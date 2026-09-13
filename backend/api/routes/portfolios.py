@@ -310,6 +310,66 @@ class PortfolioAnalyticsResponse(BaseModel):
     accounting: PortfolioAccountingResponse
 
 
+class PrimaryPortfolioItemResponse(BaseModel):
+    """Legacy dashboard row with internally consistent base-currency values."""
+
+    id: str
+    ticker: str
+    quantity: float
+    avg_buy_price: float | None = Field(description="Cost per share in currency")
+    buy_date: str
+    sector: str | None
+    current_price: float | None = Field(description="Current price per share in currency")
+    current_value: float | None = Field(description="Market value in currency")
+    pnl: float | None = Field(description="Unrealized P&L in currency")
+    exchange: str | None
+    country_code: str | None
+    currency: str = Field(description="Portfolio accounting base currency for all monetary fields")
+    native_currency: str | None = Field(description="Provider/native instrument currency, when known")
+    flag_emoji: str | None
+    has_futures: bool
+    has_options: bool
+
+
+class PrimaryPortfolioSummaryResponse(BaseModel):
+    total_cost: float | None
+    total_value: float | None
+    cash_balance: float | None
+    net_liquidation_value: float | None
+    overall_pnl: float | None
+    day_change: float | None
+    day_change_pct: float | None
+
+
+class PrimaryPortfolioResponse(BaseModel):
+    items: list[PrimaryPortfolioItemResponse]
+    summary: PrimaryPortfolioSummaryResponse
+    portfolio_id: str
+    portfolio_name: str
+    portfolio_currency: str
+    accounting: PortfolioAccountingSummary
+
+
+class SectorAllocationSectorResponse(BaseModel):
+    sector: str
+    value: float
+    weight_pct: float
+
+
+class SectorAllocationIndustryResponse(BaseModel):
+    industry: str
+    value: float
+    weight_pct: float
+
+
+class SectorAllocationResponse(BaseModel):
+    total_value: float | None
+    sectors: list[SectorAllocationSectorResponse]
+    industries: list[SectorAllocationIndustryResponse]
+    currency: str
+    accounting: PortfolioAccountingSummary
+
+
 def _portfolio_for_user(db: Session, portfolio_id: str, user_id: str) -> PortfolioORM:
     row = db.query(PortfolioORM).filter(PortfolioORM.id == portfolio_id, PortfolioORM.user_id == user_id).first()
     if row is None:
@@ -348,7 +408,11 @@ def _accounting_summary(accounting: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def _legacy_summary_for_holdings(holdings: list[PortfolioHoldingORM]) -> dict[str, Any]:
+async def _legacy_summary_for_holdings(
+    portfolio: PortfolioORM,
+    holdings: list[PortfolioHoldingORM],
+    transactions: list[PortfolioTransactionORM],
+) -> dict[str, Any]:
     """Render Manager holdings in the shape the legacy ``/portfolio`` returned.
 
     Positions are aggregated per symbol (weighted-average cost across lots) and
@@ -356,15 +420,16 @@ async def _legacy_summary_for_holdings(holdings: list[PortfolioHoldingORM]) -> d
     upstream can't stall the whole endpoint. Keeping the response shape stable
     lets the shared dashboards repoint to a per-user portfolio without a rewrite.
     """
-    # Aggregate lots -> one position per symbol.
-    agg: dict[str, dict[str, float]] = {}
+    # Aggregate lots -> one position per symbol. Monetary values are populated
+    # only after the shared accounting engine has converted every lot.
+    agg: dict[str, dict[str, Any]] = {}
     for h in holdings:
         sym = (h.symbol or "").strip().upper()
         if not sym:
             continue
-        bucket = agg.setdefault(sym, {"shares": 0.0, "cost": 0.0})
+        bucket = agg.setdefault(sym, {"shares": 0.0, "holding_ids": []})
         bucket["shares"] += float(h.shares)
-        bucket["cost"] += float(h.shares) * float(h.cost_basis_per_share)
+        bucket["holding_ids"].append(str(h.id))
 
     symbols = sorted(agg.keys())
     sem = asyncio.Semaphore(32)
@@ -387,22 +452,28 @@ async def _legacy_summary_for_holdings(holdings: list[PortfolioHoldingORM]) -> d
                 return {}
 
     snapshot_tasks = {sym: asyncio.create_task(_snapshot_for(sym)) for sym in symbols}
+    snapshots = {sym: await snapshot_tasks[sym] for sym in symbols}
+    accounting = await _portfolio_accounting(portfolio, holdings, transactions, snapshots)
+    accounting_by_id = {str(row["id"]): row for row in accounting["holdings"]}
+
+    def _complete_sum(values: list[Any], expected: int) -> float | None:
+        numeric = [float(value) for value in values if isinstance(value, (int, float))]
+        return sum(numeric) if len(numeric) == expected else None
+
     rows: list[dict[str, Any]] = []
-    total_cost = 0.0
-    total_value = 0.0
     for sym in symbols:
         shares = agg[sym]["shares"]
-        cost = agg[sym]["cost"]
-        avg_buy_price = cost / shares if shares else 0.0
-        total_cost += cost
-        snapshot = await snapshot_tasks[sym]
+        holding_ids = agg[sym]["holding_ids"]
+        accounted = [accounting_by_id[row_id] for row_id in holding_ids if row_id in accounting_by_id]
+        cost = _complete_sum([row.get("cost_basis_base") for row in accounted], len(holding_ids))
+        current_value = _complete_sum([row.get("market_value_base") for row in accounted], len(holding_ids))
+        pnl = _complete_sum([row.get("unrealized_pnl_base") for row in accounted], len(holding_ids))
+        avg_buy_price = cost / shares if cost is not None and shares else None
+        current_price = current_value / shares if current_value is not None and shares else None
+        snapshot = snapshots[sym]
         classification = snapshot.get("_classification") if isinstance(snapshot.get("_classification"), dict) else {}
-        raw_price = snapshot.get("current_price")
-        price = float(raw_price) if isinstance(raw_price, (int, float)) else None
         sector = str(snapshot.get("sector") or "").strip() or ("Crypto" if is_crypto_symbol(sym) else None)
-        current_value = float(shares) * float(price) if isinstance(price, (int, float)) else None
-        if current_value is not None:
-            total_value += current_value
+        native_currency = classification.get("currency") or snapshot.get("currency")
         rows.append(
             {
                 "id": sym,
@@ -411,26 +482,33 @@ async def _legacy_summary_for_holdings(holdings: list[PortfolioHoldingORM]) -> d
                 "avg_buy_price": avg_buy_price,
                 "buy_date": "",
                 "sector": sector,
-                "current_price": price,
+                "current_price": current_price,
                 "current_value": current_value,
-                "pnl": (current_value - cost) if current_value is not None else None,
+                "pnl": pnl,
                 "exchange": classification.get("exchange") or snapshot.get("exchange"),
                 "country_code": classification.get("country_code") or snapshot.get("country_code"),
-                "currency": classification.get("currency") or snapshot.get("currency"),
+                "currency": accounting["base_currency"],
+                "native_currency": native_currency,
                 "flag_emoji": classification.get("flag_emoji") or snapshot.get("flag_emoji"),
                 "has_futures": bool(classification.get("has_futures")),
                 "has_options": bool(classification.get("has_options")),
             }
         )
 
-    overall_pnl = total_value - total_cost if total_value > 0 else None
+    totals = accounting["totals"]
     return {
         "items": rows,
         "summary": {
-            "total_cost": total_cost,
-            "total_value": total_value if total_value > 0 else None,
-            "overall_pnl": overall_pnl,
+            "total_cost": totals["total_cost"],
+            "total_value": totals["total_value"],
+            "cash_balance": totals["cash_balance"],
+            "net_liquidation_value": totals["net_liquidation_value"],
+            "overall_pnl": totals["unrealized_pnl"],
+            "day_change": totals["day_change"],
+            "day_change_pct": totals["day_change_pct"],
         },
+        "portfolio_currency": accounting["base_currency"],
+        "accounting": _accounting_summary(accounting),
     }
 
 
@@ -490,7 +568,7 @@ async def list_portfolios(
     return {"items": out}
 
 
-@router.get("/portfolios/primary")
+@router.get("/portfolios/primary", response_model=PrimaryPortfolioResponse)
 async def get_primary_portfolio_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -508,7 +586,8 @@ async def get_primary_portfolio_summary(
         .filter(PortfolioHoldingORM.portfolio_id == portfolio.id)
         .all()
     )
-    summary = await _legacy_summary_for_holdings(holdings)
+    transactions = db.query(PortfolioTransactionORM).filter(PortfolioTransactionORM.portfolio_id == portfolio.id).all()
+    summary = await _legacy_summary_for_holdings(portfolio, holdings, transactions)
     summary["portfolio_id"] = portfolio.id
     summary["portfolio_name"] = portfolio.name
     return summary
@@ -898,18 +977,68 @@ def _analytics_holdings(db: Session, portfolio_id: str, user_id: str) -> list[Si
     return manager_holdings_as_legacy(holdings)
 
 
+async def _analytics_accounting_context(
+    db: Session,
+    portfolio_id: str,
+    user_id: str,
+) -> tuple[PortfolioORM, list[PortfolioHoldingORM], dict[str, dict[str, Any]], dict[str, Any]]:
+    portfolio = _resolve_portfolio(db, portfolio_id, user_id)
+    holdings = db.query(PortfolioHoldingORM).filter(PortfolioHoldingORM.portfolio_id == portfolio.id).all()
+    transactions = db.query(PortfolioTransactionORM).filter(PortfolioTransactionORM.portfolio_id == portfolio.id).all()
+    symbols = sorted({holding.symbol for holding in holdings if holding.symbol})
+    quotes = await _quote_map(symbols) if symbols else {}
+    accounting = await _portfolio_accounting(portfolio, holdings, transactions, quotes)
+    return portfolio, holdings, quotes, accounting
+
+
 def _default_benchmark(db: Session, portfolio_id: str, user_id: str) -> str:
     return _resolve_portfolio(db, portfolio_id, user_id).benchmark_symbol or "S&P500"
 
 
-@router.get("/portfolios/{portfolio_id}/analytics/sector-allocation")
+@router.get("/portfolios/{portfolio_id}/analytics/sector-allocation", response_model=SectorAllocationResponse)
 async def get_portfolio_sector_allocation(
     portfolio_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
-    holdings = _analytics_holdings(db, portfolio_id, current_user.id)
-    return await portfolio_analytics_service.sector_allocation(holdings)
+    portfolio, holdings, quotes, accounting = await _analytics_accounting_context(db, portfolio_id, current_user.id)
+    total = accounting["totals"]["total_value"]
+    if total is None:
+        return {
+            "total_value": None,
+            "sectors": [],
+            "industries": [],
+            "currency": portfolio.currency,
+            "accounting": _accounting_summary(accounting),
+        }
+
+    holding_by_id = {str(holding.id): holding for holding in holdings}
+    sectors: dict[str, float] = {}
+    industries: dict[str, float] = {}
+    for row in accounting["holdings"]:
+        value = row.get("market_value_base")
+        holding = holding_by_id.get(str(row.get("id")))
+        if holding is None or not isinstance(value, (int, float)):
+            continue
+        snapshot = quotes.get(holding.symbol, {})
+        sector = str(snapshot.get("sector") or "").strip() or ("Crypto" if is_crypto_symbol(holding.symbol) else "Other")
+        industry = str(snapshot.get("industry") or "").strip() or sector
+        sectors[sector] = sectors.get(sector, 0.0) + float(value)
+        industries[industry] = industries.get(industry, 0.0) + float(value)
+
+    def _rows(source: dict[str, float], label: str) -> list[dict[str, Any]]:
+        return [
+            {label: name, "value": value, "weight_pct": (value / total * 100.0) if total > 0 else 0.0}
+            for name, value in sorted(source.items(), key=lambda item: item[1], reverse=True)
+        ]
+
+    return {
+        "total_value": total,
+        "sectors": _rows(sectors, "sector"),
+        "industries": _rows(industries, "industry"),
+        "currency": portfolio.currency,
+        "accounting": _accounting_summary(accounting),
+    }
 
 
 @router.get("/portfolios/{portfolio_id}/analytics/risk-metrics")

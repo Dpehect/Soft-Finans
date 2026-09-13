@@ -39,6 +39,14 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   unacceptably distant rates fail instead of silently becoming `1.0`.
 
 ### Changed
+- **Base-currency dashboard and allocation convergence** — the owner-scoped
+  primary-portfolio response now derives holdings, cash, net liquidation,
+  unrealised P&L, day change, and sector/industry allocation from the shared
+  accounting engine. Home, Cockpit, Launchpad, and exposure widgets consume the
+  explicit portfolio base and accounting status instead of inferring a currency
+  from holdings or filling incomplete totals with zero. Position reports retain
+  one row per lot with native cost currency and portfolio base, avoiding
+  currency-agnostic weighted averages in synchronous exports.
 - **v1 roadmap accounting boundary** — base-currency portfolio accounting is now
   the explicit v1.7 milestone rather than an unspecified post-v1 limitation.
   The planned contract distinguishes portfolio, transaction, and instrument

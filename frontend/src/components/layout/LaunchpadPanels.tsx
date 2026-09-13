@@ -29,6 +29,8 @@ import { PanelBody } from "./PanelChrome";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Send, Sparkles, User, Bot, Loader2 } from "lucide-react";
 import { HotKeyPanel } from "../trading/HotKeyPanel";
+import { useDisplayCurrency } from "../../hooks/useDisplayCurrency";
+import { asCurrencyCode } from "../../lib/currency";
 
 type PanelProps = { panel: LaunchpadPanelConfig };
 
@@ -489,12 +491,15 @@ export function LaunchpadAlertsPanel(_: PanelProps) {
 export function LaunchpadPortfolioSummaryPanel(_: PanelProps) {
   const portfolio = useQuery({ queryKey: ["launchpad", "portfolio"], queryFn: fetchPortfolio, staleTime: 30_000, refetchInterval: 60_000 });
   const summary = portfolio.data?.summary;
+  const { formatMoney, formatSignedMoney } = useDisplayCurrency();
+  const baseCurrency = asCurrencyCode(portfolio.data?.portfolio_currency || portfolio.data?.accounting.base_currency);
   return (
     <div className="h-full p-2 text-xs">
       <div className="grid grid-cols-1 gap-2">
-        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Total Value</div><div className="ot-type-data text-terminal-text">{summary?.total_value == null ? "NA" : Number(summary.total_value).toLocaleString()}</div></div>
-        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Total Cost</div><div className="ot-type-data text-terminal-text">{summary?.total_cost == null ? "NA" : Number(summary.total_cost).toLocaleString()}</div></div>
-        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Overall PnL</div><div className={`${Number(summary?.overall_pnl ?? 0) >= 0 ? "text-terminal-pos" : "text-terminal-neg"} ot-type-data`}>{summary?.overall_pnl == null ? "NA" : Number(summary.overall_pnl).toLocaleString()}</div></div>
+        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Net Liquidation</div><div className="ot-type-data text-terminal-text">{formatMoney(summary?.net_liquidation_value, baseCurrency ?? undefined)}</div></div>
+        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Total Cost</div><div className="ot-type-data text-terminal-text">{formatMoney(summary?.total_cost, baseCurrency ?? undefined)}</div></div>
+        <div className="rounded border border-terminal-border bg-terminal-bg p-2"><div className="text-terminal-muted">Overall PnL</div><div className={`${Number(summary?.overall_pnl ?? 0) >= 0 ? "text-terminal-pos" : "text-terminal-neg"} ot-type-data`}>{formatSignedMoney(summary?.overall_pnl, baseCurrency ?? undefined)}</div></div>
+        <div className="text-[10px] uppercase tracking-[0.1em] text-terminal-muted">Accounting {portfolio.data?.accounting.status ?? "unavailable"}</div>
       </div>
     </div>
   );
@@ -506,7 +511,7 @@ export function LaunchpadHeatmapPanel(_: PanelProps) {
   const max = Math.max(...rows.map((r) => r.weight_pct), 1);
   return (
     <div className="h-full overflow-auto p-2">
-      {!rows.length ? <div className="text-xs text-terminal-muted">No sector data.</div> : null}
+      {!rows.length ? <div className="text-xs text-terminal-muted">{sector.data?.accounting.status === "partial" ? "Sector totals unavailable: portfolio accounting is partial." : "No sector data."}</div> : null}
       <div className="space-y-1">
         {rows.slice(0, 12).map((row) => (
           <div key={row.sector} className="rounded border border-terminal-border bg-terminal-bg px-2 py-1 text-xs">

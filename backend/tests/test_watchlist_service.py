@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from backend.api.routes.dividends import _portfolio_symbols
-from backend.models import WatchlistORM
+from backend.models import PortfolioHoldingORM, PortfolioORM, WatchlistORM
 from backend.reports.generator import rows_for_data_type
 from backend.services.watchlists import all_watchlist_symbols, watchlist_symbols_for_user
 from backend.shared.db import Base
@@ -77,3 +77,48 @@ def test_background_union_exposes_symbols_only_and_honours_limit() -> None:
 
         assert all_watchlist_symbols(db) == ["AAPL", "NVDA", "TSLA"]
         assert all_watchlist_symbols(db, limit=2) == ["AAPL", "NVDA"]
+
+
+def test_position_report_keeps_lot_currency_evidence() -> None:
+    factory = _session_factory()
+    now = datetime.now(timezone.utc)
+    with factory() as db:
+        portfolio = PortfolioORM(
+            id="portfolio-report",
+            user_id="report-user",
+            name="Global book",
+            currency="USD",
+            starting_cash=0,
+        )
+        db.add(portfolio)
+        db.add_all(
+            [
+                PortfolioHoldingORM(
+                    portfolio_id=portfolio.id,
+                    symbol="SAP.DE",
+                    shares=2,
+                    cost_basis_per_share=100,
+                    cost_basis_currency="EUR",
+                    purchase_date="2026-01-02",
+                    lot_id="eur-lot",
+                    created_at=now,
+                ),
+                PortfolioHoldingORM(
+                    portfolio_id=portfolio.id,
+                    symbol="SAP.DE",
+                    shares=1,
+                    cost_basis_per_share=110,
+                    cost_basis_currency=None,
+                    purchase_date="2026-02-02",
+                    lot_id="legacy-lot",
+                    created_at=now + timedelta(seconds=1),
+                ),
+            ]
+        )
+        db.commit()
+
+        rows = rows_for_data_type(db, "positions", "report-user")
+        assert [row["lot_id"] for row in rows] == ["eur-lot", "legacy-lot"]
+        assert rows[0]["portfolio_currency"] == "USD"
+        assert rows[0]["cost_basis_currency"] == "EUR"
+        assert rows[1]["cost_basis_currency"] is None

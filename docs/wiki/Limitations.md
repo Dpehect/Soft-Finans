@@ -72,17 +72,19 @@ never silently faked.
   `^NSEI`, …) shows price / chart / performance + notes; issuer fundamentals
   (P/E, financials, peers, shareholding) are intentionally hidden because they
   don't apply to an index.
-- **Base-currency accounting is available on the core Portfolio Manager APIs,
-  but not every downstream consumer yet.** Portfolio list, detail, and Manager
-  analytics normalize current marks and dated ledger/cost/P&L inputs through the
+- **Base-currency accounting is available on current portfolio surfaces, but
+  historical analytics remain incomplete.** Portfolio list, detail, Manager,
+  primary dashboard, and current allocation APIs normalize current marks and
+  dated ledger/cost/P&L inputs through the
   traceable FX resolver. Their accounting block reports
   `complete`/`degraded`/`partial`, retains native/base evidence, and nulls totals
   whose inputs cannot be converted. Legacy rows with no reliable denomination
-  remain `null`. Portfolio Manager consumes these results directly; the legacy
-  primary summary, Journal, deep exposure/risk/report
-  surfaces, portfolio-seeded backtests, supported history, and return attribution
-  still require v1.7 alignment; frontend display conversion must not be treated
-  as a substitute for that backend contract.
+  remain `null`. Portfolio Manager, Home, Cockpit, and Launchpad consume these
+  results directly, while position exports retain native lot currency rather
+  than pretending a provider-free report can value FX. Historical risk,
+  benchmark, exposure, and return-attribution surfaces still require v1.7
+  alignment; frontend display conversion must not be treated as a substitute for
+  that backend contract.
 - **Several retained tools are compatibility-only.** OMS is a user-scoped,
   quote-backed simulator, not broker execution, and it does not update Paper
   portfolios. Ops shows measured system state only; global restricted-list and

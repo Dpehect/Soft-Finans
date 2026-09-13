@@ -101,7 +101,23 @@ const EMPTY_PORTFOLIO: PortfolioResponse = {
   summary: {
     total_cost: 0,
     total_value: 0,
+    cash_balance: 0,
+    net_liquidation_value: 0,
     overall_pnl: 0,
+    day_change: 0,
+    day_change_pct: 0,
+  },
+  portfolio_id: "",
+  portfolio_name: "Portfolio",
+  portfolio_currency: "USD",
+  accounting: {
+    base_currency: "USD",
+    status: "complete",
+    as_of: "",
+    issues: [],
+    degraded_reasons: [],
+    fx_rates: [],
+    known_totals: {},
   },
 };
 
@@ -482,6 +498,7 @@ export function CockpitDashboard() {
   const currency =
     stock?.classification?.currency ||
     (selectedMarket === "NSE" || selectedMarket === "BSE" ? "INR" : "USD");
+  const portfolioCurrency = portfolio.portfolio_currency || portfolio.accounting.base_currency || "USD";
   const currentPrice = asNumber(stock?.current_price ?? stockRecord.current_price);
   const changePct = pctValue(stock?.change_pct ?? stockRecord.change_pct);
   const week52Low = asNumber(stock?.fifty_two_week_low ?? stockRecord["52w_low"] ?? stockRecord.low_52_week);
@@ -489,9 +506,9 @@ export function CockpitDashboard() {
   const dayOpen = asNumber(stockRecord.open);
   const dayHigh = asNumber(stockRecord.day_high ?? stockRecord.high);
   const dayLow = asNumber(stockRecord.day_low ?? stockRecord.low);
-  const portfolioValue = asNumber(portfolio.summary.total_value) ?? asNumber(cockpit?.portfolio_snapshot?.total_value);
+  const portfolioValue = asNumber(portfolio.summary.net_liquidation_value);
   const lifetimePnl = asNumber(portfolio.summary.overall_pnl);
-  const dailyPnl = asNumber(cockpit?.portfolio_snapshot?.daily_pnl);
+  const dailyPnl = asNumber(portfolio.summary.day_change);
   const activeJobs = asNumber(cockpit?.portfolio_snapshot?.active_jobs);
   const focusBeta = asNumber(focusRisk.beta ?? cockpit?.risk_summary?.beta ?? stock?.beta);
   const focusVar95 = asNumber(focusRisk.var_95 ?? cockpit?.risk_summary?.var_95);
@@ -803,11 +820,15 @@ export function CockpitDashboard() {
             context={sentimentQuery.data ? `${sentimentQuery.data.total_articles} articles in scope` : "Intraday move"}
             tone={changePct != null && changePct < 0 ? "text-terminal-neg" : "text-terminal-pos"}
           />
-          <MetricCard label="Portfolio Value" value={fmtCurrency(portfolioValue, currency, 0)} context={`${portfolio.items.length} holdings on desk`} />
+          <MetricCard
+            label="Portfolio Value"
+            value={fmtCurrency(portfolioValue, portfolioCurrency, 0)}
+            context={`${portfolio.items.length} holdings · ${portfolio.accounting.status} accounting`}
+          />
           <MetricCard
             label="Day PnL"
             value={fmtSignedCurrency(dailyPnl, currency, 0)}
-            context={lifetimePnl != null ? `Lifetime ${fmtSignedCurrency(lifetimePnl, currency, 0)}` : "Daily monitor"}
+            context={lifetimePnl != null ? `Lifetime ${fmtSignedCurrency(lifetimePnl, portfolioCurrency, 0)}` : "Daily monitor"}
             tone={dailyPnl != null && dailyPnl < 0 ? "text-terminal-neg" : "text-terminal-pos"}
           />
           <MetricCard
@@ -948,7 +969,7 @@ export function CockpitDashboard() {
                         className="flex w-full items-center justify-between rounded-sm border border-terminal-border px-2 py-1 text-left hover:border-terminal-accent"
                       >
                         <span className="text-terminal-text">{item.ticker}</span>
-                        <span className="text-[11px] text-terminal-muted">{fmtCurrency(item.current_value, currency, 0)}</span>
+                        <span className="text-[11px] text-terminal-muted">{fmtCurrency(item.current_value, portfolioCurrency, 0)}</span>
                       </button>
                     ))}
                     {topHoldings.length === 0 ? (
@@ -1057,9 +1078,9 @@ export function CockpitDashboard() {
                           </button>
                         </td>
                         <td className="px-2 py-1 text-terminal-muted">{item.sector || "--"}</td>
-                        <td className="px-2 py-1 text-right">{fmtCurrency(item.current_value, currency, 0)}</td>
+                        <td className="px-2 py-1 text-right">{fmtCurrency(item.current_value, portfolioCurrency, 0)}</td>
                         <td className={`px-2 py-1 text-right ${Number(item.pnl ?? 0) < 0 ? "text-terminal-neg" : "text-terminal-pos"}`}>
-                          {fmtSignedCurrency(item.pnl, currency, 0)}
+                          {fmtSignedCurrency(item.pnl, portfolioCurrency, 0)}
                         </td>
                       </tr>
                     ))}

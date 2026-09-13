@@ -288,14 +288,20 @@ across those intentional interfaces.
       amounts. The shared accounting engine and portfolio list/detail/Manager
       analytics contract now cover current holdings plus dated ledger, cost,
       income, fee, and realised-P&L conversion with explicit partial/degraded
-      semantics. Deep exposure and supported historical surfaces remain.
+      semantics. The primary dashboard contract and sector/industry allocations
+      now use the same values. Deep risk exposure and supported historical
+      surfaces remain.
 - [ ] Separate security return from FX return where the available price and rate
       history supports it.
 - [ ] Move Portfolio Manager, dashboard summaries, Journal, reports,
       risk/analytics, portfolio-seeded backtests, and AI context onto the shared
       backend accounting contract; keep display conversion presentation-only.
-      Portfolio Manager's aggregate cards, position P&L, and transaction cash
-      deltas now consume the contract; the other named consumers remain.
+      Portfolio Manager, Home, Cockpit, Launchpad, and current allocation views
+      now consume it. Position exports preserve native lot currency rather than
+      aggregating unlike costs. Journal has no portfolio-money aggregation, the
+      backtest submit contract accepts explicit assets rather than seeding from
+      a portfolio, and AI risk narrative accepts supplied metrics rather than
+      recomputing them. Historical risk/attribution consumers remain.
 - [ ] Add deterministic mixed-currency and migration coverage on SQLite and
       disposable PostgreSQL, including buys/sells, cash flows, fees, missing and
       stale rates, and historical valuation.

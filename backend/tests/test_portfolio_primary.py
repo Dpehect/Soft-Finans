@@ -7,7 +7,9 @@ point of retiring the shared table -- never leaks one user's holdings to another
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
@@ -32,8 +34,10 @@ def test_primary_autocreates_default_when_user_has_none() -> None:
     body = resp.json()
     assert body["items"] == []
     assert body["summary"]["total_cost"] == 0.0
-    assert body["summary"]["total_value"] is None
-    assert body["summary"]["overall_pnl"] is None
+    assert body["summary"]["total_value"] == 0.0
+    assert body["summary"]["overall_pnl"] == 0.0
+    assert body["portfolio_currency"] == "USD"
+    assert body["accounting"]["status"] == "complete"
     assert body["portfolio_id"]
 
     # The default now shows up in the user's portfolio list.
@@ -65,7 +69,7 @@ def test_primary_stays_fixed_and_aggregates_lots(monkeypatch) -> None:
     monkeypatch.setattr(portfolio_routes, "fetch_stock_snapshot_coalesced", no_live_snapshot)
     monkeypatch.setattr(portfolio_routes.market_classifier, "classify", usd_classification)
     client = TestClient(app)
-    headers = _auth_headers(client, "primary-lots@example.com")
+    headers = _auth_headers(client, f"primary-lots-{uuid4()}@example.com")
 
     # Whatever the current primary is (auto-created or pre-existing), it must not
     # change when the user creates more portfolios -- dashboards read the primary
@@ -84,7 +88,7 @@ def test_primary_stays_fixed_and_aggregates_lots(monkeypatch) -> None:
         client.post(
             f"/api/portfolios/{primary_id}/holdings",
             headers=headers,
-            json={"symbol": "AAPL", "shares": shares, "cost_basis_per_share": cost},
+            json={"symbol": "AAPL", "shares": shares, "cost_basis_per_share": cost, "currency": "USD"},
         )
 
     after = client.get("/api/portfolios/primary", headers=headers).json()
@@ -94,6 +98,73 @@ def test_primary_stays_fixed_and_aggregates_lots(monkeypatch) -> None:
     assert _qty_for(after, "AAPL") - base_qty == 40
     # total_cost delta = 10*100 + 30*200 = 7000, independent of live quotes.
     assert float(after["summary"]["total_cost"]) - base_cost == 7000.0
+
+
+def test_primary_converts_rows_and_summary_to_portfolio_base(monkeypatch) -> None:
+    async def eur_snapshot(_symbol: str) -> dict:
+        return {"current_price": 120.0, "currency": "EUR", "sector": "Technology"}
+
+    async def eur_classification(_symbol: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            model_dump=lambda: {
+                "exchange": "XETRA",
+                "country_code": "DE",
+                "currency": "EUR",
+                "flag_emoji": "🇩🇪",
+                "has_futures": False,
+                "has_options": False,
+            },
+        )
+
+    async def rate(source: str, target: str, requested_date):
+        assert (source, target) == ("EUR", "USD")
+        value = 1.2 if requested_date is not None else 1.3
+        return {
+            "base_currency": source,
+            "quote_currency": target,
+            "rate": value,
+            "rate_at": datetime(2026, 1, 2, tzinfo=timezone.utc),
+            "requested_date": requested_date,
+            "source": "test",
+            "source_symbol": "EURUSD",
+            "freshness": "historical" if requested_date is not None else "live",
+            "cache_status": "fresh",
+            "degraded": False,
+            "degraded_reason": None,
+        }
+
+    monkeypatch.setattr(portfolio_routes, "fetch_stock_snapshot_coalesced", eur_snapshot)
+    monkeypatch.setattr(portfolio_routes.market_classifier, "classify", eur_classification)
+    monkeypatch.setattr(portfolio_routes.forex_service, "get_valuation_rate", rate)
+    client = TestClient(app)
+    headers = _auth_headers(client, f"primary-base-currency-{uuid4()}@example.com")
+    primary_id = client.get("/api/portfolios/primary", headers=headers).json()["portfolio_id"]
+    added = client.post(
+        f"/api/portfolios/{primary_id}/holdings",
+        headers=headers,
+        json={
+            "symbol": "SAP.DE",
+            "shares": 2,
+            "cost_basis_per_share": 100,
+            "currency": "EUR",
+            "purchase_date": "2026-01-02",
+        },
+    )
+    assert added.status_code == 200, added.text
+
+    body = client.get("/api/portfolios/primary", headers=headers).json()
+    row = next(item for item in body["items"] if item["ticker"] == "SAP.DE")
+    assert body["portfolio_currency"] == "USD"
+    assert body["accounting"]["status"] == "complete"
+    assert body["summary"]["total_cost"] == 240.0
+    assert body["summary"]["total_value"] == 312.0
+    assert body["summary"]["overall_pnl"] == 72.0
+    assert row["currency"] == "USD"
+    assert row["native_currency"] == "EUR"
+    assert row["avg_buy_price"] == 120.0
+    assert row["current_price"] == 156.0
+    assert row["current_value"] == 312.0
+    assert row["pnl"] == 72.0
 
 
 def test_primary_does_not_leak_across_users() -> None:
