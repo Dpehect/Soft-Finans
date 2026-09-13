@@ -1,4 +1,5 @@
 import type { CountryCode, MarketCode } from "./markets";
+import type { PortfolioAccountingSummary } from "../api/types";
 
 export type ChartPoint = {
   t: number;
@@ -239,10 +240,10 @@ export type FundamentalScoresResponse = {
 };
 
 export type PortfolioItem = {
-  id: number;
+  id: string;
   ticker: string;
   quantity: number;
-  avg_buy_price: number;
+  avg_buy_price: number | null;
   buy_date: string;
   sector?: string | null;
   current_price: number | null;
@@ -251,6 +252,7 @@ export type PortfolioItem = {
   exchange?: string | null;
   country_code?: string | null;
   currency?: string | null;
+  native_currency?: string | null;
   flag_emoji?: string | null;
   has_futures?: boolean;
   has_options?: boolean;
@@ -259,16 +261,26 @@ export type PortfolioItem = {
 export type PortfolioResponse = {
   items: PortfolioItem[];
   summary: {
-    total_cost: number;
+    total_cost: number | null;
     total_value: number | null;
+    cash_balance: number | null;
+    net_liquidation_value: number | null;
     overall_pnl: number | null;
+    day_change: number | null;
+    day_change_pct: number | null;
   };
+  portfolio_id: string;
+  portfolio_name: string;
+  portfolio_currency: string;
+  accounting: PortfolioAccountingSummary;
 };
 
 export type SectorAllocationResponse = {
-  total_value: number;
+  total_value: number | null;
   sectors: Array<{ sector: string; value: number; weight_pct: number }>;
   industries: Array<{ industry: string; value: number; weight_pct: number }>;
+  currency: string;
+  accounting: PortfolioAccountingSummary;
 };
 
 export type PortfolioRiskMetrics = {

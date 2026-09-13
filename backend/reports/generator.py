@@ -9,7 +9,8 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from backend.db.models import BacktestRun, VirtualTrade
-from backend.services.legacy_holdings import resolve_user_holdings
+from backend.models import PortfolioHoldingORM
+from backend.services.legacy_holdings import primary_portfolio
 from backend.services.watchlists import watchlist_rows_for_user
 
 
@@ -28,15 +29,31 @@ def rows_for_data_type(db: Session, data_type: str, user_id: str) -> list[dict[s
     if key == "watchlist":
         return watchlist_rows_for_user(db, user_id)
     if key == "positions":
-        # Scoped to the user's own primary portfolio (was a global query).
+        # Keep each lot's native cost basis and explicit denomination. A sync
+        # export cannot perform provider-backed FX valuation safely, and
+        # aggregating unlike currencies here would recreate the bug v1.7 removes.
+        portfolio = primary_portfolio(db, user_id, create=False)
+        if portfolio is None:
+            return []
+        holdings = (
+            db.query(PortfolioHoldingORM)
+            .filter(PortfolioHoldingORM.portfolio_id == portfolio.id)
+            .order_by(PortfolioHoldingORM.created_at.asc())
+            .all()
+        )
         return [
             {
-                "ticker": x.ticker,
-                "quantity": x.quantity,
-                "avg_buy_price": x.avg_buy_price,
-                "buy_date": x.buy_date,
+                "portfolio_id": portfolio.id,
+                "portfolio_name": portfolio.name,
+                "portfolio_currency": portfolio.currency,
+                "ticker": row.symbol,
+                "quantity": row.shares,
+                "avg_buy_price": row.cost_basis_per_share,
+                "cost_basis_currency": row.cost_basis_currency,
+                "buy_date": row.purchase_date,
+                "lot_id": row.lot_id,
             }
-            for x in resolve_user_holdings(db, user_id)
+            for row in holdings
         ]
     if key in {"trades", "backtest_trades"}:
         return [

@@ -83,19 +83,38 @@ export async function deleteHolding(holdingId: string | number): Promise<void> {
 function _normalizePortfolioResponse(data: unknown): PortfolioResponse {
   const items = Array.isArray((data as any)?.items) ? (data as any).items : [];
   const summary = (data as any)?.summary && typeof (data as any).summary === "object" ? (data as any).summary : {};
+  const accounting = (data as any)?.accounting && typeof (data as any).accounting === "object"
+    ? (data as any).accounting
+    : null;
   return {
     items,
     summary: {
-      total_cost: Number((summary as any).total_cost ?? 0),
+      total_cost: typeof (summary as any).total_cost === "number" ? (summary as any).total_cost : null,
       total_value: typeof (summary as any).total_value === "number" ? (summary as any).total_value : null,
+      cash_balance: typeof (summary as any).cash_balance === "number" ? (summary as any).cash_balance : null,
+      net_liquidation_value: typeof (summary as any).net_liquidation_value === "number" ? (summary as any).net_liquidation_value : null,
       overall_pnl: typeof (summary as any).overall_pnl === "number" ? (summary as any).overall_pnl : null,
+      day_change: typeof (summary as any).day_change === "number" ? (summary as any).day_change : null,
+      day_change_pct: typeof (summary as any).day_change_pct === "number" ? (summary as any).day_change_pct : null,
+    },
+    portfolio_id: String((data as any)?.portfolio_id || ""),
+    portfolio_name: String((data as any)?.portfolio_name || "Portfolio"),
+    portfolio_currency: String((data as any)?.portfolio_currency || accounting?.base_currency || ""),
+    accounting: accounting ?? {
+      base_currency: "",
+      status: "partial",
+      as_of: "",
+      issues: [],
+      degraded_reasons: [],
+      fx_rates: [],
+      known_totals: {},
     },
   };
 }
 
 // The holdings summary now comes from the caller's *own* primary portfolio, not
-// the retired global (shared-across-users) table. Same {items, summary} shape,
-// so every dashboard (home, cockpit, HUD, launchpad, correlation) is unchanged.
+// the retired global (shared-across-users) table. Monetary fields are expressed
+// in portfolio_currency and carry the shared accounting status/evidence.
 export async function fetchPortfolio(): Promise<PortfolioResponse> {
   const { data } = await api.get<PortfolioResponse>("/portfolios/primary");
   return _normalizePortfolioResponse(data);

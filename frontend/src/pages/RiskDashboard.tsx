@@ -155,7 +155,7 @@ export function RiskDashboardPage() {
   const heatmapItems = useMemo<PortfolioItem[]>(
     () =>
       sectorData.map((row, index) => ({
-        id: index,
+        id: String(index),
         ticker: row.name,
         quantity: 0,
         avg_buy_price: 0,

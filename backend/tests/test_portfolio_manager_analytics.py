@@ -8,10 +8,13 @@ which is what we assert here — plus that they're scoped to the owner.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from backend.api.routes import portfolios as portfolio_routes
 from backend.main import app
 from backend.services.legacy_holdings import manager_holdings_as_legacy
 
@@ -78,6 +81,62 @@ def test_analytics_endpoints_return_wellformed_shapes() -> None:
     overlay = client.get(f"/api/portfolios/{pid}/analytics/benchmark-overlay", headers=headers)
     assert overlay.status_code == 200, overlay.text
     assert set(overlay.json()) >= {"equity_curve", "alpha", "tracking_error", "benchmark"}
+
+
+def test_sector_allocation_uses_base_currency_market_values(monkeypatch) -> None:
+    async def snapshot(_symbol: str) -> dict:
+        return {
+            "current_price": 120.0,
+            "currency": "EUR",
+            "sector": "Technology",
+            "industry": "Software",
+        }
+
+    async def rate(source: str, target: str, requested_date):
+        assert (source, target) == ("EUR", "USD")
+        return {
+            "base_currency": source,
+            "quote_currency": target,
+            "rate": 1.2 if requested_date is not None else 1.3,
+            "rate_at": datetime(2026, 1, 2, tzinfo=timezone.utc),
+            "requested_date": requested_date,
+            "source": "test",
+            "source_symbol": "EURUSD",
+            "freshness": "historical" if requested_date is not None else "live",
+            "cache_status": "fresh",
+            "degraded": False,
+            "degraded_reason": None,
+        }
+
+    monkeypatch.setattr(portfolio_routes, "fetch_stock_snapshot_coalesced", snapshot)
+    monkeypatch.setattr(portfolio_routes.forex_service, "get_valuation_rate", rate)
+    client = TestClient(app)
+    headers = _auth_headers(client, f"analytics-fx-{uuid4()}@example.com")
+    pid = client.post(
+        "/api/portfolios",
+        headers=headers,
+        json={"name": "FX allocation", "currency": "USD", "starting_cash": 0},
+    ).json()["id"]
+    client.post(
+        f"/api/portfolios/{pid}/holdings",
+        headers=headers,
+        json={
+            "symbol": "SAP.DE",
+            "shares": 2,
+            "cost_basis_per_share": 100,
+            "currency": "EUR",
+            "purchase_date": "2026-01-02",
+        },
+    )
+
+    response = client.get(f"/api/portfolios/{pid}/analytics/sector-allocation", headers=headers)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["currency"] == "USD"
+    assert body["accounting"]["status"] == "complete"
+    assert body["total_value"] == 312.0
+    assert body["sectors"] == [{"sector": "Technology", "value": 312.0, "weight_pct": 100.0}]
+    assert body["industries"] == [{"industry": "Software", "value": 312.0, "weight_pct": 100.0}]
 
 
 def test_primary_alias_resolves_for_analytics() -> None:

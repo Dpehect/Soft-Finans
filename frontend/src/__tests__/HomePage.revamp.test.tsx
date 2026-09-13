@@ -121,7 +121,23 @@ describe("HomePage mission-control revamp", () => {
       summary: {
         total_cost: 2310000,
         total_value: 2480000,
+        cash_balance: 0,
+        net_liquidation_value: 2480000,
         overall_pnl: 170000,
+        day_change: 12000,
+        day_change_pct: 0.48,
+      },
+      portfolio_id: "portfolio-1",
+      portfolio_name: "Primary",
+      portfolio_currency: "USD",
+      accounting: {
+        base_currency: "USD",
+        status: "complete",
+        as_of: "2026-03-11T12:00:00Z",
+        issues: [],
+        degraded_reasons: [],
+        fx_rates: [],
+        known_totals: {},
       },
     } as any);
 
@@ -217,6 +233,7 @@ describe("HomePage mission-control revamp", () => {
 
     expect(screen.getAllByText("$2480000").length).toBeGreaterThan(0);
     expect(screen.getByText("$170000 (+7.36%)")).toBeInTheDocument();
+    expect(screen.getByText("COMPLETE")).toBeInTheDocument();
     expect(screen.getByText("RBI signals steady liquidity support for domestic markets")).toBeInTheDocument();
     expect(screen.getByText("Bullish 87%")).toBeInTheDocument();
 

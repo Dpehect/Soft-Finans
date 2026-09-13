@@ -9077,6 +9077,295 @@
         "title": "PriceRange",
         "type": "object"
       },
+      "PrimaryPortfolioItemResponse": {
+        "description": "Legacy dashboard row with internally consistent base-currency values.",
+        "properties": {
+          "avg_buy_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cost per share in currency",
+            "title": "Avg Buy Price"
+          },
+          "buy_date": {
+            "title": "Buy Date",
+            "type": "string"
+          },
+          "country_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Code"
+          },
+          "currency": {
+            "description": "Portfolio accounting base currency for all monetary fields",
+            "title": "Currency",
+            "type": "string"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Current price per share in currency",
+            "title": "Current Price"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Market value in currency",
+            "title": "Current Value"
+          },
+          "exchange": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange"
+          },
+          "flag_emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag Emoji"
+          },
+          "has_futures": {
+            "title": "Has Futures",
+            "type": "boolean"
+          },
+          "has_options": {
+            "title": "Has Options",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "native_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Provider/native instrument currency, when known",
+            "title": "Native Currency"
+          },
+          "pnl": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unrealized P&L in currency",
+            "title": "Pnl"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticker",
+          "quantity",
+          "avg_buy_price",
+          "buy_date",
+          "sector",
+          "current_price",
+          "current_value",
+          "pnl",
+          "exchange",
+          "country_code",
+          "currency",
+          "native_currency",
+          "flag_emoji",
+          "has_futures",
+          "has_options"
+        ],
+        "title": "PrimaryPortfolioItemResponse",
+        "type": "object"
+      },
+      "PrimaryPortfolioResponse": {
+        "properties": {
+          "accounting": {
+            "$ref": "#/components/schemas/PortfolioAccountingSummary"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PrimaryPortfolioItemResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "portfolio_currency": {
+            "title": "Portfolio Currency",
+            "type": "string"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          },
+          "portfolio_name": {
+            "title": "Portfolio Name",
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PrimaryPortfolioSummaryResponse"
+          }
+        },
+        "required": [
+          "items",
+          "summary",
+          "portfolio_id",
+          "portfolio_name",
+          "portfolio_currency",
+          "accounting"
+        ],
+        "title": "PrimaryPortfolioResponse",
+        "type": "object"
+      },
+      "PrimaryPortfolioSummaryResponse": {
+        "properties": {
+          "cash_balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Balance"
+          },
+          "day_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change"
+          },
+          "day_change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change Pct"
+          },
+          "net_liquidation_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Liquidation Value"
+          },
+          "overall_pnl": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Pnl"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "total_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Value"
+          }
+        },
+        "required": [
+          "total_cost",
+          "total_value",
+          "cash_balance",
+          "net_liquidation_value",
+          "overall_pnl",
+          "day_change",
+          "day_change_pct"
+        ],
+        "title": "PrimaryPortfolioSummaryResponse",
+        "type": "object"
+      },
       "PromoteRequest": {
         "properties": {
           "metadata": {
@@ -10336,6 +10625,97 @@
           }
         },
         "title": "ScreenerV2RunRequest",
+        "type": "object"
+      },
+      "SectorAllocationIndustryResponse": {
+        "properties": {
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          },
+          "weight_pct": {
+            "title": "Weight Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "industry",
+          "value",
+          "weight_pct"
+        ],
+        "title": "SectorAllocationIndustryResponse",
+        "type": "object"
+      },
+      "SectorAllocationResponse": {
+        "properties": {
+          "accounting": {
+            "$ref": "#/components/schemas/PortfolioAccountingSummary"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "industries": {
+            "items": {
+              "$ref": "#/components/schemas/SectorAllocationIndustryResponse"
+            },
+            "title": "Industries",
+            "type": "array"
+          },
+          "sectors": {
+            "items": {
+              "$ref": "#/components/schemas/SectorAllocationSectorResponse"
+            },
+            "title": "Sectors",
+            "type": "array"
+          },
+          "total_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Value"
+          }
+        },
+        "required": [
+          "total_value",
+          "sectors",
+          "industries",
+          "currency",
+          "accounting"
+        ],
+        "title": "SectorAllocationResponse",
+        "type": "object"
+      },
+      "SectorAllocationSectorResponse": {
+        "properties": {
+          "sector": {
+            "title": "Sector",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          },
+          "weight_pct": {
+            "title": "Weight Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "sector",
+          "value",
+          "weight_pct"
+        ],
+        "title": "SectorAllocationSectorResponse",
         "type": "object"
       },
       "SignalSummary": {
@@ -27279,9 +27659,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Primary Portfolio Summary Api Portfolios Primary Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PrimaryPortfolioResponse"
                 }
               }
             },
@@ -27843,9 +28221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Portfolio Sector Allocation Api Portfolios  Portfolio Id  Analytics Sector Allocation Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/SectorAllocationResponse"
                 }
               }
             },

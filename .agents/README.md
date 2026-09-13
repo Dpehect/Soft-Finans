@@ -94,8 +94,9 @@ release-level interpretation and safety boundaries.
   rows remain unknown. Portfolio list, detail, and Manager analytics now share a
   backend base-currency engine with native evidence and explicit
   complete/degraded/partial results, and Portfolio Manager renders that contract.
-  Remaining downstream consumer, deep-exposure, history, and return-attribution
-  alignment is the next boundary.
+  Primary dashboard summaries, Home, Cockpit, Launchpad, current allocation, and
+  position exports are aligned as well. Deep risk, supported history, and
+  security-versus-FX return attribution are the next boundary.
 - **v1.3 — The second brain gets depth** shipped
   deterministic long-note chunking, source-aware retrieval, progressive answers,
   deliberate API-key note ingestion, and an explicit journal-gap review. Feature

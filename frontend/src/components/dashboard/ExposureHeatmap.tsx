@@ -22,7 +22,7 @@ function pct(value: number): string {
 
 function classifyCurrency(item: PortfolioItem, market: string): string {
   return nativeCurrencyForInstrument(
-    item.currency,
+    item.native_currency,
     item.ticker,
     item.exchange || item.country_code || market,
   );

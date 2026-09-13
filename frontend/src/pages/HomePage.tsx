@@ -29,7 +29,7 @@ import { fetchChainSummary } from "../fno/api/fnoApi";
 import { fetchCollectionBriefing } from "../api/client";
 import { useSettingsStore } from "../store/settingsStore";
 import type { PortfolioItem } from "../types";
-import { nativeCurrencyForInstrument, type CurrencyCode } from "../lib/currency";
+import { asCurrencyCode, type CurrencyCode } from "../lib/currency";
 import { getWorkspacePresetConfig, readWorkspacePreset } from "../workspace/presets";
 
 type MarketRow = {
@@ -43,8 +43,9 @@ type MarketRow = {
 
 type DashboardSnapshot = {
   equityValue: number | null;
-  equityCost: number;
+  equityCost: number | null;
   equityPnl: number | null;
+  accountingStatus: "complete" | "degraded" | "partial" | null;
   holdingsCount: number;
   watchlistCount: number;
   watchlistDerivativesCount: number;
@@ -171,8 +172,9 @@ const FALLBACK_PERFORMANCE_POINTS = [
 
 const EMPTY_SNAPSHOT: DashboardSnapshot = {
   equityValue: null,
-  equityCost: 0,
+  equityCost: null,
   equityPnl: null,
+  accountingStatus: null,
   holdingsCount: 0,
   watchlistCount: 0,
   watchlistDerivativesCount: 0,
@@ -267,22 +269,14 @@ export function HomePage() {
     if (portfolioRes.status === "fulfilled") {
       const data = portfolioRes.value;
       setPortfolioItems(data.items || []);
-      const currencies = new Set((data.items || []).map((row) =>
-        nativeCurrencyForInstrument(row.currency, row.ticker, row.exchange || row.country_code || selectedMarket)
-      ));
-      const resolvedPortfolioCurrency = currencies.size === 1 ? currencies.values().next().value ?? null : null;
+      const resolvedPortfolioCurrency = asCurrencyCode(
+        data.portfolio_currency || data.accounting?.base_currency || data.items[0]?.currency,
+      );
       setPortfolioCurrency(resolvedPortfolioCurrency);
-      if (currencies.size <= 1) {
-        const derivedValue = data.summary.total_value ?? data.items.reduce((acc, row) => acc + Number(row.current_value ?? 0), 0);
-        next.equityValue = Number.isFinite(derivedValue) ? derivedValue : null;
-        next.equityCost = Number(data.summary.total_cost ?? 0);
-        next.equityPnl =
-          typeof data.summary.overall_pnl === "number"
-            ? data.summary.overall_pnl
-            : next.equityValue != null
-              ? next.equityValue - next.equityCost
-              : null;
-      }
+      next.equityValue = data.summary.net_liquidation_value;
+      next.equityCost = data.summary.total_cost;
+      next.equityPnl = data.summary.overall_pnl;
+      next.accountingStatus = data.accounting?.status ?? null;
       next.holdingsCount = data.items.length;
     }
 
@@ -452,7 +446,7 @@ export function HomePage() {
   }, [marketRows, selectedHeatId]);
 
   const equityPnlPct = useMemo(() => {
-    if (snapshot.equityPnl == null || snapshot.equityCost <= 0) return null;
+    if (snapshot.equityPnl == null || snapshot.equityCost == null || snapshot.equityCost <= 0) return null;
     return (snapshot.equityPnl / snapshot.equityCost) * 100;
   }, [snapshot.equityCost, snapshot.equityPnl]);
 
@@ -725,13 +719,13 @@ export function HomePage() {
                 <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
                   <MetricCard
                     label="Net Liquidation"
-                    value={portfolioItems.length > 0 && !portfolioCurrency ? "Mixed currencies" : formatMoney(snapshot.equityValue, portfolioCurrency ?? undefined)}
+                    value={formatMoney(snapshot.equityValue, portfolioCurrency ?? undefined)}
                     tone={getMetricTone(snapshot.equityPnl)}
                     delta={
                       snapshot.equityPnl == null
                         ? undefined
                         : {
-                            label: `${formatSignedMoney(snapshot.equityPnl)} (${formatPercent(equityPnlPct)})`,
+                            label: `${formatSignedMoney(snapshot.equityPnl, portfolioCurrency ?? undefined)} (${formatPercent(equityPnlPct)})`,
                             tone: getMetricTone(snapshot.equityPnl),
                           }
                     }
@@ -739,6 +733,11 @@ export function HomePage() {
                       { label: "Holdings", value: String(snapshot.holdingsCount) },
                       { label: "Watchlist", value: String(snapshot.watchlistCount), tone: "accent" },
                       { label: "Backtests", value: String(snapshot.backtestPresetCount) },
+                      {
+                        label: "Accounting",
+                        value: snapshot.accountingStatus?.toUpperCase() ?? "UNAVAILABLE",
+                        tone: snapshot.accountingStatus === "complete" ? "up" : "accent",
+                      },
                       { label: "Sync", value: updatedLabel, tone: "neutral" },
                     ]}
                     sparklinePoints={performancePoints}
