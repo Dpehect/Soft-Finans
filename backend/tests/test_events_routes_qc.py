@@ -47,7 +47,17 @@ def test_portfolio_events_endpoint(monkeypatch) -> None:
             _event("RELIANCE", EventType.DIVIDEND, date(2025, 2, 5)),
         ]
 
+    async def _fake_dividends(symbols: list[str], days_ahead: int = 30, project: bool = True):
+        assert symbols == ["RELIANCE", "TCS"]
+        assert days_ahead == 30
+        assert project is True
+        return []
+
     monkeypatch.setattr(events.corporate_actions_service, "get_portfolio_events", _fake_portfolio)
+    # The endpoint intentionally merges labelled dividend projections. Patch
+    # that independent provider boundary too so this route-shape test cannot
+    # reach live Yahoo/FMP or vary with cached dividend history.
+    monkeypatch.setattr(events.corporate_actions_service, "get_upcoming_dividends", _fake_dividends)
     out = asyncio.run(events.get_portfolio_events("RELIANCE,TCS", days=30))
     assert out["count"] == 2
     assert out["items"][0]["symbol"] == "TCS"
