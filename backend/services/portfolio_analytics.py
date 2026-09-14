@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from backend.api.deps import fetch_stock_snapshot_coalesced, get_unified_fetcher
 from backend.db.models import PortfolioHoldingORM, PortfolioORM
 from backend.equity.services.corporate_actions import corporate_actions_service, extract_amount
+from backend.services.forex_service import service as forex_service
 from backend.shared.db import init_db
 from backend.shared.market_classifier import is_crypto_symbol
 
@@ -66,6 +67,27 @@ def _series_return(close: pd.Series) -> float:
     if start <= 0:
         return 0.0
     return (end / start) - 1.0
+
+
+def decompose_base_currency_return(
+    start_price: float,
+    end_price: float,
+    start_fx: float,
+    end_fx: float,
+) -> dict[str, float]:
+    """Exactly separate a base-currency return into security, FX and interaction."""
+    if start_price <= 0 or start_fx <= 0:
+        raise ValueError("start price and FX rate must be positive")
+    security = (end_price / start_price) - 1.0
+    currency = (end_fx / start_fx) - 1.0
+    interaction = security * currency
+    total = ((end_price * end_fx) / (start_price * start_fx)) - 1.0
+    return {
+        "security": security,
+        "currency": currency,
+        "interaction": interaction,
+        "total": total,
+    }
 
 
 def compute_brinson_attribution(
@@ -226,6 +248,134 @@ class PortfolioAnalyticsService:
             return df["close"]
         return pd.Series(dtype="float64")
 
+    async def _base_close_series(
+        self,
+        close: pd.Series,
+        source_currency: str | None,
+        base_currency: str,
+    ) -> tuple[pd.Series, list[dict[str, Any]], str | None]:
+        """Convert a native close series without assuming currency parity."""
+        source = str(source_currency or "").strip().upper()
+        target = str(base_currency or "USD").strip().upper() or "USD"
+        if close.empty:
+            return pd.Series(dtype="float64"), [], "price_history_unavailable"
+        if not source:
+            return pd.Series(dtype="float64"), [], "instrument_currency_unknown"
+        dates = [timestamp.date() for timestamp in close.index]
+        try:
+            rates = await forex_service.get_historical_valuation_rates(source, target, dates)
+        except Exception:
+            return pd.Series(dtype="float64"), [], "fx_history_unavailable"
+        converted: list[tuple[pd.Timestamp, float]] = []
+        evidence: list[dict[str, Any]] = []
+        seen_evidence: set[tuple[str, str, str]] = set()
+        for timestamp, price in close.items():
+            rate = rates.get(timestamp.date().isoformat())
+            if not rate:
+                continue
+            converted.append((timestamp, float(price) * float(rate["rate"])))
+            key = (
+                str(rate.get("source_symbol") or ""),
+                str(rate.get("rate_at") or ""),
+                str(rate.get("requested_date") or ""),
+            )
+            if key not in seen_evidence:
+                seen_evidence.add(key)
+                evidence.append(rate)
+        if not converted:
+            return pd.Series(dtype="float64"), evidence, "fx_history_unavailable"
+        return pd.Series({timestamp: value for timestamp, value in converted}, dtype="float64").sort_index(), evidence, None
+
+    async def _historical_market_context(
+        self,
+        holdings: Iterable[Any],
+        *,
+        base_currency: str,
+        range_str: str,
+        benchmark: str,
+    ) -> dict[str, Any]:
+        """Load dated prices and FX for constant-quantity open-position history.
+
+        This deliberately models only the holdings that are open today, from
+        their recorded first purchase date. It is useful for comparable risk and
+        benchmark views, but it is not presented as a full transaction-ledger
+        performance record.
+        """
+        rows = list(holdings)
+        symbols = sorted({str(row.ticker).strip().upper() for row in rows if str(row.ticker).strip()})
+        quantities = {
+            symbol: sum(float(row.quantity) for row in rows if str(row.ticker).strip().upper() == symbol)
+            for symbol in symbols
+        }
+        buy_dates = {
+            symbol: max(
+                (str(row.buy_date) for row in rows if str(row.ticker).strip().upper() == symbol and str(row.buy_date).strip()),
+                default="",
+            )
+            for symbol in symbols
+        }
+        benchmark_symbol = BENCHMARK_MAP.get(str(benchmark or "S&P500").upper(), benchmark)
+        all_symbols = [*symbols, benchmark_symbol]
+        snapshot_tasks = {symbol: asyncio.create_task(fetch_stock_snapshot_coalesced(symbol)) for symbol in all_symbols}
+        series_tasks = {symbol: asyncio.create_task(self._close_series(symbol, range_str=range_str)) for symbol in all_symbols}
+        snapshots = {symbol: await task for symbol, task in snapshot_tasks.items()}
+        native_series = {symbol: await task for symbol, task in series_tasks.items()}
+
+        issues: list[dict[str, Any]] = []
+        degraded_reasons: list[str] = []
+        fx_rates: list[dict[str, Any]] = []
+        base_series: dict[str, pd.Series] = {}
+        for symbol in all_symbols:
+            snapshot = snapshots.get(symbol, {})
+            classification = snapshot.get("_classification") if isinstance(snapshot.get("_classification"), dict) else {}
+            currency = classification.get("currency") or snapshot.get("currency")
+            converted, evidence, error = await self._base_close_series(
+                native_series.get(symbol, pd.Series(dtype="float64")), currency, base_currency
+            )
+            fx_rates.extend(evidence)
+            for rate in evidence:
+                reason = rate.get("degraded_reason") if rate.get("degraded") else None
+                if reason and reason not in degraded_reasons:
+                    degraded_reasons.append(str(reason))
+            if error:
+                issues.append({"code": error, "symbol": symbol, "currency": currency})
+            else:
+                base_series[symbol] = converted
+
+        portfolio_values = pd.Series(dtype="float64")
+        if symbols and all(symbol in base_series for symbol in symbols):
+            price_df = pd.concat({symbol: base_series[symbol] for symbol in symbols}, axis=1).sort_index().ffill()
+            purchase_timestamps: list[pd.Timestamp] = []
+            for symbol in symbols:
+                try:
+                    purchase_timestamps.append(pd.Timestamp(f"{buy_dates[symbol]}T00:00:00Z"))
+                except Exception:
+                    issues.append({"code": "purchase_date_invalid", "symbol": symbol, "date": buy_dates[symbol]})
+            if len(purchase_timestamps) == len(symbols):
+                # Starting before all today's quantities were actually open would
+                # turn later purchases into fake investment returns. Begin at the
+                # first date on which the complete current basket existed.
+                price_df = price_df.loc[price_df.index >= max(purchase_timestamps)].dropna()
+                if not price_df.empty:
+                    portfolio_values = sum(
+                        (price_df[symbol] * quantities[symbol] for symbol in symbols),
+                        start=pd.Series(0.0, index=price_df.index),
+                    )
+
+        benchmark_base = base_series.get(benchmark_symbol, pd.Series(dtype="float64"))
+        return {
+            "base_currency": str(base_currency or "USD").upper(),
+            "status": "partial" if issues else "degraded" if degraded_reasons else "complete",
+            "methodology": "current_open_holdings_constant_quantity",
+            "issues": issues,
+            "degraded_reasons": degraded_reasons,
+            "fx_rates": fx_rates,
+            "prices": base_series,
+            "portfolio_values": portfolio_values,
+            "benchmark_values": benchmark_base,
+            "benchmark_symbol": benchmark_symbol,
+        }
+
     async def sector_allocation(self, holdings: Iterable[Any]) -> dict[str, Any]:
         rows: list[dict[str, Any]] = []
         total = 0.0
@@ -262,26 +412,18 @@ class PortfolioAnalyticsService:
         ]
         return {"total_value": total, "sectors": sectors, "industries": industries}
 
-    async def _portfolio_returns(self, holdings: Iterable[Any], range_str: str = "1y") -> pd.Series:
-        series: dict[str, pd.Series] = {}
-        qty_map: dict[str, float] = {}
-        for h in holdings:
-            close = await self._close_series(h.ticker, range_str=range_str)
-            if close.empty:
-                continue
-            series[h.ticker] = close
-            qty_map[h.ticker] = float(h.quantity)
-        if not series:
-            return pd.Series(dtype="float64")
-        df = pd.concat(series, axis=1).sort_index().ffill().dropna(how="all")
-        weights = pd.Series({k: max(0.0, qty_map[k]) for k in df.columns}, dtype="float64")
-        weights = weights / max(1e-12, float(weights.sum()))
-        returns = df.pct_change().dropna(how="all").fillna(0.0)
-        port = (returns * weights.reindex(returns.columns).fillna(0.0)).sum(axis=1)
-        return port
-
-    async def risk_metrics(self, holdings: Iterable[Any], risk_free_rate: float = 0.04, benchmark: str = "S&P500") -> dict[str, Any]:
-        port = await self._portfolio_returns(holdings, range_str="2y")
+    async def risk_metrics(
+        self,
+        holdings: Iterable[Any],
+        risk_free_rate: float = 0.04,
+        benchmark: str = "S&P500",
+        base_currency: str = "USD",
+    ) -> dict[str, Any]:
+        history = await self._historical_market_context(
+            holdings, base_currency=base_currency, range_str="2y", benchmark=benchmark
+        )
+        values = history["portfolio_values"]
+        port = values.pct_change().dropna() if not values.empty else pd.Series(dtype="float64")
         if port.empty:
             return {
                 "sharpe_ratio": 0.0,
@@ -290,9 +432,13 @@ class PortfolioAnalyticsService:
                 "beta": 0.0,
                 "alpha": 0.0,
                 "information_ratio": 0.0,
+                "base_currency": history["base_currency"],
+                "status": history["status"],
+                "methodology": history["methodology"],
+                "issues": history["issues"],
+                "degraded_reasons": history["degraded_reasons"],
             }
-        bench_symbol = BENCHMARK_MAP.get(benchmark.upper(), benchmark)
-        bench_close = await self._close_series(bench_symbol, range_str="2y")
+        bench_close = history["benchmark_values"].reindex(values.index).ffill().dropna()
         bench = bench_close.pct_change().dropna() if not bench_close.empty else pd.Series(dtype="float64")
         aligned = pd.concat([port, bench], axis=1, join="inner").dropna()
         if aligned.shape[0] >= 5:
@@ -336,6 +482,11 @@ class PortfolioAnalyticsService:
             "beta": beta,
             "alpha": alpha,
             "information_ratio": info_ratio,
+            "base_currency": history["base_currency"],
+            "status": history["status"],
+            "methodology": history["methodology"],
+            "issues": history["issues"],
+            "degraded_reasons": history["degraded_reasons"],
         }
 
     async def correlation_matrix(self, holdings: Iterable[Any], window: int = 60) -> dict[str, Any]:
@@ -428,37 +579,37 @@ class PortfolioAnalyticsService:
         rows.sort(key=lambda x: (x.get("ex_date") or x.get("event_date") or ""))
         return {"upcoming": rows, "annual_income_projection": annual_income}
 
-    async def benchmark_overlay(self, holdings: Iterable[Any], benchmark: str = "S&P500") -> dict[str, Any]:
-        symbols = [h.ticker for h in holdings]
-        buy_dates = {h.ticker: h.buy_date for h in holdings}
-        quantities = {h.ticker: float(h.quantity) for h in holdings}
-        frames: dict[str, pd.Series] = {}
-        for symbol in symbols:
-            s = await self._close_series(symbol, range_str="5y")
-            if not s.empty:
-                frames[symbol] = s
-        if not frames:
-            return {"equity_curve": [], "alpha": 0.0, "tracking_error": 0.0, "benchmark": benchmark}
-
-        price_df = pd.concat(frames, axis=1).sort_index().ffill().dropna(how="all")
-        portfolio_values = pd.Series(0.0, index=price_df.index)
-        for symbol in price_df.columns:
-            qty = quantities.get(symbol, 0.0)
-            buy_dt = pd.Timestamp(f"{buy_dates.get(symbol, '1900-01-01')}T00:00:00Z")
-            mask = price_df.index >= buy_dt
-            portfolio_values.loc[mask] = portfolio_values.loc[mask] + price_df.loc[mask, symbol] * qty
-
-        portfolio_values = portfolio_values.replace(0, pd.NA).ffill().dropna()
+    async def benchmark_overlay(
+        self,
+        holdings: Iterable[Any],
+        benchmark: str = "S&P500",
+        base_currency: str = "USD",
+    ) -> dict[str, Any]:
+        history = await self._historical_market_context(
+            holdings, base_currency=base_currency, range_str="5y", benchmark=benchmark
+        )
+        portfolio_values = history["portfolio_values"]
         if portfolio_values.empty:
-            return {"equity_curve": [], "alpha": 0.0, "tracking_error": 0.0, "benchmark": benchmark}
+            return {
+                "equity_curve": [], "alpha": 0.0, "tracking_error": 0.0, "benchmark": benchmark,
+                "base_currency": history["base_currency"], "status": history["status"],
+                "methodology": history["methodology"], "issues": history["issues"],
+                "degraded_reasons": history["degraded_reasons"],
+            }
 
-        bench_symbol = BENCHMARK_MAP.get(benchmark.upper(), benchmark)
-        bench_close = await self._close_series(bench_symbol, range_str="5y")
+        bench_close = history["benchmark_values"]
         bench_close = bench_close.reindex(portfolio_values.index).ffill().dropna()
         if bench_close.empty:
-            bench_norm = pd.Series(1.0, index=portfolio_values.index)
-        else:
-            bench_norm = bench_close / float(bench_close.iloc[0])
+            return {
+                "equity_curve": [], "alpha": 0.0, "tracking_error": 0.0, "benchmark": benchmark,
+                "base_currency": history["base_currency"], "status": "partial",
+                "methodology": history["methodology"],
+                "issues": [*history["issues"], {"code": "benchmark_history_unavailable", "symbol": history["benchmark_symbol"]}],
+                "degraded_reasons": history["degraded_reasons"],
+            }
+        portfolio_values = portfolio_values.reindex(bench_close.index).ffill().dropna()
+        bench_close = bench_close.reindex(portfolio_values.index).ffill().dropna()
+        bench_norm = bench_close / float(bench_close.iloc[0])
 
         port_norm = portfolio_values / float(portfolio_values.iloc[0])
         port_ret = port_norm.pct_change().dropna()
@@ -472,6 +623,7 @@ class PortfolioAnalyticsService:
                 "date": idx.date().isoformat(),
                 "portfolio": float(port_norm.loc[idx]),
                 "benchmark": float(bench_norm.loc[idx]) if idx in bench_norm.index else 1.0,
+                "portfolio_value_base": float(portfolio_values.loc[idx]),
             }
             for idx in port_norm.index
         ]
@@ -480,6 +632,11 @@ class PortfolioAnalyticsService:
             "equity_curve": curve,
             "alpha": alpha,
             "tracking_error": tracking_error,
+            "base_currency": history["base_currency"],
+            "status": history["status"],
+            "methodology": history["methodology"],
+            "issues": history["issues"],
+            "degraded_reasons": history["degraded_reasons"],
         }
 
     async def _load_portfolio_attribution_context(
@@ -518,18 +675,65 @@ class PortfolioAnalyticsService:
         snapshots = {symbol: await task for symbol, task in snapshot_tasks.items()}
         series_map = {symbol: await task for symbol, task in series_tasks.items()}
         benchmark_close = await benchmark_task
-        benchmark_return = _series_return(benchmark_close)
+        benchmark_snapshot = await fetch_stock_snapshot_coalesced(benchmark_symbol)
+        benchmark_classification = (
+            benchmark_snapshot.get("_classification")
+            if isinstance(benchmark_snapshot.get("_classification"), dict)
+            else {}
+        )
+        benchmark_currency = benchmark_classification.get("currency") or benchmark_snapshot.get("currency")
+        benchmark_base, benchmark_fx, benchmark_error = await self._base_close_series(
+            benchmark_close, benchmark_currency, portfolio.currency
+        )
+        benchmark_return = _series_return(benchmark_base)
 
         holdings: list[dict[str, Any]] = []
         total_value = 0.0
+        issues: list[dict[str, Any]] = []
+        degraded_reasons: list[str] = []
+        fx_rates = list(benchmark_fx)
+        if benchmark_error:
+            issues.append({"code": benchmark_error, "symbol": benchmark_symbol, "currency": benchmark_currency})
         for row in rows:
             symbol = str(row.symbol).strip().upper()
             snap = snapshots.get(symbol, {})
             close = series_map.get(symbol, pd.Series(dtype="float64"))
-            period_return = _series_return(close)
-            price = snap.get("current_price")
-            current_price = float(price) if isinstance(price, (int, float)) else float(row.cost_basis_per_share)
-            current_value = max(0.0, float(row.shares)) * current_price
+            try:
+                purchase_at = pd.Timestamp(f"{str(row.purchase_date)}T00:00:00Z")
+            except Exception:
+                issues.append({"code": "purchase_date_invalid", "symbol": symbol, "date": str(row.purchase_date)})
+                continue
+            if not close.empty:
+                close = close.loc[close.index >= purchase_at]
+            classification = snap.get("_classification") if isinstance(snap.get("_classification"), dict) else {}
+            native_currency = classification.get("currency") or snap.get("currency")
+            close_base, holding_fx, error = await self._base_close_series(close, native_currency, portfolio.currency)
+            fx_rates.extend(holding_fx)
+            for rate in holding_fx:
+                reason = rate.get("degraded_reason") if rate.get("degraded") else None
+                if reason and reason not in degraded_reasons:
+                    degraded_reasons.append(str(reason))
+            if error or close_base.empty:
+                issues.append({"code": error or "price_history_unavailable", "symbol": symbol, "currency": native_currency})
+                continue
+            native = close.reindex(close_base.index).dropna()
+            close_base = close_base.reindex(native.index).dropna()
+            native = native.reindex(close_base.index)
+            if len(native) < 2 or len(close_base) < 2:
+                issues.append({"code": "insufficient_history", "symbol": symbol, "currency": native_currency})
+                continue
+            start_native = float(native.iloc[0])
+            end_native = float(native.iloc[-1])
+            start_base = float(close_base.iloc[0])
+            end_base = float(close_base.iloc[-1])
+            start_fx = start_base / start_native if start_native > 0 else 0.0
+            end_fx = end_base / end_native if end_native > 0 else 0.0
+            decomposition = decompose_base_currency_return(start_native, end_native, start_fx, end_fx)
+            security_return = decomposition["security"]
+            fx_return = decomposition["currency"]
+            currency_interaction = decomposition["interaction"]
+            total_base_return = decomposition["total"]
+            current_value = max(0.0, float(row.shares)) * end_base
             total_value += current_value
             sector = str(snap.get("sector") or snap.get("industry") or "Unknown").strip() or "Unknown"
             holdings.append(
@@ -537,8 +741,16 @@ class PortfolioAnalyticsService:
                     "symbol": symbol,
                     "sector": sector,
                     "weight": 0.0,
-                    "return": period_return,
+                    "return": total_base_return,
+                    "security_return": security_return,
+                    "currency_return": fx_return,
+                    "currency_interaction": currency_interaction,
+                    "start_date": native.index[0].date().isoformat(),
+                    "end_date": native.index[-1].date().isoformat(),
+                    "start_fx": start_fx,
+                    "end_fx": end_fx,
                     "current_value": current_value,
+                    "native_currency": native_currency,
                     "market_cap": float(snap.get("market_cap") or 0.0) if isinstance(snap.get("market_cap"), (int, float)) else 0.0,
                     "pe_ratio": float(snap.get("pe_ratio") or 0.0) if isinstance(snap.get("pe_ratio"), (int, float)) else 0.0,
                     "roe_pct": float(snap.get("roe_pct") or 0.0) if isinstance(snap.get("roe_pct"), (int, float)) else 0.0,
@@ -556,6 +768,9 @@ class PortfolioAnalyticsService:
                 row["weight"] = weight
 
         portfolio_return = sum(float(row["weight"]) * float(row["return"]) for row in holdings)
+        security_return = sum(float(row["weight"]) * float(row["security_return"]) for row in holdings)
+        currency_return = sum(float(row["weight"]) * float(row["currency_return"]) for row in holdings)
+        currency_interaction = sum(float(row["weight"]) * float(row["currency_interaction"]) for row in holdings)
         return {
             "portfolio_id": portfolio_key,
             "portfolio_name": str(portfolio.name),
@@ -564,6 +779,34 @@ class PortfolioAnalyticsService:
             "holdings": holdings,
             "portfolio_return": portfolio_return,
             "benchmark_return": benchmark_return,
+            "base_currency": str(portfolio.currency or "USD").upper(),
+            "status": "partial" if issues else "degraded" if degraded_reasons else "complete",
+            "methodology": "current_open_holdings_point_to_point",
+            "issues": issues,
+            "degraded_reasons": degraded_reasons,
+            "fx_rates": fx_rates,
+            "return_attribution": {
+                "security": security_return,
+                "currency": currency_return,
+                "interaction": currency_interaction,
+                "total": security_return + currency_return + currency_interaction,
+                "holdings": [
+                    {
+                        "symbol": row["symbol"],
+                        "weight": row["weight"],
+                        "native_currency": row["native_currency"],
+                        "security": row["security_return"],
+                        "currency": row["currency_return"],
+                        "interaction": row["currency_interaction"],
+                        "total": row["return"],
+                        "start_date": row["start_date"],
+                        "end_date": row["end_date"],
+                        "start_fx": row["start_fx"],
+                        "end_fx": row["end_fx"],
+                    }
+                    for row in holdings
+                ],
+            },
         }
 
     async def portfolio_attribution(
@@ -598,6 +841,14 @@ class PortfolioAnalyticsService:
                 "total_return": 0.0,
                 "benchmark_return": 0.0,
                 "active_return": 0.0,
+                "base_currency": context.get("base_currency") or "USD",
+                "status": context.get("status") or "complete",
+                "methodology": context.get("methodology") or "current_open_holdings_point_to_point",
+                "issues": context.get("issues") or [],
+                "degraded_reasons": context.get("degraded_reasons") or [],
+                "return_attribution": context.get("return_attribution") or {
+                    "security": 0.0, "currency": 0.0, "interaction": 0.0, "total": 0.0, "holdings": []
+                },
                 "brinson": {
                     "sectors": [],
                     "total_allocation": 0.0,
@@ -684,6 +935,18 @@ class PortfolioAnalyticsService:
             "total_return": portfolio_total_return,
             "benchmark_return": benchmark_total_return,
             "active_return": portfolio_total_return - benchmark_total_return,
+            "base_currency": context.get("base_currency") or "USD",
+            "status": context.get("status") or "complete",
+            "methodology": context.get("methodology") or "current_open_holdings_point_to_point",
+            "issues": context.get("issues") or [],
+            "degraded_reasons": context.get("degraded_reasons") or [],
+            "return_attribution": context.get("return_attribution") or {
+                "security": portfolio_total_return,
+                "currency": 0.0,
+                "interaction": 0.0,
+                "total": portfolio_total_return,
+                "holdings": [],
+            },
             "brinson": brinson,
             "factors": factors,
         }

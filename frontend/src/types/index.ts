@@ -359,9 +359,14 @@ export type PortfolioDividendTracker = {
 
 export type PortfolioBenchmarkOverlay = {
   benchmark: string;
-  equity_curve: Array<{ date: string; portfolio: number; benchmark: number }>;
+  equity_curve: Array<{ date: string; portfolio: number; benchmark: number; portfolio_value_base?: number }>;
   alpha: number;
   tracking_error: number;
+  base_currency?: string;
+  status?: "complete" | "degraded" | "partial";
+  methodology?: string;
+  issues?: Array<{ code: string; symbol?: string; currency?: string | null }>;
+  degraded_reasons?: string[];
 };
 
 export type PluginManifestItem = {

@@ -282,18 +282,22 @@ across those intentional interfaces.
       amounts when their currency cannot be established safely.
 - [x] Add current and historical FX-rate lookup with timestamp, provider,
       freshness, cache, and explicit unavailable/degraded semantics.
-- [ ] Normalize backend cash, cost basis, market value, net liquidation,
+- [x] Normalize backend cash, cost basis, market value, net liquidation,
       realised/unrealised P&L, income, fees, allocations, exposures, and supported
       history into the portfolio base currency while retaining explanatory native
       amounts. The shared accounting engine and portfolio list/detail/Manager
       analytics contract now cover current holdings plus dated ledger, cost,
       income, fee, and realised-P&L conversion with explicit partial/degraded
       semantics. The primary dashboard contract and sector/industry allocations
-      now use the same values. Deep risk exposure and supported historical
-      surfaces remain.
-- [ ] Separate security return from FX return where the available price and rate
-      history supports it.
-- [ ] Move Portfolio Manager, dashboard summaries, Journal, reports,
+      now use the same values. Risk metrics and benchmark overlays value their
+      retained price history in the portfolio base and expose partial/degraded
+      status. Historical analytics deliberately describe the current basket from
+      the first date all its positions were open; they are not a transaction-
+      ledger reconstruction of closed positions.
+- [x] Separate security return from FX return where the available price and rate
+      history supports it. Attribution exposes security, currency, and exact
+      multiplicative interaction components with dated boundary evidence.
+- [x] Move Portfolio Manager, dashboard summaries, Journal, reports,
       risk/analytics, portfolio-seeded backtests, and AI context onto the shared
       backend accounting contract; keep display conversion presentation-only.
       Portfolio Manager, Home, Cockpit, Launchpad, and current allocation views
@@ -301,10 +305,13 @@ across those intentional interfaces.
       aggregating unlike costs. Journal has no portfolio-money aggregation, the
       backtest submit contract accepts explicit assets rather than seeding from
       a portfolio, and AI risk narrative accepts supplied metrics rather than
-      recomputing them. Historical risk/attribution consumers remain.
-- [ ] Add deterministic mixed-currency and migration coverage on SQLite and
+      recomputing them. Historical risk and attribution now use dated base-
+      currency observations and withhold unsupported results.
+- [x] Add deterministic mixed-currency and migration coverage on SQLite and
       disposable PostgreSQL, including buys/sells, cash flows, fees, missing and
-      stale rates, and historical valuation.
+      stale rates, and historical valuation. The PostgreSQL gate exercises the
+      additive schema and accounting contract; deterministic service tests cover
+      batched prior-close FX and exact return decomposition.
 - [ ] Document the API contract, migration behavior, limitations, and operational
       FX dependencies; complete normal release preparation and host verification.
 

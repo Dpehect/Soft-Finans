@@ -25,6 +25,16 @@ type AttributionResponse = {
   total_return: number;
   benchmark_return: number;
   active_return: number;
+  base_currency?: string;
+  status?: "complete" | "degraded" | "partial";
+  methodology?: string;
+  issues?: Array<{ code: string; symbol?: string; currency?: string | null }>;
+  return_attribution?: {
+    security: number;
+    currency: number;
+    interaction: number;
+    total: number;
+  };
   brinson: {
     sectors: AttributionSectorRow[];
     total_allocation: number;
@@ -50,7 +60,7 @@ const BENCHMARKS = ["S&P500", "NIFTY50", "SENSEX", "CUSTOM"] as const;
 
 function formatPct(value: number | null | undefined, digits = 2): string {
   if (value == null || !Number.isFinite(value)) return "-";
-  return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;
+  return `${value >= 0 ? "+" : ""}${(value * 100).toFixed(digits)}%`;
 }
 
 function formatWeight(value: number | null | undefined): string {
@@ -161,6 +171,11 @@ export function AttributionPanel({ portfolioId }: Props) {
 
       {error ? <div className="rounded border border-terminal-neg/40 bg-terminal-neg/10 px-3 py-2 text-xs text-terminal-neg">{error}</div> : null}
       {loading ? <div className="text-xs text-terminal-muted">Loading attribution data...</div> : null}
+      {data?.status === "partial" ? (
+        <div className="rounded border border-terminal-neg/40 bg-terminal-neg/10 px-3 py-2 text-xs text-terminal-neg">
+          Some price or FX history is unavailable. The analysis includes only supported evidence.
+        </div>
+      ) : null}
 
       {data ? (
         <>
@@ -193,6 +208,28 @@ export function AttributionPanel({ portfolioId }: Props) {
               </div>
             ))}
           </div>
+
+          {data.return_attribution ? (
+            <div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-terminal-accent">
+                Security vs FX · {data.base_currency ?? "portfolio base"}
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
+                {[
+                  ["Security", data.return_attribution.security],
+                  ["Currency", data.return_attribution.currency],
+                  ["Interaction", data.return_attribution.interaction],
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="rounded border border-terminal-border bg-terminal-bg p-2">
+                    <div className="text-[11px] uppercase tracking-wide text-terminal-muted">{label}</div>
+                    <div className={Number(value) >= 0 ? "text-terminal-pos" : "text-terminal-neg"}>
+                      {formatPct(Number(value))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="h-72 rounded border border-terminal-border bg-terminal-bg p-2">
             <ResponsiveContainer width="100%" height="100%">

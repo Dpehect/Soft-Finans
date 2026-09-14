@@ -370,6 +370,110 @@ class SectorAllocationResponse(BaseModel):
     accounting: PortfolioAccountingSummary
 
 
+class HistoricalAnalyticsIssue(BaseModel):
+    code: str
+    symbol: str | None = None
+    currency: str | None = None
+    date: str | None = None
+
+
+class HistoricalAnalyticsMetadata(BaseModel):
+    base_currency: str
+    status: Literal["complete", "degraded", "partial"]
+    methodology: str
+    issues: list[HistoricalAnalyticsIssue]
+    degraded_reasons: list[str]
+
+
+class PortfolioRiskMetricsResponse(HistoricalAnalyticsMetadata):
+    sharpe_ratio: float
+    sortino_ratio: float
+    max_drawdown: float
+    beta: float
+    alpha: float
+    information_ratio: float
+
+
+class PortfolioBenchmarkPoint(BaseModel):
+    date: str
+    portfolio: float
+    benchmark: float
+    portfolio_value_base: float
+
+
+class PortfolioBenchmarkOverlayResponse(HistoricalAnalyticsMetadata):
+    benchmark: str
+    equity_curve: list[PortfolioBenchmarkPoint]
+    alpha: float
+    tracking_error: float
+
+
+class PortfolioReturnAttributionHolding(BaseModel):
+    symbol: str
+    weight: float
+    native_currency: str
+    security: float
+    currency: float
+    interaction: float
+    total: float
+    start_date: str
+    end_date: str
+    start_fx: float
+    end_fx: float
+
+
+class PortfolioReturnAttribution(BaseModel):
+    security: float
+    currency: float
+    interaction: float
+    total: float
+    holdings: list[PortfolioReturnAttributionHolding]
+
+
+class PortfolioBrinsonSector(BaseModel):
+    sector: str
+    portfolio_weight: float
+    benchmark_weight: float
+    portfolio_return: float
+    benchmark_return: float
+    allocation: float
+    selection: float
+    interaction: float
+    total: float
+
+
+class PortfolioBrinsonAttribution(BaseModel):
+    sectors: list[PortfolioBrinsonSector]
+    total_allocation: float
+    total_selection: float
+    total_interaction: float
+    check_sum: float
+    portfolio_return: float | None = None
+    benchmark_return: float | None = None
+    active_return: float | None = None
+
+
+class PortfolioFactorAttribution(BaseModel):
+    exposures: dict[str, float]
+    factor_returns: dict[str, float]
+    contributions: dict[str, float]
+    alpha: float
+    check_sum: float
+
+
+class PortfolioAttributionResponse(HistoricalAnalyticsMetadata):
+    portfolio_id: str
+    portfolio_name: str
+    period: str
+    benchmark: str
+    total_return: float
+    benchmark_return: float
+    active_return: float
+    return_attribution: PortfolioReturnAttribution
+    brinson: PortfolioBrinsonAttribution
+    factors: PortfolioFactorAttribution
+
+
 def _portfolio_for_user(db: Session, portfolio_id: str, user_id: str) -> PortfolioORM:
     row = db.query(PortfolioORM).filter(PortfolioORM.id == portfolio_id, PortfolioORM.user_id == user_id).first()
     if row is None:
@@ -977,6 +1081,14 @@ def _analytics_holdings(db: Session, portfolio_id: str, user_id: str) -> list[Si
     return manager_holdings_as_legacy(holdings)
 
 
+def _historical_analytics_holdings(rows: list[PortfolioHoldingORM]) -> list[SimpleNamespace]:
+    """Preserve lot dates so later acquisitions cannot appear as market return."""
+    return [
+        SimpleNamespace(ticker=row.symbol, quantity=row.shares, buy_date=row.purchase_date)
+        for row in rows
+    ]
+
+
 async def _analytics_accounting_context(
     db: Session,
     portfolio_id: str,
@@ -989,10 +1101,6 @@ async def _analytics_accounting_context(
     quotes = await _quote_map(symbols) if symbols else {}
     accounting = await _portfolio_accounting(portfolio, holdings, transactions, quotes)
     return portfolio, holdings, quotes, accounting
-
-
-def _default_benchmark(db: Session, portfolio_id: str, user_id: str) -> str:
-    return _resolve_portfolio(db, portfolio_id, user_id).benchmark_symbol or "S&P500"
 
 
 @router.get("/portfolios/{portfolio_id}/analytics/sector-allocation", response_model=SectorAllocationResponse)
@@ -1041,7 +1149,7 @@ async def get_portfolio_sector_allocation(
     }
 
 
-@router.get("/portfolios/{portfolio_id}/analytics/risk-metrics")
+@router.get("/portfolios/{portfolio_id}/analytics/risk-metrics", response_model=PortfolioRiskMetricsResponse)
 async def get_portfolio_risk_metrics(
     portfolio_id: str,
     risk_free_rate: float = Query(default=0.04, ge=0, le=0.25),
@@ -1049,9 +1157,14 @@ async def get_portfolio_risk_metrics(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
-    holdings = _analytics_holdings(db, portfolio_id, current_user.id)
-    bench = benchmark or _default_benchmark(db, portfolio_id, current_user.id)
-    return await portfolio_analytics_service.risk_metrics(holdings, risk_free_rate=risk_free_rate, benchmark=bench)
+    portfolio = _resolve_portfolio(db, portfolio_id, current_user.id)
+    holdings = _historical_analytics_holdings(
+        db.query(PortfolioHoldingORM).filter(PortfolioHoldingORM.portfolio_id == portfolio.id).all()
+    )
+    bench = benchmark or portfolio.benchmark_symbol or "S&P500"
+    return await portfolio_analytics_service.risk_metrics(
+        holdings, risk_free_rate=risk_free_rate, benchmark=bench, base_currency=portfolio.currency
+    )
 
 
 @router.get("/portfolios/{portfolio_id}/analytics/correlation")
@@ -1076,19 +1189,27 @@ async def get_portfolio_dividends(
     return await portfolio_analytics_service.dividend_tracker(holdings, days=days)
 
 
-@router.get("/portfolios/{portfolio_id}/analytics/benchmark-overlay")
+@router.get(
+    "/portfolios/{portfolio_id}/analytics/benchmark-overlay",
+    response_model=PortfolioBenchmarkOverlayResponse,
+)
 async def get_portfolio_benchmark_overlay(
     portfolio_id: str,
     benchmark: str | None = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
-    holdings = _analytics_holdings(db, portfolio_id, current_user.id)
-    bench = benchmark or _default_benchmark(db, portfolio_id, current_user.id)
-    return await portfolio_analytics_service.benchmark_overlay(holdings, benchmark=bench)
+    portfolio = _resolve_portfolio(db, portfolio_id, current_user.id)
+    holdings = _historical_analytics_holdings(
+        db.query(PortfolioHoldingORM).filter(PortfolioHoldingORM.portfolio_id == portfolio.id).all()
+    )
+    bench = benchmark or portfolio.benchmark_symbol or "S&P500"
+    return await portfolio_analytics_service.benchmark_overlay(
+        holdings, benchmark=bench, base_currency=portfolio.currency
+    )
 
 
-@router.get("/portfolios/{portfolio_id}/attribution")
+@router.get("/portfolios/{portfolio_id}/attribution", response_model=PortfolioAttributionResponse)
 async def get_portfolio_attribution(
     portfolio_id: str,
     period: str = Query(default="1M"),
