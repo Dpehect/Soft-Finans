@@ -697,6 +697,101 @@ class ForexService:
             "degraded_reason": "; ".join(degraded_reasons) or None,
         }
 
+    async def get_historical_valuation_rates(
+        self,
+        base_currency: str,
+        quote_currency: str,
+        requested_dates: list[date],
+    ) -> dict[str, dict[str, Any]]:
+        """Resolve many dated valuation rates with one provider chart request.
+
+        Historical portfolio analytics may need hundreds of daily observations.
+        Calling :meth:`get_valuation_rate` once per day is both slow and hostile
+        to provider limits, so this method fetches the pair once and applies the
+        same on-or-before and seven-day-gap rules to every requested date.
+        """
+        base = str(base_currency or "").strip().upper()
+        quote = str(quote_currency or "").strip().upper()
+        unsupported = [currency for currency in (base, quote) if currency not in SUPPORTED_CURRENCIES]
+        if unsupported:
+            raise ValueError(
+                "currencies must use supported codes: USD, EUR, GBP, JPY, CHF, AUD, CAD, INR"
+            )
+
+        dates = sorted(set(requested_dates))
+        today = self._now().date()
+        if any(requested > today for requested in dates):
+            raise ValueError("historical FX date cannot be in the future")
+        if not dates:
+            return {}
+        if base == quote:
+            return {
+                requested.isoformat(): {
+                    "base_currency": base,
+                    "quote_currency": quote,
+                    "rate": 1.0,
+                    "rate_at": datetime.combine(requested, time.min, tzinfo=timezone.utc),
+                    "requested_date": requested,
+                    "source": "identity",
+                    "source_symbol": f"{base}{quote}",
+                    "freshness": "historical",
+                    "cache_status": "identity",
+                    "degraded": False,
+                    "degraded_reason": None,
+                }
+                for requested in dates
+            }
+
+        chart = await self.get_pair_chart(
+            f"{base}{quote}", interval="1d", range_str=self._valuation_range(dates[0])
+        )
+        raw_candles = chart.get("candles") if isinstance(chart.get("candles"), list) else []
+        candles = sorted(
+            (row for row in raw_candles if isinstance(row, dict) and _f(row.get("c"), -1) > 0),
+            key=lambda row: _f(row.get("t"), -1),
+        )
+        if not candles:
+            raise RuntimeError(f"No FX rate data available for {base}{quote}")
+
+        cache_status = str(chart.get("_cache_status") or "fresh")
+        source_symbol = str(chart.get("source_symbol") or "unknown")
+        result: dict[str, dict[str, Any]] = {}
+        candle_index = 0
+        selected: dict[str, Any] | None = None
+        for requested in dates:
+            cutoff = datetime.combine(requested, time.max, tzinfo=timezone.utc).timestamp()
+            while candle_index < len(candles) and _f(candles[candle_index].get("t"), -1) <= cutoff:
+                selected = candles[candle_index]
+                candle_index += 1
+            if selected is None:
+                raise RuntimeError(
+                    f"No FX rate available on or before {requested.isoformat()} for {base}{quote}"
+                )
+            rate_at = datetime.fromtimestamp(int(selected["t"]), tz=timezone.utc)
+            historical_gap = requested - rate_at.date()
+            if historical_gap > _MAX_ACCEPTABLE_RATE_AGE:
+                raise RuntimeError(
+                    f"Nearest FX rate for {base}{quote} is {historical_gap.days} days before "
+                    f"{requested.isoformat()}"
+                )
+            degraded_reason = (
+                "live providers unavailable; serving the stale cache" if cache_status == "stale" else None
+            )
+            result[requested.isoformat()] = {
+                "base_currency": base,
+                "quote_currency": quote,
+                "rate": round(_f(selected.get("c")), 6),
+                "rate_at": rate_at,
+                "requested_date": requested,
+                "source": _provider_from_source_symbol(source_symbol),
+                "source_symbol": source_symbol,
+                "freshness": "historical",
+                "cache_status": cache_status,
+                "degraded": degraded_reason is not None,
+                "degraded_reason": degraded_reason,
+            }
+        return result
+
     async def get_central_banks(self) -> dict[str, Any]:
         key = self._cache.build_key("forex_central_banks", "calendar", {"currencies": SUPPORTED_CURRENCIES})
         cached = await self._cache.get(key)

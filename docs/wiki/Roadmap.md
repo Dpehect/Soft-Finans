@@ -506,7 +506,7 @@ inherited ambiguity or display-only currency conversion.
 **Exit condition:** the retained fork installs, documents, navigates, degrades,
 and tests as one dependable product, ready for the v1.7 accounting contract.
 
-### v1.7.0 — Multi-currency portfolio accounting 🧭 planned
+### v1.7.0 — Multi-currency portfolio accounting 🚧 release candidate
 
 Make a portfolio's existing `currency` field an explicit accounting base rather
 than merely a cash/display label. Every aggregate monetary value must be
@@ -535,11 +535,17 @@ comparison in v2 depends on trustworthy cross-currency portfolio truth.
   list, detail, and Manager analytics now use one shared engine for current
   valuation plus dated ledger/cost/P&L conversion, returning traceable native and
   FX evidence with complete/degraded/partial status. Primary dashboard summaries
-  and sector/industry allocations now use the same engine. Deep risk exposure
-  and supported historical surfaces remain to be moved onto it.
+  and sector/industry allocations now use the same engine. Risk metrics and
+  benchmark overlays convert retained native prices with dated FX into the
+  portfolio base. Their stated methodology follows today's open holdings from
+  the first date when the complete current basket existed; it does not claim to reconstruct closed
+  positions or a full ledger time-weighted return.
 - **Separate investment and currency effects.** Attribute security return and FX
   return independently wherever the available history supports it; never imply
-  that a currency move was instrument performance.
+  that a currency move was instrument performance. The attribution response now
+  exposes security, currency, and multiplicative interaction components that
+  reconcile exactly to base-currency return, with holding-level boundary dates
+  and FX rates.
 - **Align every consumer.** Portfolio Manager, dashboard summaries, Journal,
   reports, risk/analytics, backtests seeded from a portfolio, and AI context must
   consume the same backend accounting contract. The display-currency selector
@@ -549,8 +555,9 @@ comparison in v2 depends on trustworthy cross-currency portfolio truth.
   lot's native cost currency instead of aggregating incompatible units. The
   Journal does not aggregate portfolio money; current backtest submission uses
   explicit assets rather than a portfolio seed; and AI risk narrative consumes
-  supplied metrics rather than calculating portfolio totals. Historical
-  risk/attribution consumers remain to be aligned.
+  supplied metrics rather than calculating portfolio totals. Historical risk,
+  benchmark, and attribution consumers now use dated base-currency observations
+  and expose incomplete evidence instead of filling gaps.
 - **Protect portability and ownership.** Ship additive Alembic migrations and
   SQLite/PostgreSQL parity coverage without touching deployment databases in
   tests. Preserve per-user ownership across portfolio, transaction, and derived

@@ -95,8 +95,11 @@ release-level interpretation and safety boundaries.
   backend base-currency engine with native evidence and explicit
   complete/degraded/partial results, and Portfolio Manager renders that contract.
   Primary dashboard summaries, Home, Cockpit, Launchpad, current allocation, and
-  position exports are aligned as well. Deep risk, supported history, and
-  security-versus-FX return attribution are the next boundary.
+  position exports are aligned as well. Deep risk and benchmark history now use
+  dated base-currency observations, while attribution separates security, FX,
+  and interaction returns. The endpoints explicitly describe their current-open-
+  holdings methodology and withhold unsupported history. Release closure is the
+  remaining v1.7 boundary.
 - **v1.3 — The second brain gets depth** shipped
   deterministic long-note chunking, source-aware retrieval, progressive answers,
   deliberate API-key note ingestion, and an explicit journal-gap review. Feature

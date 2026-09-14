@@ -7,6 +7,18 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Base-currency historical portfolio analytics** — risk metrics and benchmark
+  overlays now value every retained price observation through dated FX into the
+  portfolio accounting base. A batched resolver obtains one provider chart per
+  currency pair instead of issuing a request per trading day, while retaining
+  the same prior-close, freshness, and maximum-gap rules as point valuation.
+  Attribution now separates security return, currency return, and their exact
+  multiplicative interaction at portfolio and holding level, including boundary
+  dates and FX rates. These endpoints identify their open-holdings methodology
+  and return partial evidence instead of substituting cost basis, parity, or a
+  flat benchmark when price, denomination, or FX history is unavailable. The
+  constant-quantity comparison starts only once the complete current basket was
+  open, so a later acquisition is not misreported as an investment gain.
 - **Base-currency portfolio accounting contract** — portfolio list, detail, and
   primary Manager analytics now share one backend calculation engine. Holding
   costs and ledger activity use dated FX rates, current marks use current rates,

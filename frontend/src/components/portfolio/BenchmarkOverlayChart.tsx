@@ -7,11 +7,21 @@ export function BenchmarkOverlayChart({ data }: { data: PortfolioBenchmarkOverla
   return (
     <div className="rounded border border-terminal-border bg-terminal-panel p-3">
       <div className="mb-2 flex items-center justify-between">
-        <div className="text-sm font-semibold text-terminal-accent">Benchmark Overlay</div>
+        <div>
+          <div className="text-sm font-semibold text-terminal-accent">Benchmark Overlay</div>
+          {data?.base_currency ? (
+            <div className="text-[10px] text-terminal-muted">Returns and portfolio values in {data.base_currency}</div>
+          ) : null}
+        </div>
         <div className="text-xs text-terminal-muted">
           Alpha {((data?.alpha ?? 0) * 100).toFixed(2)}% | Tracking Error {((data?.tracking_error ?? 0) * 100).toFixed(2)}%
         </div>
       </div>
+      {data?.status === "partial" ? (
+        <div className="mb-2 rounded border border-terminal-neg/40 bg-terminal-neg/10 px-2 py-1 text-[11px] text-terminal-neg">
+          Historical evidence is incomplete; no unsupported values were estimated.
+        </div>
+      ) : null}
       {!rows.length ? (
         <div className="text-xs text-terminal-muted">No benchmark overlay data.</div>
       ) : (

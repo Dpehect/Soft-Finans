@@ -4910,6 +4910,52 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HistoricalAnalyticsIssue": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "HistoricalAnalyticsIssue",
+        "type": "object"
+      },
       "HotlistItem": {
         "properties": {
           "change": {
@@ -7779,6 +7825,314 @@
         "title": "PortfolioAnalyticsResponse",
         "type": "object"
       },
+      "PortfolioAttributionResponse": {
+        "properties": {
+          "active_return": {
+            "title": "Active Return",
+            "type": "number"
+          },
+          "base_currency": {
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "benchmark_return": {
+            "title": "Benchmark Return",
+            "type": "number"
+          },
+          "brinson": {
+            "$ref": "#/components/schemas/PortfolioBrinsonAttribution"
+          },
+          "degraded_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Degraded Reasons",
+            "type": "array"
+          },
+          "factors": {
+            "$ref": "#/components/schemas/PortfolioFactorAttribution"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricalAnalyticsIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "methodology": {
+            "title": "Methodology",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "portfolio_id": {
+            "title": "Portfolio Id",
+            "type": "string"
+          },
+          "portfolio_name": {
+            "title": "Portfolio Name",
+            "type": "string"
+          },
+          "return_attribution": {
+            "$ref": "#/components/schemas/PortfolioReturnAttribution"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "degraded",
+              "partial"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "total_return": {
+            "title": "Total Return",
+            "type": "number"
+          }
+        },
+        "required": [
+          "base_currency",
+          "status",
+          "methodology",
+          "issues",
+          "degraded_reasons",
+          "portfolio_id",
+          "portfolio_name",
+          "period",
+          "benchmark",
+          "total_return",
+          "benchmark_return",
+          "active_return",
+          "return_attribution",
+          "brinson",
+          "factors"
+        ],
+        "title": "PortfolioAttributionResponse",
+        "type": "object"
+      },
+      "PortfolioBenchmarkOverlayResponse": {
+        "properties": {
+          "alpha": {
+            "title": "Alpha",
+            "type": "number"
+          },
+          "base_currency": {
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "degraded_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Degraded Reasons",
+            "type": "array"
+          },
+          "equity_curve": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioBenchmarkPoint"
+            },
+            "title": "Equity Curve",
+            "type": "array"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricalAnalyticsIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "methodology": {
+            "title": "Methodology",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "degraded",
+              "partial"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tracking_error": {
+            "title": "Tracking Error",
+            "type": "number"
+          }
+        },
+        "required": [
+          "base_currency",
+          "status",
+          "methodology",
+          "issues",
+          "degraded_reasons",
+          "benchmark",
+          "equity_curve",
+          "alpha",
+          "tracking_error"
+        ],
+        "title": "PortfolioBenchmarkOverlayResponse",
+        "type": "object"
+      },
+      "PortfolioBenchmarkPoint": {
+        "properties": {
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "number"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "portfolio": {
+            "title": "Portfolio",
+            "type": "number"
+          },
+          "portfolio_value_base": {
+            "title": "Portfolio Value Base",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "portfolio",
+          "benchmark",
+          "portfolio_value_base"
+        ],
+        "title": "PortfolioBenchmarkPoint",
+        "type": "object"
+      },
+      "PortfolioBrinsonAttribution": {
+        "properties": {
+          "active_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Return"
+          },
+          "benchmark_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Return"
+          },
+          "check_sum": {
+            "title": "Check Sum",
+            "type": "number"
+          },
+          "portfolio_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portfolio Return"
+          },
+          "sectors": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioBrinsonSector"
+            },
+            "title": "Sectors",
+            "type": "array"
+          },
+          "total_allocation": {
+            "title": "Total Allocation",
+            "type": "number"
+          },
+          "total_interaction": {
+            "title": "Total Interaction",
+            "type": "number"
+          },
+          "total_selection": {
+            "title": "Total Selection",
+            "type": "number"
+          }
+        },
+        "required": [
+          "sectors",
+          "total_allocation",
+          "total_selection",
+          "total_interaction",
+          "check_sum"
+        ],
+        "title": "PortfolioBrinsonAttribution",
+        "type": "object"
+      },
+      "PortfolioBrinsonSector": {
+        "properties": {
+          "allocation": {
+            "title": "Allocation",
+            "type": "number"
+          },
+          "benchmark_return": {
+            "title": "Benchmark Return",
+            "type": "number"
+          },
+          "benchmark_weight": {
+            "title": "Benchmark Weight",
+            "type": "number"
+          },
+          "interaction": {
+            "title": "Interaction",
+            "type": "number"
+          },
+          "portfolio_return": {
+            "title": "Portfolio Return",
+            "type": "number"
+          },
+          "portfolio_weight": {
+            "title": "Portfolio Weight",
+            "type": "number"
+          },
+          "sector": {
+            "title": "Sector",
+            "type": "string"
+          },
+          "selection": {
+            "title": "Selection",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "sector",
+          "portfolio_weight",
+          "benchmark_weight",
+          "portfolio_return",
+          "benchmark_return",
+          "allocation",
+          "selection",
+          "interaction",
+          "total"
+        ],
+        "title": "PortfolioBrinsonSector",
+        "type": "object"
+      },
       "PortfolioDefinitionCreate": {
         "properties": {
           "benchmark_symbol": {
@@ -8180,6 +8534,48 @@
           "degraded_reason"
         ],
         "title": "PortfolioFXRateEvidence",
+        "type": "object"
+      },
+      "PortfolioFactorAttribution": {
+        "properties": {
+          "alpha": {
+            "title": "Alpha",
+            "type": "number"
+          },
+          "check_sum": {
+            "title": "Check Sum",
+            "type": "number"
+          },
+          "contributions": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Contributions",
+            "type": "object"
+          },
+          "exposures": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Exposures",
+            "type": "object"
+          },
+          "factor_returns": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Factor Returns",
+            "type": "object"
+          }
+        },
+        "required": [
+          "exposures",
+          "factor_returns",
+          "contributions",
+          "alpha",
+          "check_sum"
+        ],
+        "title": "PortfolioFactorAttribution",
         "type": "object"
       },
       "PortfolioHoldingCreateRequest": {
@@ -8617,6 +9013,179 @@
           "matrices"
         ],
         "title": "PortfolioReport",
+        "type": "object"
+      },
+      "PortfolioReturnAttribution": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "number"
+          },
+          "holdings": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioReturnAttributionHolding"
+            },
+            "title": "Holdings",
+            "type": "array"
+          },
+          "interaction": {
+            "title": "Interaction",
+            "type": "number"
+          },
+          "security": {
+            "title": "Security",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "security",
+          "currency",
+          "interaction",
+          "total",
+          "holdings"
+        ],
+        "title": "PortfolioReturnAttribution",
+        "type": "object"
+      },
+      "PortfolioReturnAttributionHolding": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "number"
+          },
+          "end_date": {
+            "title": "End Date",
+            "type": "string"
+          },
+          "end_fx": {
+            "title": "End Fx",
+            "type": "number"
+          },
+          "interaction": {
+            "title": "Interaction",
+            "type": "number"
+          },
+          "native_currency": {
+            "title": "Native Currency",
+            "type": "string"
+          },
+          "security": {
+            "title": "Security",
+            "type": "number"
+          },
+          "start_date": {
+            "title": "Start Date",
+            "type": "string"
+          },
+          "start_fx": {
+            "title": "Start Fx",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "symbol",
+          "weight",
+          "native_currency",
+          "security",
+          "currency",
+          "interaction",
+          "total",
+          "start_date",
+          "end_date",
+          "start_fx",
+          "end_fx"
+        ],
+        "title": "PortfolioReturnAttributionHolding",
+        "type": "object"
+      },
+      "PortfolioRiskMetricsResponse": {
+        "properties": {
+          "alpha": {
+            "title": "Alpha",
+            "type": "number"
+          },
+          "base_currency": {
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "beta": {
+            "title": "Beta",
+            "type": "number"
+          },
+          "degraded_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Degraded Reasons",
+            "type": "array"
+          },
+          "information_ratio": {
+            "title": "Information Ratio",
+            "type": "number"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricalAnalyticsIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "max_drawdown": {
+            "title": "Max Drawdown",
+            "type": "number"
+          },
+          "methodology": {
+            "title": "Methodology",
+            "type": "string"
+          },
+          "sharpe_ratio": {
+            "title": "Sharpe Ratio",
+            "type": "number"
+          },
+          "sortino_ratio": {
+            "title": "Sortino Ratio",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "degraded",
+              "partial"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_currency",
+          "status",
+          "methodology",
+          "issues",
+          "degraded_reasons",
+          "sharpe_ratio",
+          "sortino_ratio",
+          "max_drawdown",
+          "beta",
+          "alpha",
+          "information_ratio"
+        ],
+        "title": "PortfolioRiskMetricsResponse",
         "type": "object"
       },
       "PortfolioRunRequest": {
@@ -27945,9 +28514,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Portfolio Benchmark Overlay Api Portfolios  Portfolio Id  Analytics Benchmark Overlay Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PortfolioBenchmarkOverlayResponse"
                 }
               }
             },
@@ -28165,9 +28732,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Portfolio Risk Metrics Api Portfolios  Portfolio Id  Analytics Risk Metrics Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PortfolioRiskMetricsResponse"
                 }
               }
             },
@@ -28301,9 +28866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Portfolio Attribution Api Portfolios  Portfolio Id  Attribution Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PortfolioAttributionResponse"
                 }
               }
             },

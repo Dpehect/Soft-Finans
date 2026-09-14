@@ -1,11 +1,20 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
+from types import SimpleNamespace
 from typing import Any
 
+import pandas as pd
 import pytest
 
-from backend.services.portfolio_analytics import compute_brinson_attribution, compute_factor_attribution, portfolio_analytics_service
+from backend.services import portfolio_analytics as analytics_module
+from backend.services.portfolio_analytics import (
+    compute_brinson_attribution,
+    compute_factor_attribution,
+    decompose_base_currency_return,
+    portfolio_analytics_service,
+)
 
 
 def test_brinson_sum_invariant() -> None:
@@ -19,6 +28,16 @@ def test_brinson_sum_invariant() -> None:
 
     assert result["check_sum"] == pytest.approx(result["active_return"], abs=1e-10)
     assert sum(row["total"] for row in result["sectors"]) == pytest.approx(result["active_return"], abs=1e-10)
+
+
+def test_base_currency_return_decomposition_reconciles_exactly() -> None:
+    result = decompose_base_currency_return(100.0, 110.0, 1.0, 1.2)
+
+    assert result["security"] == pytest.approx(0.10)
+    assert result["currency"] == pytest.approx(0.20)
+    assert result["interaction"] == pytest.approx(0.02)
+    assert result["total"] == pytest.approx(0.32)
+    assert result["security"] + result["currency"] + result["interaction"] == pytest.approx(result["total"])
 
 
 def test_brinson_zero_active_return() -> None:
@@ -129,6 +148,64 @@ def test_portfolio_attribution_service_shapes(monkeypatch: pytest.MonkeyPatch) -
     assert result["active_return"] == pytest.approx(0.038, abs=1e-10)
     assert result["brinson"]["check_sum"] == pytest.approx(result["active_return"], abs=1e-10)
     assert result["factors"]["check_sum"] == pytest.approx(result["total_return"], abs=1e-10)
+
+
+def test_benchmark_overlay_values_every_series_in_portfolio_base(monkeypatch: pytest.MonkeyPatch) -> None:
+    index = pd.to_datetime(["2026-03-19T00:00:00Z", "2026-03-20T00:00:00Z", "2026-03-21T00:00:00Z"])
+    closes = {
+        "SAP.DE": pd.Series([90.0, 100.0, 110.0], index=index),
+        "MSFT": pd.Series([40.0, 50.0, 55.0], index=index),
+        "^GSPC": pd.Series([190.0, 200.0, 202.0], index=index),
+    }
+
+    async def close(symbol: str, range_str: str = "5y", interval: str = "1d") -> pd.Series:
+        return closes[symbol]
+
+    async def snapshot(symbol: str) -> dict[str, Any]:
+        return {"currency": "EUR" if symbol == "SAP.DE" else "USD"}
+
+    async def rates(source: str, target: str, dates: list) -> dict[str, dict[str, Any]]:
+        values = {"2026-03-19": 1.0, "2026-03-20": 1.0, "2026-03-21": 1.2} if source == "EUR" else {}
+        return {
+            requested.isoformat(): {
+                "base_currency": source,
+                "quote_currency": target,
+                "rate": values.get(requested.isoformat(), 1.0),
+                "rate_at": datetime.combine(requested, datetime.min.time(), tzinfo=timezone.utc),
+                "requested_date": requested,
+                "source": "test",
+                "source_symbol": f"{source}{target}",
+                "freshness": "historical",
+                "cache_status": "fresh",
+                "degraded": False,
+                "degraded_reason": None,
+            }
+            for requested in dates
+        }
+
+    monkeypatch.setattr(portfolio_analytics_service, "_close_series", close)
+    monkeypatch.setattr(analytics_module, "fetch_stock_snapshot_coalesced", snapshot)
+    monkeypatch.setattr(analytics_module.forex_service, "get_historical_valuation_rates", rates)
+
+    result = asyncio.run(
+        portfolio_analytics_service.benchmark_overlay(
+            [
+                SimpleNamespace(ticker="SAP.DE", quantity=2.0, buy_date="2026-03-19"),
+                SimpleNamespace(ticker="MSFT", quantity=1.0, buy_date="2026-03-20"),
+            ],
+            benchmark="S&P500",
+            base_currency="USD",
+        )
+    )
+
+    assert result["status"] == "complete"
+    assert result["base_currency"] == "USD"
+    assert result["methodology"] == "current_open_holdings_constant_quantity"
+    assert result["equity_curve"][0]["date"] == "2026-03-20"
+    assert result["equity_curve"][0]["portfolio_value_base"] == pytest.approx(250.0)
+    assert result["equity_curve"][1]["portfolio_value_base"] == pytest.approx(319.0)
+    assert result["equity_curve"][1]["portfolio"] == pytest.approx(1.276)
+    assert result["equity_curve"][1]["benchmark"] == pytest.approx(1.01)
 
 # The attribution HTTP endpoint moved from the retired legacy route
 # (/api/portfolio/{id}/attribution) to the per-user Manager route

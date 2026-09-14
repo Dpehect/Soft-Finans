@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -337,6 +337,31 @@ def test_valuation_rate_endpoint_uses_prior_market_close_for_historical_date() -
     assert body["requested_date"] == "2026-03-22"
     assert body["freshness"] == "historical"
     assert body["degraded"] is False
+
+
+def test_historical_valuation_rates_batch_uses_one_chart_and_prior_closes() -> None:
+    friday = datetime(2026, 3, 20, 21, 0, tzinfo=timezone.utc)
+    monday = datetime(2026, 3, 23, 0, 0, tzinfo=timezone.utc)
+    yahoo = _FakeYahoo(
+        chart_payloads={
+            "EURUSD=X": _yahoo_chart_payload(
+                start_price=1.08,
+                closes=[1.08, 1.09],
+                timestamps=[int(friday.timestamp()), int(monday.timestamp())],
+            )
+        }
+    )
+    service = _build_service(yahoo=yahoo, finnhub=_FakeFinnhub())
+
+    rates = asyncio.run(
+        service.get_historical_valuation_rates(
+            "EUR", "USD", [date(2026, 3, 20), date(2026, 3, 21), date(2026, 3, 22)]
+        )
+    )
+
+    assert [rates[key]["rate"] for key in sorted(rates)] == [1.08, 1.08, 1.08]
+    assert all(rates[key]["rate_at"] == friday for key in rates)
+    assert yahoo.chart_calls == [("EURUSD=X", "5d", "1d")]
 
 
 def test_valuation_rate_endpoint_returns_identity_without_provider_lookup() -> None:
