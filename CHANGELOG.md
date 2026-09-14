@@ -6,6 +6,14 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-14
+
+The **"multi-currency portfolio accounting"** release completes v1 with one
+explicit reporting base for mixed-market portfolios. Current values, dated
+ledger activity, P&L, allocations, risk history, benchmark comparison, and
+return attribution now use traceable FX evidence or expose an actionable
+partial/degraded state instead of combining incompatible currencies.
+
 ### Added
 - **Base-currency historical portfolio analytics** — risk metrics and benchmark
   overlays now value every retained price observation through dated FX into the

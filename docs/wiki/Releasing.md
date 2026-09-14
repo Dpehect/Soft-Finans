@@ -129,6 +129,28 @@ verification then exposed an API-key list response mismatch, fixed without a
 migration in PR #139; its complete CI gate passed. Tag and GitHub release
 `v1.6.0` were published from `0dc86db` on 2026-09-10.
 
+### v1.7.0 verification ledger (release-prepared)
+
+Release-prep automation covers the final v1 accounting contracts:
+
+| Contract | Evidence |
+|---|---|
+| Explicit portfolio, transaction, holding-cost, and fee currencies with conservative legacy handling | `backend/alembic/versions/0014_portfolio_ledger_currencies.py`, migration and portfolio route tests |
+| Traceable current and dated FX with prior-close, freshness, cache, and unavailable semantics | `backend/tests/test_forex.py` |
+| Shared base-currency cash, value, cost, income, fees, and realised/unrealised P&L | `backend/tests/test_portfolio_accounting.py`, `backend/tests/test_portfolio_accounting_routes.py` |
+| Consumer agreement across primary summaries, Manager analytics, allocations, and reports | `backend/tests/test_portfolio_primary.py`, `backend/tests/test_portfolio_manager_analytics.py`, `backend/tests/test_watchlist_service.py` |
+| Base-currency risk/benchmark history and exact security/FX/interaction attribution | `backend/tests/test_attribution.py`, `backend/tests/test_forex.py` |
+| SQLite/PostgreSQL migration and ownership safety | regular backend suite plus CI `postgres-contract` job |
+| Typed agent-facing accounting and historical analytics schemas | `docs/openapi.json`, `scripts/generate_api_reference.py --check` |
+
+Implementation completed through PR #145. Historical analytics explicitly model
+the current open basket from the date all retained positions existed; they do
+not claim closed-position or cash-flow-adjusted ledger performance. Missing
+price, denomination, or FX evidence produces partial output rather than a guessed
+number. This branch completes automated release preparation. The deployment-host
+smoke matrix above, release-prep merge, tag, and GitHub release remain maintainer
+steps.
+
 ## Cutting the release
 
 ```bash

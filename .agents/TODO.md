@@ -1,7 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-10**, from `main` at `0dc86db` (through PR #139).
-The latest tag and published GitHub release are **v1.6.0** at that commit.
+Last audited: **2026-09-14**, from `main` at `77ddee6` (through PR #145), plus
+the v1.7.0 release-preparation changes on this branch. The latest tag and
+published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -312,8 +313,11 @@ across those intentional interfaces.
       stale rates, and historical valuation. The PostgreSQL gate exercises the
       additive schema and accounting contract; deterministic service tests cover
       batched prior-close FX and exact return decomposition.
-- [ ] Document the API contract, migration behavior, limitations, and operational
-      FX dependencies; complete normal release preparation and host verification.
+- [x] Document the API contract, migration behavior, limitations, and operational
+      FX dependencies; align versions, changelog, public site, roadmap, release
+      ledger, and external-agent handoff for v1.7.0.
+- [ ] After this release-preparation branch merges, complete the host smoke matrix
+      in `docs/wiki/Releasing.md`, then tag and publish v1.7.0.
 
 **Exit:** mixed-currency ledger activity and portfolio analytics reconcile in one
 explicit base currency from traceable FX inputs, and missing conversions produce
@@ -346,7 +350,11 @@ cross-market-intelligence promise into concrete journeys and contracts.
   installation are all regular gates. Release PR #138 merged; host/user testing
   exposed an API-key list serializer mismatch, fixed in PR #139. The maintainer
   verified the result, and tag/GitHub release `v1.6.0` were published from
-  `0dc86db`. v1.7 multi-currency portfolio accounting is now the active plan.
+  `0dc86db`. v1.7 implementation completed through PR #145: explicit ledger
+  currencies, traceable current/historical FX, shared base accounting, aligned
+  consumers, base-currency history, and security-versus-FX attribution. This
+  branch completes automated release preparation; host smoke, merge, tag, and
+  GitHub release remain.
 - Hermes-style pipelines can already send selected summaries through
   `PUT /api/v1/notes/external` with a `read_write` API key and stable
   source/external ID. Do not design a broad MCP surface unless it is explicitly

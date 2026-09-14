@@ -53,6 +53,19 @@ live spot ticks (toggle with `OPENTERMINALUI_BINANCE_WS_ENABLED`, default on).
 
 ---
 
+## FX valuation providers
+
+Portfolio accounting resolves USD, EUR, GBP, JPY, CHF, AUD, CAD, and INR pairs
+from Yahoo daily FX charts, trying the inverse pair when necessary. Configured
+Finnhub/OANDA candles are the fallback. Historical valuation selects the last
+close on or before the requested date, accepts normal weekend/holiday gaps up to
+seven days, and caches each chart. Historical analytics batch all required dates
+for a currency pair into one chart lookup. If no supported rate is available,
+dependent portfolio totals and analytics are marked partial rather than using
+parity or a seeded rate.
+
+---
+
 ## Provider Risk Register
 
 Condensed from `QC_MASTER_PLAN.md`:

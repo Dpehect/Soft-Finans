@@ -506,7 +506,11 @@ inherited ambiguity or display-only currency conversion.
 **Exit condition:** the retained fork installs, documents, navigates, degrades,
 and tests as one dependable product, ready for the v1.7 accounting contract.
 
-### v1.7.0 — Multi-currency portfolio accounting 🚧 release candidate
+### v1.7.0 — Multi-currency portfolio accounting ✅ release-prepared 2026-09-14
+
+Prepared as **v1.7.0 (2026-09-14)** after roadmap PR #140 and implementation
+PRs #141–#145. The release tag follows the deployment-host smoke check described
+in [Releasing](Releasing).
 
 Make a portfolio's existing `currency` field an explicit accounting base rather
 than merely a cash/display label. Every aggregate monetary value must be
@@ -538,8 +542,8 @@ comparison in v2 depends on trustworthy cross-currency portfolio truth.
   and sector/industry allocations now use the same engine. Risk metrics and
   benchmark overlays convert retained native prices with dated FX into the
   portfolio base. Their stated methodology follows today's open holdings from
-  the first date when the complete current basket existed; it does not claim to reconstruct closed
-  positions or a full ledger time-weighted return.
+  the first date when the complete current basket existed; it does not claim to
+  reconstruct closed positions or a full ledger time-weighted return.
 - **Separate investment and currency effects.** Attribute security return and FX
   return independently wherever the available history supports it; never imply
   that a currency move was instrument performance. The attribution response now
