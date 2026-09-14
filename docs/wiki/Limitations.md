@@ -23,6 +23,7 @@ to upstream availability and rate limits.
 | **Economic calendar** | labelled **sample** fallback | _(no free live source today)_ | sample events, flagged `sample: true` |
 | **Commodities** | — | `FMP_API_KEY` | degraded banner |
 | **Dividends calendar / history** | ✅ Yahoo (`events=div`) + FMP when keyed | `FMP_API_KEY` enriches | works keyless via Yahoo |
+| **Portfolio FX accounting** | ✅ Yahoo daily FX, with Finnhub fallback when configured | `FINNHUB_API_KEY` improves fallback availability | unavailable conversions become partial; parity is never assumed |
 | **Crypto fundamentals** (tokenomics, TVL, fees) | ✅ CoinGecko + DefiLlama (both keyless) | — | n/a |
 | **AI briefings / Interrogate** | local **Ollama** (no hosted key; a running model is required) | `LLM_API_KEY` only for *hosted* providers (OpenAI/OpenRouter/…) | retrieval and deterministic fallbacks remain; synthesis is labelled unavailable when no model can answer |
 | **News AI sentiment / emotion** | ✅ local **Ollama**, invoked on demand for News sentiment | `LLM_API_KEY` only for hosted providers | classical lexical/FinBERT fallback, clearly labelled |
@@ -72,6 +73,14 @@ never silently faked.
   `^NSEI`, …) shows price / chart / performance + notes; issuer fundamentals
   (P/E, financials, peers, shareholding) are intentionally hidden because they
   don't apply to an index.
+- **Portfolio FX depends on external daily market history.** Accounting supports
+  USD, EUR, GBP, JPY, CHF, AUD, CAD, and INR conversions through Yahoo daily FX
+  charts with a Finnhub candle fallback when configured. Dated conversion uses
+  the last market close on or before the requested date and rejects gaps beyond
+  seven days. Provider failure, an unsupported denomination, or a legacy row
+  whose currency cannot be established makes dependent output partial; the
+  backend never assumes a `1.0` rate. Migration `0014` deliberately leaves old
+  transaction/holding currency fields nullable for this reason.
 - **Historical portfolio analytics describe current open holdings, not a full
   transaction-ledger performance record.** Portfolio list, detail, Manager,
   primary dashboard, and current allocation APIs normalize current marks and

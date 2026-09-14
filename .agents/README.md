@@ -4,8 +4,9 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last audited: **2026-09-10**, from `main` at `0dc86db` (through PR #139).
-The latest tag and published GitHub release are **v1.6.0** at that commit.
+Last audited: **2026-09-14**, from `main` at `77ddee6` (through PR #145), plus
+the v1.7.0 release-preparation work on this branch. The latest tag and published
+GitHub release remain **v1.6.0** at `0dc86db` until host verification.
 
 ## Read order and sources of truth
 
@@ -84,7 +85,7 @@ release-level interpretation and safety boundaries.
   maintainer's host/user verification and the API-key listing fix in PR #139.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
-- Planned final v1 milestone: **v1.7.0 — multi-currency portfolio accounting**.
+- Release candidate: **v1.7.0 — multi-currency portfolio accounting**.
   It promotes the existing portfolio currency to an explicit reporting base,
   persists transaction/native currency semantics, and normalizes ledger and
   analytics results using traceable current and historical FX rates. Missing
@@ -98,18 +99,19 @@ release-level interpretation and safety boundaries.
   position exports are aligned as well. Deep risk and benchmark history now use
   dated base-currency observations, while attribution separates security, FX,
   and interaction returns. The endpoints explicitly describe their current-open-
-  holdings methodology and withhold unsupported history. Release closure is the
-  remaining v1.7 boundary.
+  holdings methodology and withhold unsupported history. Implementation and
+  automated release preparation are complete through PR #145 plus this branch;
+  host smoke, merge, tag, and GitHub release remain maintainer-gated.
 - **v1.3 — The second brain gets depth** shipped
   deterministic long-note chunking, source-aware retrieval, progressive answers,
   deliberate API-key note ingestion, and an explicit journal-gap review. Feature
   work, release verification, tag, and GitHub release are complete. The release
   gate recorded 817 backend tests and 296 frontend tests, plus compile, build,
   production-mock, and Compose checks.
-- The remaining v1 arc is now **fork consolidation and accounting truth**: v1.4 audited and pruned
-  the exposed surface, v1.5 makes fork identity/defaults/contracts consistent,
-  and v1.6 establishes the stable baseline. v1.7 then closes backend
-  base-currency accounting before v2 cross-market intelligence.
+- The v1 arc is **fork consolidation and accounting truth**: v1.4 audited and
+  pruned the exposed surface, v1.5 made identity/defaults/contracts consistent,
+  v1.6 established the stable baseline, and v1.7 closes trustworthy backend
+  base-currency accounting. v2 cross-market intelligence is the next arc.
   The v1.4 inventory, stub decisions, initial orphan removal, and hidden
   compatibility hardening have landed; primary experimental destinations are
   now adjudicated. Watchlists and their reports/dividend views are owner-scoped;
@@ -146,6 +148,11 @@ release-level interpretation and safety boundaries.
   release preparation landed in PR #138. Host/user testing then found the API-key
   list response mismatch; PR #139 fixed it without a migration and passed the
   full gate. Tag and GitHub release `v1.6.0` were published from `0dc86db`.
+  **v1.7 — Multi-currency portfolio accounting** implementation completed
+  through PR #145: explicit ledger currencies, traceable current/historical FX,
+  shared current accounting, aligned consumers, base-currency history, and
+  security-versus-FX attribution. This branch completes automated release
+  preparation; host smoke, merge, tag, and GitHub release remain.
 - General MCP tooling and automatic external market/news indexing remain
   deferred. The supported automation boundary is the authenticated, idempotent
   external-note endpoint intended for deliberate inputs such as Hermes YouTube

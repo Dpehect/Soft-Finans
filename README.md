@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.6.0-0f172a" alt="Version 1.6.0" />
+  <img src="https://img.shields.io/badge/version-1.7.0-0f172a" alt="Version 1.7.0" />
   <img src="https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white" alt="Node 22" />
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -64,10 +64,11 @@ no longer present fabricated or cross-user state as production data.
 **v1.6 — Stable baseline** completed the coherent-fork arc with deterministic
 browser journeys, shared resilient LLM jobs, leaner initial routes, PostgreSQL
 parity checks, generated public API contracts, and clean-install verification.
-**v1.7 — Multi-currency portfolio accounting** is the final planned v1
-milestone: normalize ledger activity, valuation, P&L, allocation, and supported
-history into an explicit portfolio base currency before v2 cross-market
-intelligence.
+**v1.7 — Multi-currency portfolio accounting** completes v1 by normalizing
+ledger activity, valuation, P&L, allocation, and supported history into an
+explicit portfolio base currency. Missing evidence is withheld rather than
+guessed, and supported attribution separates security performance from FX.
+The next product arc is v2 cross-market intelligence.
 
 NSE/BSE **F&O** stays supported. See the [Roadmap](docs/wiki/Roadmap.md) for what's shipped and what's next.
 
