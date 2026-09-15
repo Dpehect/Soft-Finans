@@ -129,7 +129,7 @@ verification then exposed an API-key list response mismatch, fixed without a
 migration in PR #139; its complete CI gate passed. Tag and GitHub release
 `v1.6.0` were published from `0dc86db` on 2026-09-10.
 
-### v1.7.0 verification ledger (release-prepared)
+### v1.7.0 verification ledger (released)
 
 Release-prep automation covers the final v1 accounting contracts:
 
@@ -151,9 +151,9 @@ number. Release preparation merged in PR #146. Its host test exposed that the
 honest unknown-currency state lacked a repair path; PR #147 added per-record,
 owner-scoped controls and APIs for legacy holding costs, transaction amounts,
 and nonzero fees. Host testing confirmed the repair but found the inline controls
-too crowded, so the UX follow-up moves them to a rightmost row action and focused
-dialog. Repeat the deployment-host smoke matrix after it merges; the tag and
-GitHub release remain maintainer steps.
+too crowded, so PR #148 moved them to a rightmost row action and focused dialog.
+The maintainer verified the final behavior; tag and GitHub release `v1.7.0` were
+published from `0473307` on 2026-09-15.
 
 ## Cutting the release
 

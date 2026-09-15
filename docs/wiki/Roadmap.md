@@ -498,22 +498,22 @@ of the application's Node 22 LTS baseline. Release preparation, final host/user
 verification, the discovered API-key serializer fix, tag, and GitHub release are
 complete.
 
-The stable baseline is the platform for one final v1 correctness milestone:
-base-currency portfolio accounting. Cross-market intelligence should then
-connect intentional interfaces and comparable values instead of building across
-inherited ambiguity or display-only currency conversion.
+The v1 arc now closes on base-currency portfolio accounting. Cross-market
+intelligence can connect intentional interfaces and comparable values instead of
+building across inherited ambiguity or display-only currency conversion.
 
 **Exit condition:** the retained fork installs, documents, navigates, degrades,
 and tests as one dependable product, ready for the v1.7 accounting contract.
 
-### v1.7.0 — Multi-currency portfolio accounting ✅ release-prepared 2026-09-14
+### v1.7.0 — Multi-currency portfolio accounting ✅ released 2026-09-15
 
-Prepared as **v1.7.0 (2026-09-14)** after roadmap PR #140 and implementation
-PRs #141–#145; release preparation merged in PR #146. Host testing exposed one
-release blocker: unknown legacy currencies were honest but unactionable. PR #147
-added per-record repair controls; host testing confirmed them and prompted a UX
-follow-up that moves repair to a rightmost row action and focused dialog before
-the deployment-host smoke check and release tag described in [Releasing](Releasing).
+Released as **v1.7.0 (2026-09-15)** after roadmap PR #140, implementation PRs
+#141–#145, and release preparation PR #146. Host testing exposed one release
+blocker: unknown legacy currencies were honest but unactionable. PR #147 added
+per-record repair controls; host testing confirmed them and prompted PR #148,
+which moved repair to a rightmost row action and focused dialog. The maintainer
+verified the final UX before the tag and GitHub release were published from
+`0473307`; see [Releasing](Releasing).
 
 Make a portfolio's existing `currency` field an explicit accounting base rather
 than merely a cash/display label. Every aggregate monetary value must be

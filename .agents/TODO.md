@@ -1,8 +1,7 @@
 # Current project state and backlog
 
-Last audited: **2026-09-15**, from `main` at `3d8c34e` (through legacy-currency
-repair PR #147), plus the repair-UX changes on this branch. The latest tag and
-published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
+Last audited: **2026-09-15**, from `main` at `0473307` (through PR #148). The
+latest tag and published GitHub release are **v1.7.0** at that commit.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -320,8 +319,9 @@ across those intentional interfaces.
       costs, transaction amounts, and nonzero fees found during host testing.
 - [x] Move legacy-currency repair out of value cells into a row-level action and
       focused dialog after host feedback on table readability.
-- [ ] After the repair-UX follow-up merges, repeat the host smoke matrix in
-      `docs/wiki/Releasing.md`, then tag and publish v1.7.0.
+- [x] After PR #148 moved repair into a row action and focused dialog, repeat the
+      host smoke matrix in `docs/wiki/Releasing.md`, then tag and publish
+      `v1.7.0` from `0473307` on 2026-09-15.
 
 **Exit:** mixed-currency ledger activity and portfolio analytics reconcile in one
 explicit base currency from traceable FX inputs, and missing conversions produce
@@ -359,9 +359,10 @@ cross-market-intelligence promise into concrete journeys and contracts.
   consumers, base-currency history, and security-versus-FX attribution. This
   release preparation merged in PR #146. Host testing then exposed missing UI
   remediation for intentionally unknown legacy denominations; PR #147 added
-  per-record owner-scoped repair and passed functional host testing. The current
-  follow-up moves its crowded inline controls to row actions and a focused
-  dialog. UX merge, repeated host smoke, tag, and GitHub release remain.
+  per-record owner-scoped repair and passed functional host testing. PR #148
+  moved its crowded inline controls to row actions and a focused dialog. The
+  maintainer verified the result, and tag/GitHub release `v1.7.0` were published
+  from `0473307` on 2026-09-15.
 - Hermes-style pipelines can already send selected summaries through
   `PUT /api/v1/notes/external` with a `read_write` API key and stable
   source/external ID. Do not design a broad MCP surface unless it is explicitly
@@ -369,7 +370,8 @@ cross-market-intelligence promise into concrete journeys and contracts.
 - A bilingual v1.3 retrospective was merged in `praderasblog` PR #104. Blog
   deployment belongs to the host agent and is outside this repository's scope.
   The bilingual v1.4 retrospective was merged as PR #108, series order 11.
-  The bilingual v1.5 retrospective is open as PR #109, series order 12.
+  The bilingual v1.5 retrospective merged as PR #109, series order 12. Verify
+  later article history in the blog repository before extending the series.
 
 ## Other product work
 

@@ -6,7 +6,7 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
-## [1.7.0] - 2026-09-14
+## [1.7.0] - 2026-09-15
 
 The **"multi-currency portfolio accounting"** release completes v1 with one
 explicit reporting base for mixed-market portfolios. Current values, dated
