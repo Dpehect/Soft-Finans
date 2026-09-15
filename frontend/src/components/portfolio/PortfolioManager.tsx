@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import {
@@ -17,7 +17,7 @@ import {
   fetchAiRiskInsights,
   updatePortfolioHoldingCurrency,
   updatePortfolioById,
-  updatePortfolioTransactionCurrency,
+  updatePortfolioTransactionCurrencies,
   type MultiPortfolio,
   type MultiPortfolioAnalytics,
   type MultiPortfolioHolding,
@@ -43,6 +43,7 @@ import { AiInsightCard } from "../terminal/AiInsightCard";
 import { ExportButton } from "../common/ExportButton";
 import { TerminalButton } from "../terminal/TerminalButton";
 import { TerminalInput } from "../terminal/TerminalInput";
+import { TerminalModal } from "../terminal/TerminalModal";
 import { useDisplayCurrency } from "../../hooks/useDisplayCurrency";
 import { useSettingsStore } from "../../store/settingsStore";
 import { asCurrencyCode, type CurrencyCode } from "../../lib/currency";
@@ -71,48 +72,9 @@ function metricFmt(v: number | null | undefined) {
   return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
-function LegacyCurrencyRepair({
-  label,
-  defaultCurrency,
-  onSave,
-}: {
-  label: string;
-  defaultCurrency: CurrencyCode;
-  onSave: (currency: CurrencyCode) => Promise<void>;
-}) {
-  const [currency, setCurrency] = useState<CurrencyCode>(defaultCurrency);
-  const [saving, setSaving] = useState(false);
-
-  return (
-    <span className="ml-1 inline-flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
-      <TerminalInput
-        as="select"
-        className="w-20 py-0 text-[10px]"
-        value={currency}
-        aria-label={`Currency for ${label}`}
-        onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
-      >
-        {CURRENCY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
-      </TerminalInput>
-      <button
-        type="button"
-        className="rounded border border-terminal-warn/60 px-1.5 py-0.5 text-[10px] text-terminal-warn hover:border-terminal-accent hover:text-terminal-accent disabled:opacity-50"
-        disabled={saving}
-        aria-label={`Save currency for ${label}`}
-        onClick={async () => {
-          setSaving(true);
-          try {
-            await onSave(currency);
-          } finally {
-            setSaving(false);
-          }
-        }}
-      >
-        {saving ? "Saving…" : "Set currency"}
-      </button>
-    </span>
-  );
-}
+type CurrencyRepairTarget =
+  | { kind: "holding"; row: MultiPortfolioHolding }
+  | { kind: "transaction"; row: MultiPortfolioTransaction };
 
 export function PortfolioManager() {
   const { formatMoney, formatCompactMoney, nativeForInstrument } = useDisplayCurrency();
@@ -163,6 +125,11 @@ export function PortfolioManager() {
   const [txDate, setTxDate] = useState(new Date().toISOString().slice(0, 10));
   const [txNotes, setTxNotes] = useState("");
   const txFormRef = useRef<HTMLDivElement>(null);
+  const [currencyRepairTarget, setCurrencyRepairTarget] = useState<CurrencyRepairTarget | null>(null);
+  const [repairAmountCurrency, setRepairAmountCurrency] = useState<CurrencyCode>("USD");
+  const [repairFeeCurrency, setRepairFeeCurrency] = useState<CurrencyCode>("USD");
+  const [repairSaving, setRepairSaving] = useState(false);
+  const closeCurrencyRepair = useCallback(() => setCurrencyRepairTarget(null), []);
 
   const loadAll = async (nextId?: string) => {
     setLoading(true);
@@ -267,33 +234,37 @@ export function PortfolioManager() {
   const txCurrenciesCompatible = txFees <= 0 || txCurrency === txFeesCurrency;
   const txPreview = cashDeltaPreview(txType, txShares, txPrice, txCurrenciesCompatible ? txFees : 0);
 
-  const repairHoldingCurrency = async (holding: MultiPortfolioHolding, currency: CurrencyCode) => {
-    if (!selectedId) return;
+  const openCurrencyRepair = (target: CurrencyRepairTarget) => {
+    setRepairAmountCurrency(cashCurrency);
+    setRepairFeeCurrency(cashCurrency);
+    setCurrencyRepairTarget(target);
     setError(null);
     setStatus(null);
-    try {
-      await updatePortfolioHoldingCurrency(selectedId, holding.id, currency);
-      setStatus(`Recorded ${currency} as the cost currency for ${holding.symbol}`);
-      await loadAll(selectedId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update holding currency");
-    }
   };
 
-  const repairTransactionCurrency = async (
-    transaction: MultiPortfolioTransaction,
-    currency: CurrencyCode,
-    field: "currency" | "fees_currency" = "currency",
-  ) => {
-    if (!selectedId) return;
+  const saveCurrencyRepair = async () => {
+    if (!selectedId || !currencyRepairTarget) return;
     setError(null);
     setStatus(null);
+    setRepairSaving(true);
     try {
-      await updatePortfolioTransactionCurrency(selectedId, transaction.id, currency, field);
-      setStatus(`Recorded ${currency} for the ${transaction.type} transaction ${field === "fees_currency" ? "fees" : "amount"}`);
+      if (currencyRepairTarget.kind === "holding") {
+        await updatePortfolioHoldingCurrency(selectedId, currencyRepairTarget.row.id, repairAmountCurrency);
+        setStatus(`Recorded ${repairAmountCurrency} as the cost currency for ${currencyRepairTarget.row.symbol}`);
+      } else {
+        const transaction = currencyRepairTarget.row;
+        const payload: { currency?: string; fees_currency?: string } = {};
+        if (!asCurrencyCode(transaction.currency)) payload.currency = repairAmountCurrency;
+        if (transaction.fees > 0 && !asCurrencyCode(transaction.fees_currency)) payload.fees_currency = repairFeeCurrency;
+        await updatePortfolioTransactionCurrencies(selectedId, transaction.id, payload);
+        setStatus(`Recorded the missing currencies for the ${transaction.type} transaction`);
+      }
+      setCurrencyRepairTarget(null);
       await loadAll(selectedId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update transaction currency");
+      setError(err instanceof Error ? err.message : "Failed to update legacy currency");
+    } finally {
+      setRepairSaving(false);
     }
   };
 
@@ -629,18 +600,7 @@ export function PortfolioManager() {
                 align: "right",
                 sortable: true,
                 getValue: (r) => r.cost_basis_per_share,
-                render: (r) => asCurrencyCode(r.cost_basis_currency)
-                  ? formatLedgerAmount(r.cost_basis_per_share, r.cost_basis_currency)
-                  : (
-                    <span className="inline-flex flex-wrap items-center justify-end">
-                      <span>{metricFmt(r.cost_basis_per_share)} (unknown)</span>
-                      <LegacyCurrencyRepair
-                        label={`${r.symbol} holding cost`}
-                        defaultCurrency={cashCurrency}
-                        onSave={(currency) => repairHoldingCurrency(r, currency)}
-                      />
-                    </span>
-                  ),
+                render: (r) => formatLedgerAmount(r.cost_basis_per_share, r.cost_basis_currency),
               },
               { key: "current", title: "Current", type: "currency", align: "right", sortable: true, getValue: (r) => r.current_price || 0, render: (r) => formatMoney(r.current_price || 0, currencyFor(r)) },
               { key: "value", title: "Market Value", type: "large-number", align: "right", sortable: true, getValue: (r) => (r.current_price || 0) * r.shares, render: (r) => formatCompactMoney((r.current_price || 0) * r.shares, currencyFor(r)) },
@@ -651,20 +611,34 @@ export function PortfolioManager() {
                 title: "",
                 type: "text",
                 align: "right",
-                width: 64,
+                width: 148,
                 getValue: () => "",
                 render: (r) => (
-                  <button
-                    type="button"
-                    className="rounded border border-terminal-border px-1.5 py-0.5 text-[10px] text-terminal-muted hover:border-terminal-accent hover:text-terminal-accent"
-                    title={`Sell ${r.symbol} from this position`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sellFromPosition(r);
-                    }}
-                  >
-                    Sell
-                  </button>
+                  <span className="inline-flex items-center justify-end gap-1">
+                    {!asCurrencyCode(r.cost_basis_currency) ? (
+                      <button
+                        type="button"
+                        className="rounded border border-terminal-warn/60 px-1.5 py-0.5 text-[10px] text-terminal-warn hover:border-terminal-accent hover:text-terminal-accent"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openCurrencyRepair({ kind: "holding", row: r });
+                        }}
+                      >
+                        Set currency
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="rounded border border-terminal-border px-1.5 py-0.5 text-[10px] text-terminal-muted hover:border-terminal-accent hover:text-terminal-accent"
+                      title={`Sell ${r.symbol} from this position`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sellFromPosition(r);
+                      }}
+                    >
+                      Sell
+                    </button>
+                  </span>
                 ),
               },
             ]}
@@ -760,18 +734,7 @@ export function PortfolioManager() {
                 align: "right",
                 sortable: true,
                 getValue: (r) => r.price,
-                render: (r) => asCurrencyCode(r.currency)
-                  ? formatLedgerAmount(r.price, r.currency)
-                  : (
-                    <span className="inline-flex flex-wrap items-center justify-end">
-                      <span>{metricFmt(r.price)} (unknown)</span>
-                      <LegacyCurrencyRepair
-                        label={`${r.type} transaction on ${r.date}`}
-                        defaultCurrency={cashCurrency}
-                        onSave={(currency) => repairTransactionCurrency(r, currency)}
-                      />
-                    </span>
-                  ),
+                render: (r) => formatLedgerAmount(r.price, r.currency),
               },
               {
                 key: "fees",
@@ -782,21 +745,31 @@ export function PortfolioManager() {
                 getValue: (r) => r.fees,
                 render: (r) => {
                   if (r.fees <= 0) return "—";
-                  if (asCurrencyCode(r.fees_currency)) return formatLedgerAmount(r.fees, r.fees_currency);
-                  return (
-                    <span className="inline-flex flex-wrap items-center justify-end">
-                      <span>{metricFmt(r.fees)} (unknown)</span>
-                      <LegacyCurrencyRepair
-                        label={`${r.type} transaction fees on ${r.date}`}
-                        defaultCurrency={cashCurrency}
-                        onSave={(currency) => repairTransactionCurrency(r, currency, "fees_currency")}
-                      />
-                    </span>
-                  );
+                  return formatLedgerAmount(r.fees, r.fees_currency);
                 },
               },
               { key: "cash", title: "Cash Δ", type: "large-number", align: "right", sortable: true, getValue: (r) => accountingTransactions.get(r.id)?.cash_delta_base ?? 0, render: (r) => { const value = accountingTransactions.get(r.id)?.cash_delta_base; return value == null ? "Needs FX" : formatMoney(value, cashCurrency); } },
               { key: "notes", title: "Notes", type: "text", getValue: (r) => r.notes || "" },
+              {
+                key: "actions",
+                title: "",
+                type: "text",
+                align: "right",
+                width: 96,
+                getValue: () => "",
+                render: (r) => !asCurrencyCode(r.currency) || (r.fees > 0 && !asCurrencyCode(r.fees_currency)) ? (
+                  <button
+                    type="button"
+                    className="rounded border border-terminal-warn/60 px-1.5 py-0.5 text-[10px] text-terminal-warn hover:border-terminal-accent hover:text-terminal-accent"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openCurrencyRepair({ kind: "transaction", row: r });
+                    }}
+                  >
+                    Set currency
+                  </button>
+                ) : null,
+              },
             ]}
           />
         </div>
@@ -886,6 +859,88 @@ export function PortfolioManager() {
           </>
         ) : null}
       </section>
+
+      <TerminalModal
+        open={currencyRepairTarget !== null}
+        onClose={closeCurrencyRepair}
+        title="Repair legacy currency"
+        subtitle={currencyRepairTarget?.kind === "holding"
+          ? `${currencyRepairTarget.row.symbol} holding`
+          : currencyRepairTarget?.kind === "transaction"
+            ? `${currencyRepairTarget.row.type} · ${currencyRepairTarget.row.symbol} · ${currencyRepairTarget.row.date}`
+            : undefined}
+        size="sm"
+        busy={repairSaving}
+        footer={(
+          <div className="flex justify-end gap-2">
+            <TerminalButton
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={repairSaving}
+              onClick={closeCurrencyRepair}
+            >
+              Cancel
+            </TerminalButton>
+            <TerminalButton
+              type="button"
+              size="sm"
+              variant="accent"
+              disabled={repairSaving}
+              onClick={() => void saveCurrencyRepair()}
+            >
+              {repairSaving ? "Saving…" : "Save currency"}
+            </TerminalButton>
+          </div>
+        )}
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-terminal-muted">
+            Confirm the currency recorded by the original entry. This updates its denomination only; amounts, quantities, and dates are unchanged.
+          </p>
+          {currencyRepairTarget?.kind === "holding" ? (
+            <label className="block text-terminal-muted">
+              <span className="mb-1 block">Cost currency</span>
+              <TerminalInput
+                as="select"
+                className="w-full"
+                value={repairAmountCurrency}
+                onChange={(event) => setRepairAmountCurrency(event.target.value as CurrencyCode)}
+              >
+                {CURRENCY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+              </TerminalInput>
+            </label>
+          ) : null}
+          {currencyRepairTarget?.kind === "transaction" && !asCurrencyCode(currencyRepairTarget.row.currency) ? (
+            <label className="block text-terminal-muted">
+              <span className="mb-1 block">{TX_NEEDS_SHARES[currencyRepairTarget.row.type] ? "Price currency" : "Amount currency"}</span>
+              <TerminalInput
+                as="select"
+                className="w-full"
+                value={repairAmountCurrency}
+                onChange={(event) => setRepairAmountCurrency(event.target.value as CurrencyCode)}
+              >
+                {CURRENCY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+              </TerminalInput>
+            </label>
+          ) : null}
+          {currencyRepairTarget?.kind === "transaction"
+          && currencyRepairTarget.row.fees > 0
+          && !asCurrencyCode(currencyRepairTarget.row.fees_currency) ? (
+            <label className="block text-terminal-muted">
+              <span className="mb-1 block">Fee currency</span>
+              <TerminalInput
+                as="select"
+                className="w-full"
+                value={repairFeeCurrency}
+                onChange={(event) => setRepairFeeCurrency(event.target.value as CurrencyCode)}
+              >
+                {CURRENCY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+              </TerminalInput>
+            </label>
+          ) : null}
+        </div>
+      </TerminalModal>
     </div>
   );
 }

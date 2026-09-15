@@ -11,7 +11,7 @@ const fetchPortfolioTransactionsMock = vi.fn();
 const createPortfolioMock = vi.fn();
 const updatePortfolioMock = vi.fn();
 const updatePortfolioHoldingCurrencyMock = vi.fn();
-const updatePortfolioTransactionCurrencyMock = vi.fn();
+const updatePortfolioTransactionCurrenciesMock = vi.fn();
 const fetchAiRiskInsightsMock = vi.fn();
 const fetchPortfolioAnalyticsMock = vi.fn();
 const fetchPortfolioCorrelationMock = vi.fn();
@@ -33,7 +33,7 @@ vi.mock("../api/client", () => ({
   fetchPortfolios: (...args: unknown[]) => fetchPortfoliosMock(...args),
   updatePortfolioById: (...args: unknown[]) => updatePortfolioMock(...args),
   updatePortfolioHoldingCurrency: (...args: unknown[]) => updatePortfolioHoldingCurrencyMock(...args),
-  updatePortfolioTransactionCurrency: (...args: unknown[]) => updatePortfolioTransactionCurrencyMock(...args),
+  updatePortfolioTransactionCurrencies: (...args: unknown[]) => updatePortfolioTransactionCurrenciesMock(...args),
 }));
 
 vi.mock("../hooks/useDisplayCurrency", () => ({
@@ -72,7 +72,7 @@ describe("PortfolioManager thesis capture", () => {
       createPortfolioMock,
       updatePortfolioMock,
       updatePortfolioHoldingCurrencyMock,
-      updatePortfolioTransactionCurrencyMock,
+      updatePortfolioTransactionCurrenciesMock,
       fetchAiRiskInsightsMock,
       fetchPortfolioAnalyticsMock,
       fetchPortfolioCorrelationMock,
@@ -91,7 +91,7 @@ describe("PortfolioManager thesis capture", () => {
     ]);
     updatePortfolioMock.mockResolvedValue(undefined);
     updatePortfolioHoldingCurrencyMock.mockResolvedValue(undefined);
-    updatePortfolioTransactionCurrencyMock.mockResolvedValue(undefined);
+    updatePortfolioTransactionCurrenciesMock.mockResolvedValue(undefined);
     addPortfolioHoldingMock.mockResolvedValue(undefined);
     addPortfolioTransactionMock.mockResolvedValue(undefined);
     fetchPortfolioHoldingsMock.mockResolvedValue([]);
@@ -266,23 +266,27 @@ describe("PortfolioManager thesis capture", () => {
     ]);
     render(<PortfolioManager />);
 
-    const holdingCurrency = await screen.findByRole("combobox", { name: "Currency for SAP.DE holding cost" });
+    await screen.findAllByText("SAP.DE");
+    fireEvent.click(screen.getAllByRole("button", { name: "Set currency" })[0]);
+    const holdingDialog = screen.getByRole("dialog", { name: "Repair legacy currency" });
+    const holdingCurrency = within(holdingDialog).getByRole("combobox", { name: "Cost currency" });
     fireEvent.change(holdingCurrency, { target: { value: "EUR" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save currency for SAP.DE holding cost" }));
+    fireEvent.click(within(holdingDialog).getByRole("button", { name: "Save currency" }));
 
     await waitFor(() => expect(updatePortfolioHoldingCurrencyMock).toHaveBeenCalledWith("p1", "h-legacy", "EUR"));
 
-    const transactionCurrency = screen.getByRole("combobox", { name: "Currency for buy transaction on 2025-01-02" });
+    fireEvent.click(screen.getAllByRole("button", { name: "Set currency" })[1]);
+    const transactionDialog = screen.getByRole("dialog", { name: "Repair legacy currency" });
+    const transactionCurrency = within(transactionDialog).getByRole("combobox", { name: "Price currency" });
     fireEvent.change(transactionCurrency, { target: { value: "EUR" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save currency for buy transaction on 2025-01-02" }));
-
-    await waitFor(() => expect(updatePortfolioTransactionCurrencyMock).toHaveBeenCalledWith("p1", "t-legacy", "EUR", "currency"));
-
-    const feeCurrency = screen.getByRole("combobox", { name: "Currency for buy transaction fees on 2025-01-02" });
+    const feeCurrency = within(transactionDialog).getByRole("combobox", { name: "Fee currency" });
     fireEvent.change(feeCurrency, { target: { value: "GBP" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save currency for buy transaction fees on 2025-01-02" }));
+    fireEvent.click(within(transactionDialog).getByRole("button", { name: "Save currency" }));
 
-    await waitFor(() => expect(updatePortfolioTransactionCurrencyMock).toHaveBeenCalledWith("p1", "t-legacy", "GBP", "fees_currency"));
+    await waitFor(() => expect(updatePortfolioTransactionCurrenciesMock).toHaveBeenCalledWith("p1", "t-legacy", {
+      currency: "EUR",
+      fees_currency: "GBP",
+    }));
   });
 
   it("sends available risk and exposure evidence to the assessment", async () => {
