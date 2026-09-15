@@ -510,9 +510,10 @@ and tests as one dependable product, ready for the v1.7 accounting contract.
 
 Prepared as **v1.7.0 (2026-09-14)** after roadmap PR #140 and implementation
 PRs #141–#145; release preparation merged in PR #146. Host testing exposed one
-release blocker: unknown legacy currencies were honest but unactionable. The
-follow-up adds per-record repair controls before the deployment-host smoke check
-and release tag described in [Releasing](Releasing).
+release blocker: unknown legacy currencies were honest but unactionable. PR #147
+added per-record repair controls; host testing confirmed them and prompted a UX
+follow-up that moves repair to a rightmost row action and focused dialog before
+the deployment-host smoke check and release tag described in [Releasing](Releasing).
 
 Make a portfolio's existing `currency` field an explicit accounting base rather
 than merely a cash/display label. Every aggregate monetary value must be

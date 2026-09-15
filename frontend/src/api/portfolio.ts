@@ -74,15 +74,14 @@ export async function fetchPortfolioTransactions(portfolioId: string): Promise<M
   return Array.isArray(data?.items) ? data.items : [];
 }
 
-export async function updatePortfolioTransactionCurrency(
+export async function updatePortfolioTransactionCurrencies(
   portfolioId: string,
   transactionId: string,
-  currency: string,
-  field: "currency" | "fees_currency" = "currency",
+  payload: { currency?: string; fees_currency?: string },
 ): Promise<void> {
   await api.patch(
     `/portfolios/${encodeURIComponent(portfolioId)}/transactions/${encodeURIComponent(transactionId)}/currency`,
-    { [field]: currency },
+    payload,
   );
 }
 

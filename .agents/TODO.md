@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-14**, from `main` at `24dcc0c` (through release-prep PR
-#146), plus the legacy-currency repair changes on this branch. The latest tag
-and published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
+Last audited: **2026-09-15**, from `main` at `3d8c34e` (through legacy-currency
+repair PR #147), plus the repair-UX changes on this branch. The latest tag and
+published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -318,7 +318,9 @@ across those intentional interfaces.
       ledger, and external-agent handoff for v1.7.0.
 - [x] Add an explicit owner-scoped UI/API repair path for unknown legacy holding
       costs, transaction amounts, and nonzero fees found during host testing.
-- [ ] After the legacy-currency repair merges, repeat the host smoke matrix in
+- [x] Move legacy-currency repair out of value cells into a row-level action and
+      focused dialog after host feedback on table readability.
+- [ ] After the repair-UX follow-up merges, repeat the host smoke matrix in
       `docs/wiki/Releasing.md`, then tag and publish v1.7.0.
 
 **Exit:** mixed-currency ledger activity and portfolio analytics reconcile in one
@@ -356,9 +358,10 @@ cross-market-intelligence promise into concrete journeys and contracts.
   currencies, traceable current/historical FX, shared base accounting, aligned
   consumers, base-currency history, and security-versus-FX attribution. This
   release preparation merged in PR #146. Host testing then exposed missing UI
-  remediation for intentionally unknown legacy denominations; this follow-up
-  adds per-record owner-scoped repair. Repair merge, repeated host smoke, tag,
-  and GitHub release remain.
+  remediation for intentionally unknown legacy denominations; PR #147 added
+  per-record owner-scoped repair and passed functional host testing. The current
+  follow-up moves its crowded inline controls to row actions and a focused
+  dialog. UX merge, repeated host smoke, tag, and GitHub release remain.
 - Hermes-style pipelines can already send selected summaries through
   `PUT /api/v1/notes/external` with a `read_write` API key and stable
   source/external ID. Do not design a broad MCP surface unless it is explicitly

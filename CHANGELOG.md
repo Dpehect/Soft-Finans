@@ -51,8 +51,9 @@ partial/degraded state instead of combining incompatible currencies.
   UI writes include currency, CSV imports accept a currency column, and mixed or
   unknown row-level amounts are labelled or withheld instead of silently
   formatted as the portfolio base. Legacy holding costs, transaction amounts,
-  and nonzero fees with unknown denominations provide per-record repair controls
-  instead of leaving users with an unactionable warning.
+  and nonzero fees with unknown denominations provide a per-row repair action
+  and focused dialog instead of an unactionable warning or controls crowded into
+  monetary cells.
 - **Traceable FX valuation lookup** — `GET /api/forex/rate` now resolves a
   current or dated conversion between supported currencies with the provider,
   source symbol, effective timestamp, cache state, freshness, and explicit
