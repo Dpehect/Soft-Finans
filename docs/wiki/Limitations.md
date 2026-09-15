@@ -80,7 +80,10 @@ never silently faked.
   seven days. Provider failure, an unsupported denomination, or a legacy row
   whose currency cannot be established makes dependent output partial; the
   backend never assumes a `1.0` rate. Migration `0014` deliberately leaves old
-  transaction/holding currency fields nullable for this reason.
+  transaction/holding currency fields nullable for this reason. Portfolio
+  Manager exposes an explicit currency selector beside each unknown legacy
+  holding cost, transaction amount, or nonzero fee so the owner can repair the
+  evidence record by record.
 - **Historical portfolio analytics describe current open holdings, not a full
   transaction-ledger performance record.** Portfolio list, detail, Manager,
   primary dashboard, and current allocation APIs normalize current marks and

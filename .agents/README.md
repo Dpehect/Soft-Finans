@@ -4,9 +4,9 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last audited: **2026-09-14**, from `main` at `77ddee6` (through PR #145), plus
-the v1.7.0 release-preparation work on this branch. The latest tag and published
-GitHub release remain **v1.6.0** at `0dc86db` until host verification.
+Last audited: **2026-09-14**, from `main` at `24dcc0c` (through release-prep PR
+#146), plus the legacy-currency repair work on this branch. The latest tag and
+published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
 
 ## Read order and sources of truth
 
@@ -100,8 +100,10 @@ release-level interpretation and safety boundaries.
   dated base-currency observations, while attribution separates security, FX,
   and interaction returns. The endpoints explicitly describe their current-open-
   holdings methodology and withhold unsupported history. Implementation and
-  automated release preparation are complete through PR #145 plus this branch;
-  host smoke, merge, tag, and GitHub release remain maintainer-gated.
+  automated release preparation are complete through PR #146. Host testing then
+  exposed an unactionable legacy-currency state; this branch adds explicit,
+  owner-scoped repair controls. Repair merge, repeated host smoke, tag, and
+  GitHub release remain maintainer-gated.
 - **v1.3 — The second brain gets depth** shipped
   deterministic long-note chunking, source-aware retrieval, progressive answers,
   deliberate API-key note ingestion, and an explicit journal-gap review. Feature
@@ -151,8 +153,10 @@ release-level interpretation and safety boundaries.
   **v1.7 — Multi-currency portfolio accounting** implementation completed
   through PR #145: explicit ledger currencies, traceable current/historical FX,
   shared current accounting, aligned consumers, base-currency history, and
-  security-versus-FX attribution. This branch completes automated release
-  preparation; host smoke, merge, tag, and GitHub release remain.
+  security-versus-FX attribution. Release preparation merged in PR #146. Host
+  testing then found that conservatively unknown legacy currencies could not be
+  repaired in the UI; the current follow-up adds per-record holding, transaction,
+  and fee currency repair. Its merge, host smoke, tag, and release remain.
 - General MCP tooling and automatic external market/news indexing remain
   deferred. The supported automation boundary is the authenticated, idempotent
   external-note endpoint intended for deliberate inputs such as Hermes YouTube

@@ -8630,6 +8630,20 @@
         "title": "PortfolioHoldingCreateRequest",
         "type": "object"
       },
+      "PortfolioHoldingCurrencyUpdateRequest": {
+        "properties": {
+          "currency": {
+            "description": "Correct currency of a legacy holding's recorded cost basis",
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency"
+        ],
+        "title": "PortfolioHoldingCurrencyUpdateRequest",
+        "type": "object"
+      },
       "PortfolioHoldingResponse": {
         "properties": {
           "cost_basis_currency": {
@@ -9471,6 +9485,36 @@
           "date"
         ],
         "title": "PortfolioTransactionCreateRequest",
+        "type": "object"
+      },
+      "PortfolioTransactionCurrencyUpdateRequest": {
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correct currency of a legacy transaction price or cash amount",
+            "title": "Currency"
+          },
+          "fees_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correct currency of legacy transaction fees",
+            "title": "Fees Currency"
+          }
+        },
+        "title": "PortfolioTransactionCurrencyUpdateRequest",
         "type": "object"
       },
       "PortfolioTransactionResponse": {
@@ -29019,6 +29063,81 @@
         }
       }
     },
+    "/api/portfolios/{portfolio_id}/holdings/{holding_id}/currency": {
+      "patch": {
+        "operationId": "update_portfolio_holding_currency_api_portfolios__portfolio_id__holdings__holding_id__currency_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "holding_id",
+            "required": true,
+            "schema": {
+              "title": "Holding Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioHoldingCurrencyUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Portfolio Holding Currency Api Portfolios  Portfolio Id  Holdings  Holding Id  Currency Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Portfolio Holding Currency",
+        "tags": [
+          "portfolios"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "portfolios": "supported"
+        }
+      }
+    },
     "/api/portfolios/{portfolio_id}/transactions": {
       "get": {
         "operationId": "list_portfolio_transactions_api_portfolios__portfolio_id__transactions_get",
@@ -29125,6 +29244,81 @@
           }
         ],
         "summary": "Add Portfolio Transaction",
+        "tags": [
+          "portfolios"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "portfolios": "supported"
+        }
+      }
+    },
+    "/api/portfolios/{portfolio_id}/transactions/{transaction_id}/currency": {
+      "patch": {
+        "operationId": "update_portfolio_transaction_currency_api_portfolios__portfolio_id__transactions__transaction_id__currency_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "portfolio_id",
+            "required": true,
+            "schema": {
+              "title": "Portfolio Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "title": "Transaction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortfolioTransactionCurrencyUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Portfolio Transaction Currency Api Portfolios  Portfolio Id  Transactions  Transaction Id  Currency Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Portfolio Transaction Currency",
         "tags": [
           "portfolios"
         ],

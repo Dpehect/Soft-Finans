@@ -57,6 +57,13 @@ export async function addPortfolioHolding(portfolioId: string, payload: { symbol
   return data;
 }
 
+export async function updatePortfolioHoldingCurrency(portfolioId: string, holdingId: string, currency: string): Promise<void> {
+  await api.patch(
+    `/portfolios/${encodeURIComponent(portfolioId)}/holdings/${encodeURIComponent(holdingId)}/currency`,
+    { currency },
+  );
+}
+
 export async function addPortfolioTransaction(portfolioId: string, payload: { symbol?: string; type: PortfolioTransactionType; shares?: number; price?: number; currency?: string; date: string; fees?: number; fees_currency?: string; lot_id?: string; notes?: string }): Promise<{ id: string; status: string }> {
   const { data } = await api.post<{ id: string; status: string }>(`/portfolios/${encodeURIComponent(portfolioId)}/transactions`, payload);
   return data;
@@ -65,6 +72,18 @@ export async function addPortfolioTransaction(portfolioId: string, payload: { sy
 export async function fetchPortfolioTransactions(portfolioId: string): Promise<MultiPortfolioTransaction[]> {
   const { data } = await api.get<{ items: MultiPortfolioTransaction[] }>(`/portfolios/${encodeURIComponent(portfolioId)}/transactions`);
   return Array.isArray(data?.items) ? data.items : [];
+}
+
+export async function updatePortfolioTransactionCurrency(
+  portfolioId: string,
+  transactionId: string,
+  currency: string,
+  field: "currency" | "fees_currency" = "currency",
+): Promise<void> {
+  await api.patch(
+    `/portfolios/${encodeURIComponent(portfolioId)}/transactions/${encodeURIComponent(transactionId)}/currency`,
+    { [field]: currency },
+  );
 }
 
 export async function fetchPortfolioAnalyticsV2(portfolioId: string): Promise<MultiPortfolioAnalytics> {

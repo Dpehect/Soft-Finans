@@ -6,8 +6,12 @@ import { PortfolioManager } from "../components/portfolio/PortfolioManager";
 const fetchPortfoliosMock = vi.fn();
 const addPortfolioHoldingMock = vi.fn();
 const addPortfolioTransactionMock = vi.fn();
+const fetchPortfolioHoldingsMock = vi.fn();
+const fetchPortfolioTransactionsMock = vi.fn();
 const createPortfolioMock = vi.fn();
 const updatePortfolioMock = vi.fn();
+const updatePortfolioHoldingCurrencyMock = vi.fn();
+const updatePortfolioTransactionCurrencyMock = vi.fn();
 const fetchAiRiskInsightsMock = vi.fn();
 const fetchPortfolioAnalyticsMock = vi.fn();
 const fetchPortfolioCorrelationMock = vi.fn();
@@ -23,11 +27,13 @@ vi.mock("../api/client", () => ({
   fetchPortfolioBenchmarkOverlay: vi.fn(async () => null),
   fetchPortfolioCorrelation: (...args: unknown[]) => fetchPortfolioCorrelationMock(...args),
   fetchPortfolioDividends: vi.fn(async () => null),
-  fetchPortfolioHoldings: vi.fn(async () => []),
+  fetchPortfolioHoldings: (...args: unknown[]) => fetchPortfolioHoldingsMock(...args),
   fetchPortfolioRiskMetrics: (...args: unknown[]) => fetchPortfolioRiskMetricsMock(...args),
-  fetchPortfolioTransactions: vi.fn(async () => []),
+  fetchPortfolioTransactions: (...args: unknown[]) => fetchPortfolioTransactionsMock(...args),
   fetchPortfolios: (...args: unknown[]) => fetchPortfoliosMock(...args),
   updatePortfolioById: (...args: unknown[]) => updatePortfolioMock(...args),
+  updatePortfolioHoldingCurrency: (...args: unknown[]) => updatePortfolioHoldingCurrencyMock(...args),
+  updatePortfolioTransactionCurrency: (...args: unknown[]) => updatePortfolioTransactionCurrencyMock(...args),
 }));
 
 vi.mock("../hooks/useDisplayCurrency", () => ({
@@ -35,6 +41,7 @@ vi.mock("../hooks/useDisplayCurrency", () => ({
     formatMoney: (value: number | null | undefined) => String(value ?? "-"),
     formatCompactMoney: (value: number | null | undefined) => String(value ?? "-"),
     nativeFor: () => "USD",
+    nativeForInstrument: (currency?: string | null) => currency || "USD",
   }),
 }));
 
@@ -60,8 +67,12 @@ describe("PortfolioManager thesis capture", () => {
       fetchPortfoliosMock,
       addPortfolioHoldingMock,
       addPortfolioTransactionMock,
+      fetchPortfolioHoldingsMock,
+      fetchPortfolioTransactionsMock,
       createPortfolioMock,
       updatePortfolioMock,
+      updatePortfolioHoldingCurrencyMock,
+      updatePortfolioTransactionCurrencyMock,
       fetchAiRiskInsightsMock,
       fetchPortfolioAnalyticsMock,
       fetchPortfolioCorrelationMock,
@@ -79,8 +90,12 @@ describe("PortfolioManager thesis capture", () => {
       },
     ]);
     updatePortfolioMock.mockResolvedValue(undefined);
+    updatePortfolioHoldingCurrencyMock.mockResolvedValue(undefined);
+    updatePortfolioTransactionCurrencyMock.mockResolvedValue(undefined);
     addPortfolioHoldingMock.mockResolvedValue(undefined);
     addPortfolioTransactionMock.mockResolvedValue(undefined);
+    fetchPortfolioHoldingsMock.mockResolvedValue([]);
+    fetchPortfolioTransactionsMock.mockResolvedValue([]);
     fetchPortfolioAnalyticsMock.mockResolvedValue({
       total_value: 288,
       total_cost: 220,
@@ -221,6 +236,53 @@ describe("PortfolioManager thesis capture", () => {
         notes: undefined,
       }),
     );
+  });
+
+  it("lets users repair unknown currencies on legacy holdings and transactions", async () => {
+    fetchPortfolioHoldingsMock.mockResolvedValue([
+      {
+        id: "h-legacy",
+        symbol: "SAP.DE",
+        shares: 2,
+        cost_basis_per_share: 180,
+        cost_basis_currency: null,
+        purchase_date: "2025-01-02",
+        current_price: 190,
+        currency: "EUR",
+      },
+    ]);
+    fetchPortfolioTransactionsMock.mockResolvedValue([
+      {
+        id: "t-legacy",
+        symbol: "SAP.DE",
+        type: "buy",
+        shares: 2,
+        price: 180,
+        currency: null,
+        date: "2025-01-02",
+        fees: 2,
+        fees_currency: null,
+      },
+    ]);
+    render(<PortfolioManager />);
+
+    const holdingCurrency = await screen.findByRole("combobox", { name: "Currency for SAP.DE holding cost" });
+    fireEvent.change(holdingCurrency, { target: { value: "EUR" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save currency for SAP.DE holding cost" }));
+
+    await waitFor(() => expect(updatePortfolioHoldingCurrencyMock).toHaveBeenCalledWith("p1", "h-legacy", "EUR"));
+
+    const transactionCurrency = screen.getByRole("combobox", { name: "Currency for buy transaction on 2025-01-02" });
+    fireEvent.change(transactionCurrency, { target: { value: "EUR" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save currency for buy transaction on 2025-01-02" }));
+
+    await waitFor(() => expect(updatePortfolioTransactionCurrencyMock).toHaveBeenCalledWith("p1", "t-legacy", "EUR", "currency"));
+
+    const feeCurrency = screen.getByRole("combobox", { name: "Currency for buy transaction fees on 2025-01-02" });
+    fireEvent.change(feeCurrency, { target: { value: "GBP" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save currency for buy transaction fees on 2025-01-02" }));
+
+    await waitFor(() => expect(updatePortfolioTransactionCurrencyMock).toHaveBeenCalledWith("p1", "t-legacy", "GBP", "fees_currency"));
   });
 
   it("sends available risk and exposure evidence to the assessment", async () => {
