@@ -114,6 +114,71 @@ def test_omitted_legacy_currency_remains_unknown() -> None:
         assert transaction.currency is None
 
 
+def test_legacy_holding_and_transaction_currencies_can_be_repaired_explicitly() -> None:
+    client = TestClient(app)
+    headers = _auth_headers(client)
+    portfolio_id = _portfolio(client, headers)
+
+    created = client.post(
+        f"/api/portfolios/{portfolio_id}/holdings",
+        headers=headers,
+        json={"symbol": "SAP.DE", "shares": 1, "cost_basis_per_share": 200, "purchase_date": "2026-09-01"},
+    )
+    assert created.status_code == 200, created.text
+    holding_id = created.json()["id"]
+    transaction_id = client.get(
+        f"/api/portfolios/{portfolio_id}/transactions",
+        headers=headers,
+    ).json()["items"][0]["id"]
+
+    holding_update = client.patch(
+        f"/api/portfolios/{portfolio_id}/holdings/{holding_id}/currency",
+        headers=headers,
+        json={"currency": "eur"},
+    )
+    transaction_update = client.patch(
+        f"/api/portfolios/{portfolio_id}/transactions/{transaction_id}/currency",
+        headers=headers,
+        json={"currency": "eur"},
+    )
+    fee_update = client.patch(
+        f"/api/portfolios/{portfolio_id}/transactions/{transaction_id}/currency",
+        headers=headers,
+        json={"fees_currency": "gbp"},
+    )
+
+    assert holding_update.status_code == 200, holding_update.text
+    assert holding_update.json()["currency"] == "EUR"
+    assert transaction_update.status_code == 200, transaction_update.text
+    assert transaction_update.json()["currency"] == "EUR"
+    assert fee_update.status_code == 200, fee_update.text
+    assert fee_update.json()["fees_currency"] == "GBP"
+    with SessionLocal() as db:
+        assert db.get(PortfolioHoldingORM, holding_id).cost_basis_currency == "EUR"
+        assert db.get(PortfolioTransactionORM, transaction_id).currency == "EUR"
+        assert db.get(PortfolioTransactionORM, transaction_id).fees_currency == "GBP"
+
+
+def test_currency_repair_cannot_cross_portfolio_ownership() -> None:
+    client = TestClient(app)
+    owner_headers = _auth_headers(client)
+    portfolio_id = _portfolio(client, owner_headers)
+    holding_id = client.post(
+        f"/api/portfolios/{portfolio_id}/holdings",
+        headers=owner_headers,
+        json={"symbol": "AAPL", "shares": 1, "cost_basis_per_share": 200},
+    ).json()["id"]
+    other_headers = _auth_headers(client)
+
+    response = client.patch(
+        f"/api/portfolios/{portfolio_id}/holdings/{holding_id}/currency",
+        headers=other_headers,
+        json={"currency": "USD"},
+    )
+
+    assert response.status_code == 404
+
+
 def test_one_lot_cannot_mix_known_or_unknown_cost_currencies() -> None:
     client = TestClient(app)
     headers = _auth_headers(client)

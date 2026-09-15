@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-14**, from `main` at `77ddee6` (through PR #145), plus
-the v1.7.0 release-preparation changes on this branch. The latest tag and
-published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
+Last audited: **2026-09-14**, from `main` at `24dcc0c` (through release-prep PR
+#146), plus the legacy-currency repair changes on this branch. The latest tag
+and published GitHub release remain **v1.6.0** at `0dc86db` until host verification.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -316,8 +316,10 @@ across those intentional interfaces.
 - [x] Document the API contract, migration behavior, limitations, and operational
       FX dependencies; align versions, changelog, public site, roadmap, release
       ledger, and external-agent handoff for v1.7.0.
-- [ ] After this release-preparation branch merges, complete the host smoke matrix
-      in `docs/wiki/Releasing.md`, then tag and publish v1.7.0.
+- [x] Add an explicit owner-scoped UI/API repair path for unknown legacy holding
+      costs, transaction amounts, and nonzero fees found during host testing.
+- [ ] After the legacy-currency repair merges, repeat the host smoke matrix in
+      `docs/wiki/Releasing.md`, then tag and publish v1.7.0.
 
 **Exit:** mixed-currency ledger activity and portfolio analytics reconcile in one
 explicit base currency from traceable FX inputs, and missing conversions produce
@@ -353,8 +355,10 @@ cross-market-intelligence promise into concrete journeys and contracts.
   `0dc86db`. v1.7 implementation completed through PR #145: explicit ledger
   currencies, traceable current/historical FX, shared base accounting, aligned
   consumers, base-currency history, and security-versus-FX attribution. This
-  branch completes automated release preparation; host smoke, merge, tag, and
-  GitHub release remain.
+  release preparation merged in PR #146. Host testing then exposed missing UI
+  remediation for intentionally unknown legacy denominations; this follow-up
+  adds per-record owner-scoped repair. Repair merge, repeated host smoke, tag,
+  and GitHub release remain.
 - Hermes-style pipelines can already send selected summaries through
   `PUT /api/v1/notes/external` with a `read_write` API key and stable
   source/external ID. Do not design a broad MCP surface unless it is explicitly

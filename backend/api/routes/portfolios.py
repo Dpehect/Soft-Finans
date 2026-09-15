@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -83,6 +83,18 @@ class PortfolioHoldingCreateRequest(BaseModel):
         return _normalize_currency_code(value)
 
 
+class PortfolioHoldingCurrencyUpdateRequest(BaseModel):
+    currency: str = Field(description="Correct currency of a legacy holding's recorded cost basis")
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def normalize_currency(cls, value: str | None) -> str:
+        normalized = _normalize_currency_code(value)
+        if normalized is None:
+            raise ValueError("currency is required")
+        return normalized
+
+
 class PortfolioTransactionCreateRequest(BaseModel):
     # Trades (buy/sell) carry a symbol + shares; cash-only rows (dividend/deposit/
     # withdrawal) carry the amount in `price` with shares = 0. See portfolio_cash.
@@ -107,6 +119,26 @@ class PortfolioTransactionCreateRequest(BaseModel):
     @classmethod
     def normalize_currencies(cls, value: str | None) -> str | None:
         return _normalize_currency_code(value)
+
+
+class PortfolioTransactionCurrencyUpdateRequest(BaseModel):
+    currency: str | None = Field(default=None, description="Correct currency of a legacy transaction price or cash amount")
+    fees_currency: str | None = Field(default=None, description="Correct currency of legacy transaction fees")
+
+    @field_validator("currency", "fees_currency", mode="before")
+    @classmethod
+    def normalize_currencies(cls, value: str | None) -> str | None:
+        return _normalize_currency_code(value)
+
+    @model_validator(mode="after")
+    def require_currency_update(self) -> "PortfolioTransactionCurrencyUpdateRequest":
+        if not self.model_fields_set:
+            raise ValueError("currency or fees_currency is required")
+        if "currency" in self.model_fields_set and self.currency is None:
+            raise ValueError("currency cannot be empty")
+        if "fees_currency" in self.model_fields_set and self.fees_currency is None:
+            raise ValueError("fees_currency cannot be empty")
+        return self
 
 
 class PortfolioHoldingResponse(BaseModel):
@@ -839,6 +871,30 @@ async def list_portfolio_holdings(
     }
 
 
+@router.patch("/portfolios/{portfolio_id}/holdings/{holding_id}/currency")
+def update_portfolio_holding_currency(
+    portfolio_id: str,
+    holding_id: str,
+    payload: PortfolioHoldingCurrencyUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    _portfolio_for_user(db, portfolio_id, current_user.id)
+    row = (
+        db.query(PortfolioHoldingORM)
+        .filter(
+            PortfolioHoldingORM.id == holding_id,
+            PortfolioHoldingORM.portfolio_id == portfolio_id,
+        )
+        .one_or_none()
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="Holding not found")
+    row.cost_basis_currency = payload.currency
+    db.commit()
+    return {"status": "updated", "id": row.id, "currency": row.cost_basis_currency}
+
+
 @router.post("/portfolios/{portfolio_id}/transactions")
 def add_portfolio_transaction(
     portfolio_id: str,
@@ -974,6 +1030,38 @@ def list_portfolio_transactions(
             }
             for r in rows
         ]
+    }
+
+
+@router.patch("/portfolios/{portfolio_id}/transactions/{transaction_id}/currency")
+def update_portfolio_transaction_currency(
+    portfolio_id: str,
+    transaction_id: str,
+    payload: PortfolioTransactionCurrencyUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    _portfolio_for_user(db, portfolio_id, current_user.id)
+    row = (
+        db.query(PortfolioTransactionORM)
+        .filter(
+            PortfolioTransactionORM.id == transaction_id,
+            PortfolioTransactionORM.portfolio_id == portfolio_id,
+        )
+        .one_or_none()
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    if "currency" in payload.model_fields_set:
+        row.currency = payload.currency
+    if "fees_currency" in payload.model_fields_set:
+        row.fees_currency = payload.fees_currency
+    db.commit()
+    return {
+        "status": "updated",
+        "id": row.id,
+        "currency": row.currency,
+        "fees_currency": row.fees_currency,
     }
 
 

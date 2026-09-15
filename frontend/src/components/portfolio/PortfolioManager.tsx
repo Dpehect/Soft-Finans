@@ -15,7 +15,9 @@ import {
   fetchPortfolioDividends,
   fetchPortfolioBenchmarkOverlay,
   fetchAiRiskInsights,
+  updatePortfolioHoldingCurrency,
   updatePortfolioById,
+  updatePortfolioTransactionCurrency,
   type MultiPortfolio,
   type MultiPortfolioAnalytics,
   type MultiPortfolioHolding,
@@ -67,6 +69,49 @@ function toCurrencyCode(code: string | undefined | null): CurrencyCode {
 function metricFmt(v: number | null | undefined) {
   if (v == null || !Number.isFinite(v)) return "-";
   return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
+}
+
+function LegacyCurrencyRepair({
+  label,
+  defaultCurrency,
+  onSave,
+}: {
+  label: string;
+  defaultCurrency: CurrencyCode;
+  onSave: (currency: CurrencyCode) => Promise<void>;
+}) {
+  const [currency, setCurrency] = useState<CurrencyCode>(defaultCurrency);
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <span className="ml-1 inline-flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
+      <TerminalInput
+        as="select"
+        className="w-20 py-0 text-[10px]"
+        value={currency}
+        aria-label={`Currency for ${label}`}
+        onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
+      >
+        {CURRENCY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
+      </TerminalInput>
+      <button
+        type="button"
+        className="rounded border border-terminal-warn/60 px-1.5 py-0.5 text-[10px] text-terminal-warn hover:border-terminal-accent hover:text-terminal-accent disabled:opacity-50"
+        disabled={saving}
+        aria-label={`Save currency for ${label}`}
+        onClick={async () => {
+          setSaving(true);
+          try {
+            await onSave(currency);
+          } finally {
+            setSaving(false);
+          }
+        }}
+      >
+        {saving ? "Saving…" : "Set currency"}
+      </button>
+    </span>
+  );
 }
 
 export function PortfolioManager() {
@@ -221,6 +266,36 @@ export function PortfolioManager() {
   const portfolioSymbols = useMemo(() => Array.from(new Set(holdings.map((h) => h.symbol).filter(Boolean))), [holdings]);
   const txCurrenciesCompatible = txFees <= 0 || txCurrency === txFeesCurrency;
   const txPreview = cashDeltaPreview(txType, txShares, txPrice, txCurrenciesCompatible ? txFees : 0);
+
+  const repairHoldingCurrency = async (holding: MultiPortfolioHolding, currency: CurrencyCode) => {
+    if (!selectedId) return;
+    setError(null);
+    setStatus(null);
+    try {
+      await updatePortfolioHoldingCurrency(selectedId, holding.id, currency);
+      setStatus(`Recorded ${currency} as the cost currency for ${holding.symbol}`);
+      await loadAll(selectedId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update holding currency");
+    }
+  };
+
+  const repairTransactionCurrency = async (
+    transaction: MultiPortfolioTransaction,
+    currency: CurrencyCode,
+    field: "currency" | "fees_currency" = "currency",
+  ) => {
+    if (!selectedId) return;
+    setError(null);
+    setStatus(null);
+    try {
+      await updatePortfolioTransactionCurrency(selectedId, transaction.id, currency, field);
+      setStatus(`Recorded ${currency} for the ${transaction.type} transaction ${field === "fees_currency" ? "fees" : "amount"}`);
+      await loadAll(selectedId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update transaction currency");
+    }
+  };
 
   // Pre-fill the Record Transaction form to sell a specific position (full size
   // at the current price by default; user can adjust before recording). Turns a
@@ -547,7 +622,26 @@ export function PortfolioManager() {
             columns={[
               { key: "symbol", title: "Symbol", type: "text", frozen: true, width: 100, sortable: true, getValue: (r) => r.symbol },
               { key: "shares", title: "Shares", type: "number", align: "right", sortable: true, getValue: (r) => r.shares },
-              { key: "avgCost", title: "Avg Cost", type: "currency", align: "right", sortable: true, getValue: (r) => r.cost_basis_per_share, render: (r) => formatLedgerAmount(r.cost_basis_per_share, r.cost_basis_currency) },
+              {
+                key: "avgCost",
+                title: "Avg Cost",
+                type: "currency",
+                align: "right",
+                sortable: true,
+                getValue: (r) => r.cost_basis_per_share,
+                render: (r) => asCurrencyCode(r.cost_basis_currency)
+                  ? formatLedgerAmount(r.cost_basis_per_share, r.cost_basis_currency)
+                  : (
+                    <span className="inline-flex flex-wrap items-center justify-end">
+                      <span>{metricFmt(r.cost_basis_per_share)} (unknown)</span>
+                      <LegacyCurrencyRepair
+                        label={`${r.symbol} holding cost`}
+                        defaultCurrency={cashCurrency}
+                        onSave={(currency) => repairHoldingCurrency(r, currency)}
+                      />
+                    </span>
+                  ),
+              },
               { key: "current", title: "Current", type: "currency", align: "right", sortable: true, getValue: (r) => r.current_price || 0, render: (r) => formatMoney(r.current_price || 0, currencyFor(r)) },
               { key: "value", title: "Market Value", type: "large-number", align: "right", sortable: true, getValue: (r) => (r.current_price || 0) * r.shares, render: (r) => formatCompactMoney((r.current_price || 0) * r.shares, currencyFor(r)) },
               { key: "pnl", title: "P&L", type: "large-number", align: "right", sortable: true, getValue: (r) => accountingHoldings.get(r.id)?.unrealized_pnl_base ?? 0, render: (r) => { const value = accountingHoldings.get(r.id)?.unrealized_pnl_base; return value == null ? "Needs FX" : formatCompactMoney(value, cashCurrency); } },
@@ -659,8 +753,48 @@ export function PortfolioManager() {
               { key: "type", title: "Type", type: "text", width: 90, sortable: true, getValue: (r) => r.type },
               { key: "symbol", title: "Symbol", type: "text", width: 90, sortable: true, getValue: (r) => (r.symbol === "CASH" ? "—" : r.symbol) },
               { key: "shares", title: "Shares", type: "number", align: "right", sortable: true, getValue: (r) => (TX_NEEDS_SHARES[r.type] ? r.shares : 0), render: (r) => (TX_NEEDS_SHARES[r.type] ? metricFmt(r.shares) : "—") },
-              { key: "price", title: "Price / Amt", type: "currency", align: "right", sortable: true, getValue: (r) => r.price, render: (r) => formatLedgerAmount(r.price, r.currency) },
-              { key: "fees", title: "Fees", type: "currency", align: "right", sortable: true, getValue: (r) => r.fees, render: (r) => r.fees > 0 ? formatLedgerAmount(r.fees, r.fees_currency) : "—" },
+              {
+                key: "price",
+                title: "Price / Amt",
+                type: "currency",
+                align: "right",
+                sortable: true,
+                getValue: (r) => r.price,
+                render: (r) => asCurrencyCode(r.currency)
+                  ? formatLedgerAmount(r.price, r.currency)
+                  : (
+                    <span className="inline-flex flex-wrap items-center justify-end">
+                      <span>{metricFmt(r.price)} (unknown)</span>
+                      <LegacyCurrencyRepair
+                        label={`${r.type} transaction on ${r.date}`}
+                        defaultCurrency={cashCurrency}
+                        onSave={(currency) => repairTransactionCurrency(r, currency)}
+                      />
+                    </span>
+                  ),
+              },
+              {
+                key: "fees",
+                title: "Fees",
+                type: "currency",
+                align: "right",
+                sortable: true,
+                getValue: (r) => r.fees,
+                render: (r) => {
+                  if (r.fees <= 0) return "—";
+                  if (asCurrencyCode(r.fees_currency)) return formatLedgerAmount(r.fees, r.fees_currency);
+                  return (
+                    <span className="inline-flex flex-wrap items-center justify-end">
+                      <span>{metricFmt(r.fees)} (unknown)</span>
+                      <LegacyCurrencyRepair
+                        label={`${r.type} transaction fees on ${r.date}`}
+                        defaultCurrency={cashCurrency}
+                        onSave={(currency) => repairTransactionCurrency(r, currency, "fees_currency")}
+                      />
+                    </span>
+                  );
+                },
+              },
               { key: "cash", title: "Cash Δ", type: "large-number", align: "right", sortable: true, getValue: (r) => accountingTransactions.get(r.id)?.cash_delta_base ?? 0, render: (r) => { const value = accountingTransactions.get(r.id)?.cash_delta_base; return value == null ? "Needs FX" : formatMoney(value, cashCurrency); } },
               { key: "notes", title: "Notes", type: "text", getValue: (r) => r.notes || "" },
             ]}

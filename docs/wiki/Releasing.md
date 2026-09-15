@@ -147,8 +147,11 @@ Implementation completed through PR #145. Historical analytics explicitly model
 the current open basket from the date all retained positions existed; they do
 not claim closed-position or cash-flow-adjusted ledger performance. Missing
 price, denomination, or FX evidence produces partial output rather than a guessed
-number. This branch completes automated release preparation. The deployment-host
-smoke matrix above, release-prep merge, tag, and GitHub release remain maintainer
+number. Release preparation merged in PR #146. Its host test exposed that the
+honest unknown-currency state lacked a repair path; the release-blocking follow-up
+adds per-record, owner-scoped controls and APIs for legacy holding costs,
+transaction amounts, and nonzero fees. Repeat the deployment-host smoke matrix
+above after that repair merges; the tag and GitHub release remain maintainer
 steps.
 
 ## Cutting the release
