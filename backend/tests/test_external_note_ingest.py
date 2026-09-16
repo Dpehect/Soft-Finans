@@ -55,6 +55,7 @@ def test_external_note_upsert_is_write_gated_idempotent_and_owner_scoped(monkeyp
         "title": "A useful investing talk",
         "body": "The first Hermes summary.",
         "tags": ["youtube", "hermes", "hermes"],
+        "effective_at": "2026-09-12T14:30:00+00:00",
     }
 
     forbidden = client.put(
@@ -75,6 +76,7 @@ def test_external_note_upsert_is_write_gated_idempotent_and_owner_scoped(monkeyp
     assert first["created"] is True
     assert first["note"]["ref_id"] == "youtube:dQw4w9WgXcQ"
     assert first["note"]["tags"] == ["youtube", "hermes", "external", "source:youtube"]
+    assert first["note"]["effective_at"].startswith("2026-09-12T14:30:00")
 
     payload["body"] = "A corrected Hermes summary."
     updated = client.put(
@@ -128,6 +130,25 @@ def test_api_key_permissions_are_validated() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_external_note_effective_time_requires_timezone() -> None:
+    client = TestClient(app)
+    _, write_key = _user_and_key(client, "read_write")
+
+    response = client.put(
+        "/api/v1/notes/external",
+        headers={"X-API-Key": write_key},
+        json={
+            "source": "youtube",
+            "external_id": "undated-zone",
+            "body": "A summary with an ambiguous source time.",
+            "effective_at": "2026-09-15T14:30:00",
+        },
+    )
+
+    assert response.status_code == 422
+    assert "timezone" in response.text
 
 
 def test_created_api_key_can_be_listed_without_exposing_secret() -> None:

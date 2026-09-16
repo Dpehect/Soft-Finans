@@ -150,4 +150,35 @@ describe("SecondBrainPanel source filters", () => {
     });
     expect(await screen.findByText("A complete grounded thought.")).toBeInTheDocument();
   });
+
+  it("shows when cited evidence was effective", async () => {
+    askBrainStreamMock.mockImplementation(
+      async (_question: string, _k: number, sources: string[]) => ({
+        answer: "The newer thesis supersedes the older view [1].",
+        citations: [
+          {
+            n: 1,
+            source: "note",
+            title: "Current thesis",
+            snippet: "Guidance changed the margin outlook.",
+            score: 0.87,
+            ref_id: "note-current",
+            effective_at: "2026-09-15T14:30:00+00:00",
+          },
+        ],
+        sources,
+        llm: true,
+      }),
+    );
+    renderPanel();
+    await screen.findByText(/8 indexed/);
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask your second brain/), {
+      target: { value: "What is my current thesis?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+
+    expect(await screen.findByText("Current thesis")).toBeInTheDocument();
+    expect(screen.getByText(/2026/)).toBeInTheDocument();
+  });
 });

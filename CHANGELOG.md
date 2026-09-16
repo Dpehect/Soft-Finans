@@ -6,6 +6,20 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 
 ## [Unreleased]
 
+### Added
+- **Time-aware Second Brain evidence** — private-memory chunks and citations now
+  carry effective, recorded, and updated timestamps. External note ingestion
+  accepts an optional source `effective_at` distinct from ingestion time, and
+  citation cards expose the date used by synthesis.
+
+### Changed
+- **Temporal retrieval and supersession** — Second Brain queries retrieve a
+  broader semantic candidate pool and apply a bounded recency signal only among
+  relevant evidence. Dated context instructs synthesis to treat newer
+  incompatible evidence about the same subject as the current view, preserve and
+  cite the superseded history, and report ambiguous chronology instead of
+  flattening every note into an equally current claim.
+
 ## [1.7.0] - 2026-09-15
 
 The **"multi-currency portfolio accounting"** release completes v1 with one

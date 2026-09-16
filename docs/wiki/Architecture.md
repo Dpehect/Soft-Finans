@@ -106,6 +106,10 @@ pgvector when available, while SQLite uses an in-process cosine fallback.
 External systems can deliberately upsert notes through the authenticated,
 idempotent `PUT /api/v1/notes/external` contract. A general MCP surface and
 automatic external-corpus ingestion are not part of the current architecture.
+External notes may supply an `effective_at` timestamp distinct from ingestion
+time. The Second Brain carries effective, recorded, and updated timestamps into
+retrieval and citations so later conflicting evidence can be treated as the
+current view without erasing the older view from history.
 
 ## Frontend structure
 

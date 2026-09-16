@@ -36,6 +36,12 @@ class NoteORM(Base):
     title: Mapped[str] = mapped_column(String(256), default="")
     body: Mapped[str] = mapped_column(Text, default="")
     tags: Mapped[list] = mapped_column(JSON, default=list)
+    # When the information itself applies (for example a video's publication
+    # time). This is distinct from ingestion/record time so external pipelines
+    # can submit older material without making it look like current evidence.
+    effective_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), index=True
     )

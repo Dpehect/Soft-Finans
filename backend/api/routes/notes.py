@@ -6,11 +6,11 @@ Authed (per-user, never /api/v1). Mounted under "/api" → /api/notes.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from backend.api.deps import get_db
@@ -50,12 +50,24 @@ class NoteCreate(BaseModel):
     ref_id: str | None = Field(default=None, max_length=64)
     title: str = Field(default="", max_length=256)
     tags: list[str] = Field(default_factory=list)
+    effective_at: datetime | None = None
+
+    @field_validator("effective_at")
+    @classmethod
+    def require_unambiguous_effective_time(cls, value: datetime | None) -> datetime | None:
+        return _normalize_effective_at(value)
 
 
 class NoteUpdate(BaseModel):
     body: str | None = Field(default=None, max_length=10000)
     title: str | None = Field(default=None, max_length=256)
     tags: list[str] | None = None
+    effective_at: datetime | None = None
+
+    @field_validator("effective_at")
+    @classmethod
+    def require_unambiguous_effective_time(cls, value: datetime | None) -> datetime | None:
+        return _normalize_effective_at(value)
 
 
 class NoteOut(BaseModel):
@@ -66,6 +78,7 @@ class NoteOut(BaseModel):
     title: str
     body: str
     tags: list[str]
+    effective_at: str | None
     created_at: str | None
     updated_at: str | None
 
@@ -79,6 +92,7 @@ def _serialize(row: NoteORM) -> NoteOut:
         title=row.title,
         body=row.body,
         tags=list(row.tags or []),
+        effective_at=row.effective_at.isoformat() if row.effective_at else None,
         created_at=row.created_at.isoformat() if row.created_at else None,
         updated_at=row.updated_at.isoformat() if row.updated_at else None,
     )
@@ -101,6 +115,14 @@ def _normalize_tags(tags: list[str] | None) -> list[str]:
         if v and v not in out:
             out.append(v)
     return out
+
+
+def _normalize_effective_at(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError("effective_at must include a timezone")
+    return value.astimezone(timezone.utc)
 
 
 @router.get("", response_model=list[NoteOut])
@@ -135,6 +157,7 @@ def create_note(
         title=payload.title.strip(),
         body=payload.body.strip(),
         tags=_normalize_tags(payload.tags),
+        effective_at=payload.effective_at,
     )
     db.add(row)
     db.commit()
@@ -164,6 +187,8 @@ def update_note(
         row.title = payload.title.strip()
     if payload.tags is not None:
         row.tags = _normalize_tags(payload.tags)
+    if payload.effective_at is not None:
+        row.effective_at = payload.effective_at
     db.commit()
     db.refresh(row)
     background.add_task(_reindex_user_brain, current_user.id)

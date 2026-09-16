@@ -9,6 +9,9 @@ export interface BrainCitation {
   symbol?: string | null;
   snippet: string;
   score: number;
+  effective_at?: string | null;
+  recorded_at?: string | null;
+  updated_at?: string | null;
   route?: string | null;
   ref_id: string;
   chunk_index?: number | null;

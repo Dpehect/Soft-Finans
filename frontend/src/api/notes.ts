@@ -16,6 +16,7 @@ export interface Note {
   title: string;
   body: string;
   tags: string[];
+  effective_at: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -27,12 +28,14 @@ export interface NoteCreate {
   ref_id?: string | null;
   title?: string;
   tags?: string[];
+  effective_at?: string | null;
 }
 
 export interface NoteUpdate {
   body?: string;
   title?: string;
   tags?: string[];
+  effective_at?: string | null;
 }
 
 export async function listNotes(params?: { symbol?: string; context?: NoteContext }): Promise<Note[]> {

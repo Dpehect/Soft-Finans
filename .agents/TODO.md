@@ -1,7 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-15**, from `main` at `0473307` (through PR #148). The
-latest tag and published GitHub release are **v1.7.0** at that commit.
+Last audited: **2026-09-16**, from `main` at `e28f03b` (through post-release PR
+#149), plus the v2 temporal-memory work on this branch. The latest tag and
+published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -327,6 +328,27 @@ across those intentional interfaces.
 explicit base currency from traceable FX inputs, and missing conversions produce
 partial/degraded output instead of misleading totals. Only then turn the v2
 cross-market-intelligence promise into concrete journeys and contracts.
+
+### v2 opening — time-aware private memory
+
+- [x] Carry effective, recorded, and updated timestamps into Second Brain chunks,
+      prompts, API citations, and visible citation cards. Existing notes fall
+      back to their update/creation time; external ingestion can supply the
+      source's distinct `effective_at` time.
+- [x] Retrieve a wider semantic candidate pool, then apply a bounded recency
+      signal only to candidates close to the best semantic match. Do not let an
+      unrelated recent note displace relevant older evidence.
+- [x] Tell synthesis to resolve incompatible evidence about the same subject by
+      chronology, cite the superseded and current views, retain history, and
+      state when supersession is ambiguous.
+- [ ] Evaluate retrieval against the growing Hermes corpus: build dated question
+      cases with expected current and historical evidence, then tune topic
+      identity, explicit supersession, source-specific decay, diversity, and
+      index-freshness visibility from observed failures rather than intuition.
+
+**Boundary:** this establishes temporal evidence semantics; it does not yet make
+the full cross-market intelligence promise or claim that contradiction handling
+is solved.
 
 ## Current handoff boundary
 

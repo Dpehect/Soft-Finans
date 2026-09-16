@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -147,6 +148,34 @@ def _fmt_num(value: Any) -> str:
         return str(value)
 
 
+def _iso_timestamp(value: Any) -> str | None:
+    """Return a stable temporal value for prompt/ranking metadata."""
+    if value is None:
+        return None
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    normalized = str(value).strip()
+    return normalized or None
+
+
+def _temporal_meta(
+    *,
+    effective_at: Any = None,
+    recorded_at: Any = None,
+    updated_at: Any = None,
+) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for key, value in (
+        ("effective_at", effective_at),
+        ("recorded_at", recorded_at),
+        ("updated_at", updated_at),
+    ):
+        normalized = _iso_timestamp(value)
+        if normalized:
+            out[key] = normalized
+    return out
+
+
 def _journal_text(row: JournalEntry) -> str:
     parts: list[str] = []
     when = row.entry_date.date().isoformat() if row.entry_date else "?"
@@ -210,6 +239,9 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
         route = _NOTE_CONTEXT_ROUTES.get(row.context)
         if row.context in ("security", "general") and sym:
             route = f"/equity/security/{sym}"
+        recorded_at = getattr(row, "created_at", None)
+        updated_at = getattr(row, "updated_at", None)
+        effective_at = getattr(row, "effective_at", None) or updated_at or recorded_at
         chunks.extend(
             _build_chunks(
                 source="note",
@@ -217,7 +249,16 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
                 symbol=sym or None,
                 title=heading or "Note",
                 text=text,
-                meta_json={"context": row.context, "symbol": sym or None, "route": route},
+                meta_json={
+                    "context": row.context,
+                    "symbol": sym or None,
+                    "route": route,
+                    **_temporal_meta(
+                        effective_at=effective_at,
+                        recorded_at=recorded_at,
+                        updated_at=updated_at,
+                    ),
+                },
             )
         )
 
@@ -239,6 +280,11 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
                     "pnl": row.pnl,
                     "date": when,
                     "route": "/equity/journal",
+                    **_temporal_meta(
+                        effective_at=row.entry_date,
+                        recorded_at=getattr(row, "created_at", None),
+                        updated_at=getattr(row, "updated_at", None),
+                    ),
                 },
             )
         )
@@ -260,7 +306,14 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
                 symbol=None,
                 title=f"Portfolio · {p.name}",
                 text=text,
-                meta_json={"portfolio": p.name, "route": "/equity/portfolio"},
+                meta_json={
+                    "portfolio": p.name,
+                    "route": "/equity/portfolio",
+                    **_temporal_meta(
+                        effective_at=getattr(p, "created_at", None),
+                        recorded_at=getattr(p, "created_at", None),
+                    ),
+                },
             )
         )
 
@@ -283,7 +336,14 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
                     symbol=h.symbol,
                     title=f"Position · {h.symbol}",
                     text=text,
-                    meta_json={"symbol": h.symbol, "route": "/equity/portfolio"},
+                    meta_json={
+                        "symbol": h.symbol,
+                        "route": "/equity/portfolio",
+                        **_temporal_meta(
+                            effective_at=getattr(h, "created_at", None),
+                            recorded_at=getattr(h, "created_at", None),
+                        ),
+                    },
                 )
             )
 
@@ -310,6 +370,10 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
                         "type": t.type,
                         "date": t.date,
                         "route": "/equity/portfolio",
+                        **_temporal_meta(
+                            effective_at=t.date,
+                            recorded_at=getattr(t, "created_at", None),
+                        ),
                     },
                 )
             )

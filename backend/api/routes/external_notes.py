@@ -8,6 +8,7 @@ browser JWT or creating duplicates when a job retries.
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from typing import Literal
 from uuid import NAMESPACE_URL, uuid5
 
@@ -20,6 +21,7 @@ from backend.api.routes.notes import (
     NoteOut,
     _normalize_symbol,
     _normalize_tags,
+    _normalize_effective_at,
     _reindex_user_brain,
     _serialize,
 )
@@ -42,6 +44,13 @@ class ExternalNoteUpsert(BaseModel):
     symbol: str | None = Field(default=None, max_length=64)
     context: NoteContext = "general"
     tags: list[str] = Field(default_factory=list, max_length=32)
+    effective_at: datetime | None = Field(
+        default=None,
+        description=(
+            "When the source information applies or was published. Omit to use "
+            "the note's update/ingestion time for temporal retrieval."
+        ),
+    )
 
     @field_validator("source")
     @classmethod
@@ -58,6 +67,11 @@ class ExternalNoteUpsert(BaseModel):
         if not normalized:
             raise ValueError("value must not be blank")
         return normalized
+
+    @field_validator("effective_at")
+    @classmethod
+    def require_unambiguous_effective_time(cls, value: datetime | None) -> datetime | None:
+        return _normalize_effective_at(value)
 
 
 class ExternalNoteUpsertResponse(BaseModel):
@@ -97,6 +111,8 @@ def upsert_external_note(
     row.title = payload.title.strip()
     row.body = payload.body
     row.tags = _normalize_tags([*payload.tags, "external", f"source:{payload.source}"])
+    if payload.effective_at is not None:
+        row.effective_at = payload.effective_at
     db.commit()
     db.refresh(row)
 

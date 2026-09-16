@@ -4,8 +4,9 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last audited: **2026-09-15**, from `main` at `0473307` (through PR #148). The
-latest tag and published GitHub release are **v1.7.0** at that commit.
+Last audited: **2026-09-16**, from `main` at `e28f03b` (through post-release PR
+#149), plus the v2 temporal-memory work on this branch. The latest tag and
+published GitHub release are **v1.7.0** at `0473307`.
 
 ## Read order and sources of truth
 
@@ -84,6 +85,13 @@ release-level interpretation and safety boundaries.
   2026-09-15 after the maintainer's host/user verification.
   Keep `backend/config/settings.py` and `frontend/package.json` in lockstep when
   releasing.
+- **v2 opens with time-aware private memory.** Semantic similarity alone must
+  not flatten current and historical beliefs. Second Brain evidence carries
+  effective, recorded, and updated timestamps; retrieval may give bounded weight
+  to recency only inside a semantically relevant candidate set; synthesis treats
+  newer conflicting evidence about the same subject as current while retaining
+  the older view as cited history. This remains an iterative contract to evaluate
+  against the growing Hermes corpus before cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,
   persists transaction/native currency semantics, and normalizes ledger and
