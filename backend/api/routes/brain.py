@@ -39,6 +39,9 @@ class Citation(BaseModel):
     symbol: str | None = None
     snippet: str
     score: float
+    effective_at: str | None = None
+    recorded_at: str | None = None
+    updated_at: str | None = None
     route: str | None = None
     ref_id: str
     chunk_index: int | None = None

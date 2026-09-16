@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -43,6 +44,76 @@ def test_cosine_topk_skips_dimension_drift():
 
 def test_cosine_topk_zero_query_returns_empty():
     assert _cosine_topk([0.0, 0.0], [_chunk([1.0, 0.0])], k=3) == []
+
+
+def test_temporal_rerank_keeps_current_correction_ahead_of_older_match():
+    old = VectorMatch(
+        chunk=_chunk(
+            [1.0, 0.0],
+            ref_id="old",
+            meta_json={"effective_at": "2025-09-15T00:00:00+00:00"},
+        ),
+        score=0.86,
+    )
+    current = VectorMatch(
+        chunk=_chunk(
+            [1.0, 0.0],
+            ref_id="current",
+            meta_json={"effective_at": "2026-09-15T00:00:00+00:00"},
+        ),
+        score=0.80,
+    )
+
+    out = brain_service._temporal_rerank(
+        [old, current],
+        k=2,
+        now=datetime(2026, 9, 16, tzinfo=timezone.utc),
+    )
+
+    assert [match.chunk.ref_id for match in out] == ["current", "old"]
+
+
+def test_temporal_rerank_does_not_promote_unrelated_recent_evidence():
+    relevant = VectorMatch(
+        chunk=_chunk([1.0, 0.0], ref_id="relevant"),
+        score=0.88,
+    )
+    unrelated_recent = VectorMatch(
+        chunk=_chunk(
+            [1.0, 0.0],
+            ref_id="unrelated",
+            meta_json={"effective_at": "2026-09-16T00:00:00+00:00"},
+        ),
+        score=0.40,
+    )
+
+    out = brain_service._temporal_rerank(
+        [relevant, unrelated_recent],
+        k=2,
+        now=datetime(2026, 9, 16, tzinfo=timezone.utc),
+    )
+
+    assert [match.chunk.ref_id for match in out] == ["relevant", "unrelated"]
+
+
+def test_context_exposes_temporal_evidence_to_the_model():
+    match = VectorMatch(
+        chunk=_chunk(
+            [1.0, 0.0],
+            chunk_text="The thesis changed after guidance.",
+            meta_json={
+                "effective_at": "2026-09-15T00:00:00+00:00",
+                "recorded_at": "2026-09-16T00:00:00+00:00",
+            },
+        ),
+        score=0.8,
+    )
+
+    context = brain_service._format_context([match])
+
+    assert "EFFECTIVE 2026-09-15" in context
+    assert "RECORDED 2026-09-16" in context
+    assert "thesis changed" in context
 
 
 # ---- deterministic source chunking ---------------------------------------
@@ -326,6 +397,7 @@ async def test_ask_grounds_answer_and_cites(monkeypatch):
 
     class FakeClient:
         async def chat(self, messages, **kw):
+            captured["system"] = messages[0]["content"]
             captured["context"] = messages[1]["content"]
             return "You tend to lose when anxious and chasing [1]."
 
@@ -344,6 +416,7 @@ async def test_ask_grounds_answer_and_cites(monkeypatch):
     assert "[1]" in out["answer"]
     # The note text was actually fed to the model as grounding context.
     assert "anxious" in captured["context"]
+    assert "Treat time as evidence" in captured["system"]
     assert out["citations"][0]["source"] == "journal"
     assert out["citations"][0]["route"] == "/equity/journal"
     assert out["citations"][0]["n"] == 1
@@ -521,7 +594,11 @@ def test_citation_exposes_original_source_id_and_chunk_index():
         chunk=_chunk(
             [1.0, 0.0],
             ref_id="internal-chunk-hash",
-            meta_json={"source_ref_id": "note-123", "chunk_index": 2},
+            meta_json={
+                "source_ref_id": "note-123",
+                "chunk_index": 2,
+                "effective_at": "2026-09-15T00:00:00+00:00",
+            },
         ),
         score=0.8,
     )
@@ -530,6 +607,7 @@ def test_citation_exposes_original_source_id_and_chunk_index():
 
     assert citation["ref_id"] == "note-123"
     assert citation["chunk_index"] == 2
+    assert citation["effective_at"] == "2026-09-15T00:00:00+00:00"
 
 
 @pytest.mark.asyncio
@@ -586,6 +664,9 @@ def test_collect_chunks_indexes_notes():
     note = SimpleNamespace(
         id="n1", body="Margins peaking, watch Q3 guidance.", symbol="AAPL",
         context="security", title="Thesis check", tags=["margins"],
+        effective_at=datetime(2026, 9, 14, tzinfo=timezone.utc),
+        created_at=datetime(2026, 9, 15, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 9, 16, tzinfo=timezone.utc),
     )
     empty = SimpleNamespace(id="n2", body="   ", symbol=None, context="general", title="", tags=[])
     db = _FakeDB({NoteORM: [note, empty], JournalEntry: [], PortfolioORM: []})
@@ -604,6 +685,9 @@ def test_collect_chunks_indexes_notes():
     assert "Thesis check" in c["chunk_text"]
     # security note with a symbol deep-links to the security page.
     assert c["meta_json"]["route"] == "/equity/security/AAPL"
+    assert c["meta_json"]["effective_at"] == "2026-09-14T00:00:00+00:00"
+    assert c["meta_json"]["recorded_at"] == "2026-09-15T00:00:00+00:00"
+    assert c["meta_json"]["updated_at"] == "2026-09-16T00:00:00+00:00"
     assert c["content_hash"]  # hashed for incremental skip
 
 

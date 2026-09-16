@@ -1373,9 +1373,31 @@
             ],
             "title": "Chunk Index"
           },
+          "effective_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
+          },
           "n": {
             "title": "N",
             "type": "integer"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
           },
           "ref_id": {
             "title": "Ref Id",
@@ -1418,6 +1440,17 @@
           "title": {
             "title": "Title",
             "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
           }
         },
         "required": [
@@ -4280,6 +4313,19 @@
             "title": "Context",
             "type": "string"
           },
+          "effective_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the source information applies or was published. Omit to use the note's update/ingestion time for temporal retrieval.",
+            "title": "Effective At"
+          },
           "external_id": {
             "maxLength": 38,
             "minLength": 1,
@@ -6071,6 +6117,18 @@
             "title": "Context",
             "type": "string"
           },
+          "effective_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
+          },
           "ref_id": {
             "anyOf": [
               {
@@ -6136,6 +6194,17 @@
             ],
             "title": "Created At"
           },
+          "effective_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -6193,6 +6262,7 @@
           "title",
           "body",
           "tags",
+          "effective_at",
           "created_at",
           "updated_at"
         ],
@@ -6212,6 +6282,18 @@
               }
             ],
             "title": "Body"
+          },
+          "effective_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
           },
           "tags": {
             "anyOf": [

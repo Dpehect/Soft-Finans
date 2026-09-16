@@ -10,8 +10,10 @@ when your notes don't cover the question.
 from __future__ import annotations
 
 import logging
+import math
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -27,6 +29,11 @@ logger = logging.getLogger(__name__)
 
 BRAIN_SOURCES = ("note", "journal", "portfolio", "holding", "transaction")
 _BRAIN_SOURCE_SET = frozenset(BRAIN_SOURCES)
+_TEMPORAL_CANDIDATE_MULTIPLIER = 4
+_TEMPORAL_MIN_CANDIDATES = 20
+_TEMPORAL_RELEVANCE_WINDOW = 0.18
+_TEMPORAL_RECENCY_WEIGHT = 0.12
+_TEMPORAL_HALF_LIFE_DAYS = 120.0
 
 SYSTEM_PROMPT = """You are the user's private "second brain" — a research partner \
 that helps them invest without being fooled by markets, by hype, or by themselves.
@@ -42,14 +49,98 @@ the user could journal to close the gap. Never invent trades, numbers, or notes.
 - Be concise and concrete. Surface patterns the user might be blind to (recurring \
 emotions, setups that lose money, theses that drifted) — act as a check against \
 their own biases, not a cheerleader.
+- Treat time as evidence. When excerpts make incompatible claims about the same \
+subject, use their EFFECTIVE/UPDATED/RECORDED timestamps to identify the current \
+view, explain that the older view was superseded, and cite both. Newer evidence \
+does not erase older history and must not override a different subject merely \
+because it is recent. If chronology or supersession is ambiguous, say so.
 - Plain language. You are a thinking partner, not a financial advisor; don't give \
 buy/sell directives."""
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    if isinstance(value, datetime):
+        parsed = value
+    elif value:
+        try:
+            parsed = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _effective_at(match: VectorMatch) -> datetime | None:
+    meta = getattr(match.chunk, "meta_json", None) or {}
+    for key in ("effective_at", "updated_at", "recorded_at"):
+        parsed = _parse_timestamp(meta.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def _temporal_rerank(
+    matches: list[VectorMatch],
+    *,
+    k: int,
+    now: datetime | None = None,
+) -> list[VectorMatch]:
+    """Blend semantic relevance with bounded recency inside a relevant pool.
+
+    Semantic search remains the gate: only candidates close to the best semantic
+    match receive a recency bonus. The bounded signal is strong enough to keep a
+    slightly less similar current correction beside an older note, but cannot
+    promote an unrelated new note over clearly relevant evidence.
+    """
+    if not matches or k <= 0:
+        return []
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    else:
+        current = current.astimezone(timezone.utc)
+
+    best_semantic = max(match.score for match in matches)
+    semantic_floor = max(0.2, best_semantic - _TEMPORAL_RELEVANCE_WINDOW)
+
+    def rank_score(match: VectorMatch) -> float:
+        if match.score < semantic_floor:
+            return match.score
+        effective_at = _effective_at(match)
+        if effective_at is None:
+            return match.score
+        age_days = max(0.0, (current - effective_at).total_seconds() / 86_400.0)
+        recency = math.pow(0.5, age_days / _TEMPORAL_HALF_LIFE_DAYS)
+        return match.score + (_TEMPORAL_RECENCY_WEIGHT * recency)
+
+    reranked = sorted(
+        matches,
+        key=lambda match: (rank_score(match), match.score),
+        reverse=True,
+    )
+    return reranked[:k]
 
 
 def _format_context(matches: list[VectorMatch]) -> str:
     blocks: list[str] = []
     for i, m in enumerate(matches, start=1):
-        blocks.append(f"[{i}] ({m.chunk.source}) {m.chunk.title}\n{m.chunk.chunk_text}")
+        meta = getattr(m.chunk, "meta_json", None) or {}
+        temporal = " | ".join(
+            f"{label} {meta[key]}"
+            for key, label in (
+                ("effective_at", "EFFECTIVE"),
+                ("updated_at", "UPDATED"),
+                ("recorded_at", "RECORDED"),
+            )
+            if meta.get(key)
+        )
+        heading = f"[{i}] ({m.chunk.source}) {m.chunk.title}"
+        if temporal:
+            heading += f"\nTIME: {temporal}"
+        blocks.append(f"{heading}\n{m.chunk.chunk_text}")
     return "\n\n".join(blocks)
 
 
@@ -90,6 +181,9 @@ def _citations(matches: list[VectorMatch]) -> list[dict[str, Any]]:
                 "symbol": m.chunk.symbol,
                 "snippet": snippet[:280] + ("…" if len(snippet) > 280 else ""),
                 "score": round(m.score, 4),
+                "effective_at": meta.get("effective_at"),
+                "recorded_at": meta.get("recorded_at"),
+                "updated_at": meta.get("updated_at"),
                 "route": meta.get("route"),
                 # Chunk rows use an internal deterministic key. Citations keep the
                 # original record ID so existing deep links/API consumers remain
@@ -237,7 +331,15 @@ async def _prepare_ask(
         )
 
     search_sources = None if sources is None else active_sources
-    matches = store.search(db, user_id, query_vector, k=k, sources=search_sources)
+    candidate_k = max(k * _TEMPORAL_CANDIDATE_MULTIPLIER, _TEMPORAL_MIN_CANDIDATES)
+    candidates = store.search(
+        db,
+        user_id,
+        query_vector,
+        k=candidate_k,
+        sources=search_sources,
+    )
+    matches = _temporal_rerank(candidates, k=k)
     if not matches:
         return (
             _with_scope(

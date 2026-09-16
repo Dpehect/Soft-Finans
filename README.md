@@ -618,6 +618,7 @@ curl -X PUT http://localhost:8000/api/v1/notes/external \
     "external_id": "dQw4w9WgXcQ",
     "title": "Video title",
     "body": "Hermes-generated summary with the source URL and key points.",
+    "effective_at": "2026-09-15T14:30:00Z",
     "tags": ["youtube", "hermes"]
   }'
 ```
@@ -625,7 +626,10 @@ curl -X PUT http://localhost:8000/api/v1/notes/external \
 Retries with the same `source` and `external_id` update the same owner-scoped
 note. Successful writes schedule the normal incremental Second Brain reindex.
 `source` is limited to 16 URL-safe characters, `external_id` to 38 characters,
-and `body` to 10,000 characters. General MCP tooling remains deferred.
+and `body` to 10,000 characters. `effective_at` is optional but strongly
+recommended: it records when the source information applies or was published,
+which may differ from when Hermes ingested it. General MCP tooling remains
+deferred.
 
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other

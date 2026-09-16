@@ -56,6 +56,14 @@ function scopeLabel(sources: BrainSource[]) {
 
 function CitationCard({ citation }: { citation: BrainCitation }) {
   const label = sourceLabels[citation.source] ?? citation.source;
+  const evidenceTime = citation.effective_at ?? citation.updated_at ?? citation.recorded_at;
+  const evidenceDate = evidenceTime
+    ? new Date(evidenceTime).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
   const body = (
     <div className="rounded-sm border border-terminal-border bg-terminal-bg/60 p-2.5 transition-colors hover:border-terminal-accent/40">
       <div className="flex items-center justify-between gap-2">
@@ -67,6 +75,7 @@ function CitationCard({ citation }: { citation: BrainCitation }) {
         </span>
         <span className="shrink-0 text-[9px] uppercase tracking-wide text-terminal-muted">
           {label}
+          {evidenceDate ? ` · ${evidenceDate}` : ""}
           {citation.score ? ` · ${(citation.score * 100).toFixed(0)}%` : ""}
         </span>
       </div>

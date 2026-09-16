@@ -158,11 +158,37 @@ The version numbers continue to follow Semantic Versioning. A generation becomes
 a major release only when its product promise and stable contracts are ready; the
 table is direction, not permission to bump a major version for marketing alone.
 
+## v2 opening principle — time-aware memory
+
+> **Intelligence begins with time-aware memory.** Before markets can explain one
+> another, the terminal must distinguish current belief from historical belief,
+> preserve how a thesis changed, and surface contradictions instead of flattening
+> every note into equally valid context.
+
+The Second Brain is therefore the first v2 evidence foundation. Its initial
+temporal contract:
+
+- keeps source-effective time distinct from recording and update time, including
+  optional `effective_at` metadata supplied by Hermes-style ingestion;
+- retrieves a wider semantic candidate set and applies a bounded recency signal
+  only within semantically relevant evidence, so a new unrelated note cannot win
+  merely by being new;
+- gives the model dated excerpts and explicit conflict rules: newer incompatible
+  evidence about the same subject represents the current view, while the older
+  evidence remains citable history and ambiguity must be named;
+- exposes evidence dates on citations so the user can audit which chronology
+  informed the answer.
+
+This is an iterative contract, not a claim that memory is solved. A larger real
+Hermes corpus should drive evaluation of topic identity, explicit supersession,
+source-specific decay, retrieval diversity, index freshness, and contradiction
+handling before cross-market synthesis depends on it.
+
 ## Release plan
 
-The fork has shipped v1.0 through v1.6. The remaining v1 release finishes the fork
-as one coherent product and establish trustworthy multi-currency accounting
-before v2 adds a cross-market intelligence layer. See
+The fork has shipped v1.0 through v1.7, closing the coherent-fork arc with
+trustworthy multi-currency accounting. v2 begins by making private evidence
+temporally meaningful before adding a cross-market intelligence layer. See
 [Releasing](Releasing.md) for mechanics and `CHANGELOG.md` for curated history.
 
 > **What "stable" means here.** For a private-investing terminal whose north star
