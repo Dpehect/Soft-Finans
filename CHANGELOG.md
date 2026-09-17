@@ -11,6 +11,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   carry effective, recorded, and updated timestamps. External note ingestion
   accepts an optional source `effective_at` distinct from ingestion time, and
   citation cards expose the date used by synthesis.
+- **Effective-date note controls** — the Notes composer and editor can now set
+  or clear when information applied, converting the browser-local value to the
+  timezone-aware API contract. Notes distinguish effective time from their
+  last update in the record.
 
 ### Changed
 - **Temporal retrieval and supersession** — Second Brain queries retrieve a
@@ -19,6 +23,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
   incompatible evidence about the same subject as the current view, preserve and
   cite the superseded history, and report ambiguous chronology instead of
   flattening every note into an equally current claim.
+- **Visible Notes and indexing lifecycle** — Notes now expose initial loading,
+  request failure with retry, and the queued background-indexing state after a
+  save. Manual Second Brain reindexing reports active work and its final chunk
+  totals instead of looking like a stalled screen.
 
 ## [1.7.0] - 2026-09-15
 

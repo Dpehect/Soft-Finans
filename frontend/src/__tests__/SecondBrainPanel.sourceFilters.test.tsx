@@ -181,4 +181,21 @@ describe("SecondBrainPanel source filters", () => {
     expect(await screen.findByText("Current thesis")).toBeInTheDocument();
     expect(screen.getByText(/2026/)).toBeInTheDocument();
   });
+
+  it("explains reindex progress and reports the completed work", async () => {
+    let finish: ((value: unknown) => void) | undefined;
+    reindexBrainMock.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    renderPanel();
+    await screen.findByText(/8 indexed/);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reindex" }));
+    expect(await screen.findByText(/Reindexing private memory/)).toBeInTheDocument();
+
+    finish?.({ indexed: 3, removed: 1, total: 9, backend: "numpy", dim: 768, sources: 5 });
+    expect(await screen.findByText("Reindex complete · 9 chunks · 3 refreshed · 1 removed")).toBeInTheDocument();
+  });
 });

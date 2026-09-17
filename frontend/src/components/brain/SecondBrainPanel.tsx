@@ -169,6 +169,7 @@ export function SecondBrainPanel() {
 
   const reindexMutation = useMutation({
     mutationFn: reindexBrain,
+    onMutate: () => setError(null),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["brain", "status"] }),
     onError: (err) => setError(extractApiErrorMessage(err, "Reindex failed.")),
   });
@@ -208,6 +209,16 @@ export function SecondBrainPanel() {
       }
     >
       <div className="space-y-3">
+        {reindexMutation.isPending ? (
+          <p role="status" className="flex items-center gap-1.5 text-[11px] text-terminal-muted">
+            <RefreshCw className="h-3 w-3 animate-spin text-terminal-accent" />
+            Reindexing private memory… Notes remain available while embeddings are refreshed.
+          </p>
+        ) : reindexMutation.isSuccess ? (
+          <p role="status" className="text-[11px] text-terminal-pos">
+            Reindex complete · {reindexMutation.data.total} chunks · {reindexMutation.data.indexed} refreshed · {reindexMutation.data.removed} removed
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2 text-[11px]">
           <Link
             to="/equity/journal"

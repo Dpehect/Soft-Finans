@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Pencil, Plus, StickyNote, Trash2, X } from "lucide-react";
+import { Check, Pencil, Plus, RefreshCw, StickyNote, Trash2, X } from "lucide-react";
 
 import {
   createNote,
@@ -22,6 +22,27 @@ const contextBadge: Record<NoteContext, string> = {
   holding: "Position",
   transaction: "Transaction",
 };
+
+function toIsoDateTime(value: string): string | null {
+  if (!value) return null;
+  return new Date(value).toISOString();
+}
+
+function toLocalDateTime(value: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function displayDate(value: string): string {
+  return new Date(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 interface Props {
   /** Scope notes to a symbol. Omit on the hub to show all notes. */
@@ -46,12 +67,16 @@ export function NotesPanel({
   className = "",
 }: Props) {
   const queryClient = useQueryClient();
+  const effectiveAtId = useId();
   const normalizedSymbol = symbol ? symbol.toUpperCase() : undefined;
   const [body, setBody] = useState("");
   const [freeSymbol, setFreeSymbol] = useState("");
+  const [effectiveAt, setEffectiveAt] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
+  const [editEffectiveAt, setEditEffectiveAt] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [open, setOpen] = useState(!compact);
 
   const queryKey = ["notes", normalizedSymbol ?? "all"] as const;
@@ -72,24 +97,37 @@ export function NotesPanel({
         symbol: normalizedSymbol ?? (freeSymbol.trim().toUpperCase() || null),
         context,
         ref_id: refId,
+        effective_at: toIsoDateTime(effectiveAt),
       }),
     onSuccess: () => {
       setBody("");
       setFreeSymbol("");
+      setEffectiveAt("");
       setError(null);
+      setNotice("Note saved. Second Brain indexing was queued and may take a moment.");
       invalidate();
     },
-    onError: (err) => setError(extractApiErrorMessage(err, "Failed to save note.")),
+    onError: (err) => {
+      setNotice(null);
+      setError(extractApiErrorMessage(err, "Failed to save note."));
+    },
   });
 
   const editMutation = useMutation({
-    mutationFn: (id: string) => updateNote(id, { body: editBody }),
+    mutationFn: (id: string) =>
+      updateNote(id, { body: editBody, effective_at: toIsoDateTime(editEffectiveAt) }),
     onSuccess: () => {
       setEditingId(null);
       setEditBody("");
+      setEditEffectiveAt("");
+      setError(null);
+      setNotice("Note updated. Second Brain indexing was queued and may take a moment.");
       invalidate();
     },
-    onError: (err) => setError(extractApiErrorMessage(err, "Failed to update note.")),
+    onError: (err) => {
+      setNotice(null);
+      setError(extractApiErrorMessage(err, "Failed to update note."));
+    },
   });
 
   const removeMutation = useMutation({
@@ -103,6 +141,8 @@ export function NotesPanel({
 
   const submit = () => {
     if (!body.trim() || addMutation.isPending) return;
+    setError(null);
+    setNotice(null);
     addMutation.mutate();
   };
 
@@ -155,6 +195,23 @@ export function NotesPanel({
             }
           }}
         />
+        <label htmlFor={effectiveAtId} className="block space-y-1">
+          <span className="text-[10px] uppercase tracking-wide text-terminal-muted">
+            Effective date and time <span className="normal-case">(optional)</span>
+          </span>
+          <TerminalInput
+            id={effectiveAtId}
+            type="datetime-local"
+            size="sm"
+            value={effectiveAt}
+            onChange={(e) => setEffectiveAt(e.target.value)}
+          />
+          {!compact ? (
+            <span className="block text-[9px] text-terminal-muted">
+              When this information applied. Leave blank to use the save time.
+            </span>
+          ) : null}
+        </label>
         <div className="flex items-center justify-between">
           <span className="text-[9px] text-terminal-muted">⌘/Ctrl+Enter to save</span>
           <TerminalButton
@@ -169,9 +226,23 @@ export function NotesPanel({
         </div>
       </div>
 
-      {error ? <p className="text-[11px] text-terminal-neg">{error}</p> : null}
+      {error ? <p role="alert" className="text-[11px] text-terminal-neg">{error}</p> : null}
+      {notice ? <p role="status" className="text-[11px] text-terminal-pos">{notice}</p> : null}
 
       <div className="space-y-1.5">
+        {notesQuery.isPending ? (
+          <p role="status" className="flex items-center gap-1.5 text-[11px] text-terminal-muted">
+            <RefreshCw className="h-3 w-3 animate-spin" /> Loading notes…
+          </p>
+        ) : null}
+        {notesQuery.isError ? (
+          <div role="alert" className="flex flex-wrap items-center gap-2 text-[11px] text-terminal-neg">
+            <span>{extractApiErrorMessage(notesQuery.error, "Failed to load notes.")}</span>
+            <TerminalButton size="sm" variant="ghost" onClick={() => void notesQuery.refetch()}>
+              Retry
+            </TerminalButton>
+          </div>
+        ) : null}
         {notes.map((note: Note) => (
           <div key={note.id} className="rounded-sm border border-terminal-border bg-terminal-bg/50 p-2">
             <div className="flex items-center justify-between gap-2">
@@ -180,7 +251,11 @@ export function NotesPanel({
                   {contextBadge[note.context]}
                 </span>
                 {note.symbol ? <span>{note.symbol}</span> : null}
-                {note.updated_at ? <span>{new Date(note.updated_at).toLocaleDateString()}</span> : null}
+                {note.effective_at ? (
+                  <span>Effective {displayDate(note.effective_at)}</span>
+                ) : note.updated_at ? (
+                  <span>Updated {displayDate(note.updated_at)}</span>
+                ) : null}
               </span>
               <span className="flex items-center gap-1.5">
                 {editingId === note.id ? (
@@ -210,6 +285,9 @@ export function NotesPanel({
                       onClick={() => {
                         setEditingId(note.id);
                         setEditBody(note.body);
+                        setEditEffectiveAt(toLocalDateTime(note.effective_at));
+                        setError(null);
+                        setNotice(null);
                       }}
                       title="Edit"
                     >
@@ -228,19 +306,31 @@ export function NotesPanel({
               </span>
             </div>
             {editingId === note.id ? (
-              <TerminalInput
-                as="textarea"
-                rows={3}
-                className="mt-1.5"
-                value={editBody}
-                onChange={(e) => setEditBody(e.target.value)}
-              />
+              <div className="mt-1.5 space-y-1.5">
+                <TerminalInput
+                  as="textarea"
+                  rows={3}
+                  value={editBody}
+                  onChange={(e) => setEditBody(e.target.value)}
+                />
+                <label className="block space-y-1">
+                  <span className="text-[9px] uppercase tracking-wide text-terminal-muted">
+                    Effective date and time (optional)
+                  </span>
+                  <TerminalInput
+                    type="datetime-local"
+                    size="sm"
+                    value={editEffectiveAt}
+                    onChange={(e) => setEditEffectiveAt(e.target.value)}
+                  />
+                </label>
+              </div>
             ) : (
               <p className="mt-1 whitespace-pre-wrap text-[11px] leading-relaxed text-terminal-text">{note.body}</p>
             )}
           </div>
         ))}
-        {count === 0 && !notesQuery.isLoading ? (
+        {count === 0 && !notesQuery.isPending && !notesQuery.isError ? (
           <p className="text-[11px] text-terminal-muted">No notes yet.</p>
         ) : null}
       </div>

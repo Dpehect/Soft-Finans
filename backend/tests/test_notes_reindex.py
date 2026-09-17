@@ -46,6 +46,34 @@ def test_creating_a_note_schedules_a_brain_reindex(monkeypatch) -> None:
     assert len(calls) == 1
 
 
+def test_note_effective_time_can_be_cleared(monkeypatch) -> None:
+    async def _fake_reindex(user_id: str) -> None:
+        return None
+
+    monkeypatch.setattr(notes_route, "_reindex_user_brain", _fake_reindex)
+    client = TestClient(app)
+    headers = _auth(client, f"effective-time-{uuid.uuid4().hex[:8]}@example.com")
+    created = client.post(
+        "/api/notes",
+        headers=headers,
+        json={
+            "body": "A dated view",
+            "effective_at": "2026-09-15T14:30:00+00:00",
+        },
+    )
+    assert created.status_code == 201, created.text
+    assert created.json()["effective_at"] == "2026-09-15T14:30:00+00:00"
+
+    cleared = client.put(
+        f"/api/notes/{created.json()['id']}",
+        headers=headers,
+        json={"effective_at": None},
+    )
+
+    assert cleared.status_code == 200, cleared.text
+    assert cleared.json()["effective_at"] is None
+
+
 @pytest.mark.asyncio
 async def test_reindex_helper_swallows_errors(monkeypatch) -> None:
     import backend.services.brain.indexer as indexer

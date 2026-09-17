@@ -92,10 +92,21 @@ def _serialize(row: NoteORM) -> NoteOut:
         title=row.title,
         body=row.body,
         tags=list(row.tags or []),
-        effective_at=row.effective_at.isoformat() if row.effective_at else None,
-        created_at=row.created_at.isoformat() if row.created_at else None,
-        updated_at=row.updated_at.isoformat() if row.updated_at else None,
+        effective_at=_isoformat_utc(row.effective_at),
+        created_at=_isoformat_utc(row.created_at),
+        updated_at=_isoformat_utc(row.updated_at),
     )
+
+
+def _isoformat_utc(value: datetime | None) -> str | None:
+    """Keep SQLite's timezone-stripped UTC values unambiguous at the API edge."""
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        value = value.replace(tzinfo=timezone.utc)
+    else:
+        value = value.astimezone(timezone.utc)
+    return value.isoformat()
 
 
 def _normalize_context(context: str) -> str:
@@ -187,7 +198,8 @@ def update_note(
         row.title = payload.title.strip()
     if payload.tags is not None:
         row.tags = _normalize_tags(payload.tags)
-    if payload.effective_at is not None:
+    # An explicit null clears the effective date; an omitted field preserves it.
+    if "effective_at" in payload.model_fields_set:
         row.effective_at = payload.effective_at
     db.commit()
     db.refresh(row)

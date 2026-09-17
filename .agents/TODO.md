@@ -341,6 +341,9 @@ cross-market-intelligence promise into concrete journeys and contracts.
 - [x] Tell synthesis to resolve incompatible evidence about the same subject by
       chronology, cite the superseded and current views, retain history, and
       state when supersession is ambiguous.
+- [x] Expose `effective_at` in the manual Notes composer/editor, including clear
+      semantics, timezone-safe serialization, visible Notes loading/failure
+      states, queued-indexing feedback, and manual-reindex progress/results.
 - [ ] Evaluate retrieval against the growing Hermes corpus: build dated question
       cases with expected current and historical evidence, then tune topic
       identity, explicit supersession, source-specific decay, diversity, and
