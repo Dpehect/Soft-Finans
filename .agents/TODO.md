@@ -354,10 +354,23 @@ cross-market-intelligence promise into concrete journeys and contracts.
       cases with expected current and historical evidence, then tune topic
       identity, explicit supersession, source-specific decay, diversity, and
       index-freshness visibility from observed failures rather than intuition.
+- [ ] Add an owner-scoped Brain Log with explicit **Save answer**. Persist an
+      immutable research-memo snapshot of the question, complete answer, source
+      scope, dated citations, generation time, and provider/model metadata;
+      support title, tags, annotation, optional symbol, pinning, and deletion.
+- [ ] Keep saved Brain memos out of retrieval by default so derived model output
+      cannot recursively become its own evidence. Show when cited evidence has
+      changed instead of silently rewriting the historical memo.
+- [ ] Add a reviewed **Promote to Note** bridge with provenance back to the memo.
+      Defer position/portfolio-thesis and Journal promotion until observed Brain
+      Log usage justifies those transitions; never replace canonical beliefs or
+      record decisions without explicit user confirmation.
 
-**Boundary:** this establishes temporal evidence semantics; it does not yet make
-the full cross-market intelligence promise or claim that contradiction handling
-is solved.
+**Boundary:** this establishes temporal evidence semantics and a planned durable
+home for derived synthesis. It does not make model output an independent source,
+automatically persist conversations, replace user-owned beliefs, make the full
+cross-market intelligence promise, or claim that contradiction handling is
+solved.
 
 ## Current handoff boundary
 

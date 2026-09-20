@@ -184,6 +184,42 @@ Hermes corpus should drive evaluation of topic identity, explicit supersession,
 source-specific decay, retrieval diversity, index freshness, and contradiction
 handling before cross-market synthesis depends on it.
 
+### v2 derived memory — Brain Log and research memos
+
+Second Brain answers currently disappear with the page session. Neither a
+portfolio thesis nor a position note is the right default destination: those
+fields represent a current user-owned belief, while a Brain answer is a derived
+synthesis of cited evidence at one point in time. v2 therefore adds an
+owner-scoped **Brain Log** whose durable unit is a saved **research memo**.
+
+The initial contract:
+
+- completed answers remain transient until the user chooses **Save**; saving
+  captures the question, complete answer, evidence scope, citation snapshot and
+  evidence dates, generation time, and provider/model metadata;
+- a memo may be titled, tagged, annotated, associated with a symbol, pinned, and
+  deleted without changing the underlying evidence records;
+- citations remain navigable and the memo records enough source identity or
+  hashes to show when cited evidence has since changed. A saved answer is an
+  immutable historical synthesis, not something silently regenerated in place;
+- Brain memos are **not indexed as Second Brain evidence by default**. Feeding
+  model output back into retrieval would let prior synthesis amplify itself and
+  blur the boundary between user/external evidence and derived interpretation;
+- explicit, reviewable promotion turns a memo into evidence: first **Promote to
+  Note**, then carefully scoped actions to update a position thesis, portfolio
+  thesis, or create a Journal entry. The user edits and confirms the promoted
+  text, and provenance links back to the originating memo;
+- Notes continue to hold user-authored or externally ingested evidence; theses
+  hold the current canonical belief; Journal records decisions, actions, and
+  outcomes; Brain Log preserves what the system concluded from a dated evidence
+  set.
+
+Implementation should begin with save/list/read/delete plus citation snapshots
+and **Promote to Note**. Memo staleness and thesis/Journal promotion follow once
+real usage shows which transitions are valuable. Automatic persistence,
+automatic re-indexing, autonomous thesis replacement, and treating model output
+as an independent fact are outside this first boundary.
+
 ## Release plan
 
 The fork has shipped v1.0 through v1.7, closing the coherent-fork arc with
