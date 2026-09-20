@@ -93,8 +93,13 @@ release-level interpretation and safety boundaries.
   the older view as cited history. Manual Notes capture can set or clear the
   effective time, and its loading, failure, and queued-indexing states are
   visible; manual Brain reindexing also reports progress and final chunk totals.
-  This remains an iterative contract to evaluate against the growing Hermes
-  corpus before cross-market synthesis relies on it.
+  The next planned memory surface is an owner-scoped **Brain Log**: users
+  explicitly save completed answers as immutable research memos with dated
+  citation snapshots. Memos stay out of retrieval by default and enter the
+  evidence layer only through reviewed promotion, beginning with **Promote to
+  Note**; theses and Journal remain canonical user-owned records. This remains
+  an iterative contract to evaluate against the growing Hermes corpus before
+  cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,
   persists transaction/native currency semantics, and normalizes ledger and
