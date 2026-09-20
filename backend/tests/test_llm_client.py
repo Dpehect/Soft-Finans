@@ -12,7 +12,12 @@ import json
 import pytest
 
 from backend.services import llm_client as llm_client_mod
-from backend.services.llm_client import LLMClient, parse_json_response, _TRUNCATION_RETRY_MAX_TOKENS
+from backend.services.llm_client import (
+    LLMClient,
+    LLMError,
+    _TRUNCATION_RETRY_MAX_TOKENS,
+    parse_json_response,
+)
 
 
 _SCHEMA = {
@@ -184,6 +189,45 @@ async def test_no_retry_for_plain_text_call(monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
+async def test_plain_text_call_can_retry_truncation_when_completion_is_required(monkeypatch) -> None:
+    _FakeAsyncClient.posts = []
+    _FakeAsyncClient.queue = [
+        _FakeResp(_choice("partial", "length")),
+        _FakeResp(_choice("complete answer", "stop")),
+    ]
+    monkeypatch.setattr(llm_client_mod.httpx, "AsyncClient", _FakeAsyncClient)
+
+    out = await _client().chat(
+        [{"role": "user", "content": "hi"}],
+        max_tokens=600,
+        retry_on_truncation=True,
+    )
+
+    assert out == "complete answer"
+    assert [_post["max_tokens"] for _post in _FakeAsyncClient.posts] == [
+        600,
+        _TRUNCATION_RETRY_MAX_TOKENS,
+    ]
+
+
+@pytest.mark.asyncio
+async def test_plain_text_call_rejects_answer_still_truncated_after_retry(monkeypatch) -> None:
+    _FakeAsyncClient.posts = []
+    _FakeAsyncClient.queue = [
+        _FakeResp(_choice("partial", "length")),
+        _FakeResp(_choice("still partial", "length")),
+    ]
+    monkeypatch.setattr(llm_client_mod.httpx, "AsyncClient", _FakeAsyncClient)
+
+    with pytest.raises(LLMError, match="remained truncated"):
+        await _client().chat(
+            [{"role": "user", "content": "hi"}],
+            max_tokens=600,
+            retry_on_truncation=True,
+        )
+
+
+@pytest.mark.asyncio
 async def test_chat_stream_parses_sse_deltas_and_usage_trailer(monkeypatch) -> None:
     _FakeStreamingClient.response = _FakeStreamResponse(
         [
@@ -219,6 +263,33 @@ async def test_chat_stream_adds_schema_directive_without_response_format(monkeyp
     assert "response_format" not in _FakeStreamingClient.payload
     assert _FakeStreamingClient.payload["messages"][-1]["role"] == "system"
     assert "JSON Schema" in _FakeStreamingClient.payload["messages"][-1]["content"]
+
+
+@pytest.mark.asyncio
+async def test_chat_stream_rejects_token_limit_as_incomplete(monkeypatch) -> None:
+    _FakeStreamingClient.response = _FakeStreamResponse(
+        [
+            'data: {"choices":[{"delta":{"content":"unfinished"}}]}',
+            'data: {"choices":[{"delta":{},"finish_reason":"length"}]}',
+        ]
+    )
+    monkeypatch.setattr(llm_client_mod.httpx, "AsyncClient", _FakeStreamingClient)
+
+    with pytest.raises(LLMError, match="token limit"):
+        _ = [chunk async for chunk in _client().chat_stream(msgs_ref())]
+
+    assert _FakeStreamingClient.response.exited is True
+
+
+@pytest.mark.asyncio
+async def test_chat_stream_rejects_transport_end_without_completion_marker(monkeypatch) -> None:
+    _FakeStreamingClient.response = _FakeStreamResponse(
+        ['data: {"choices":[{"delta":{"content":"cut off"}}]}']
+    )
+    monkeypatch.setattr(llm_client_mod.httpx, "AsyncClient", _FakeStreamingClient)
+
+    with pytest.raises(LLMError, match="without a completion marker"):
+        _ = [chunk async for chunk in _client().chat_stream(msgs_ref())]
 
 
 @pytest.mark.asyncio

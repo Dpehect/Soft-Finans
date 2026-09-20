@@ -346,7 +346,10 @@ cross-market-intelligence promise into concrete journeys and contracts.
       states, queued-indexing feedback, and manual-reindex progress/results.
 - [x] Fall back to ordinary chat completion when a configured provider rejects,
       interrupts, or returns no visible text from Second Brain streaming; only
-      degrade after both provider paths fail.
+      degrade after both provider paths fail. Follow-up host testing added idle
+      heartbeats, terminal-marker validation, a 2,048-token normal synthesis
+      budget, and a 6,144-token truncation retry so a silent reasoning phase or
+      truncated `200` cannot masquerade as a finished answer.
 - [ ] Evaluate retrieval against the growing Hermes corpus: build dated question
       cases with expected current and historical evidence, then tune topic
       identity, explicit supersession, source-specific decay, diversity, and

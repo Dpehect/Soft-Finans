@@ -46,11 +46,12 @@ type BrainStreamEvent =
   | { type: "start"; citations: BrainCitation[]; sources: BrainSource[]; llm: true }
   | { type: "delta"; text: string }
   | { type: "result"; result: BrainAskResponse }
+  | { type: "heartbeat" }
   | { type: "done" };
 
 // Ask + reindex hit the local LLM / embedder, which can take a while — give them
 // a generous timeout rather than the default 30s.
-const SLOW = { timeout: 180000 } as const;
+const SLOW = { timeout: 300000 } as const;
 
 export async function askBrain(
   question: string,
@@ -88,6 +89,7 @@ export async function askBrainStream(
     const reader = response.body.getReader();
 
     const applyEvent = (event: BrainStreamEvent) => {
+      if (event.type === "heartbeat") return;
       if (event.type === "start") {
         citations = event.citations;
         activeSources = event.sources;

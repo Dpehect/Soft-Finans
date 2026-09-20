@@ -46,6 +46,7 @@ describe("askBrainStream", () => {
     fetchApiMock.mockResolvedValue(
       streamedResponse([
         '{"type":"start","citations":[],"sources":["journal"],"llm":true}\n',
+        '{"type":"heartbeat"}\n',
         '{"type":"delta","text":"Patterns "}\n{"type":"delta","text":"repeat."}\n',
         '{"type":"done"}\n',
       ]),
@@ -62,7 +63,12 @@ describe("askBrainStream", () => {
       sources: ["journal"],
       llm: true,
     });
-    expect(updates.map((update) => update.answer)).toContain("Patterns ");
+    expect(updates.map((update) => update.answer)).toEqual([
+      "",
+      "Patterns ",
+      "Patterns repeat.",
+      "Patterns repeat.",
+    ]);
     expect(updates.at(-1)).toEqual(result);
     expect(apiPostMock).not.toHaveBeenCalled();
   });
@@ -85,7 +91,7 @@ describe("askBrainStream", () => {
     expect(apiPostMock).toHaveBeenCalledWith(
       "/brain/ask",
       { question: "What repeats?", k: 6, sources: ["journal"] },
-      { timeout: 180000 },
+      { timeout: 300000 },
     );
     expect(updates.at(-1)).toEqual(fallback);
   });

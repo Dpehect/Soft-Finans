@@ -109,6 +109,7 @@ class LLMClient:
         max_tokens: int = 512,
         json_schema: dict[str, Any] | None = None,
         frequency_penalty: float = 0.0,
+        retry_on_truncation: bool = False,
     ) -> str:
         """Send a chat completion and return the assistant message text.
 
@@ -160,12 +161,11 @@ class LLMClient:
                 except (KeyError, IndexError, TypeError) as exc:
                     raise LLMError("LLM returned an unexpected payload") from exc
 
-                # A structured answer truncated by the token cap (finish_reason ==
-                # "length") — typically a reasoning model that spent the budget on
-                # hidden thinking — gets one roomier retry on the same rung before we
-                # accept a broken/empty result.
+                # A caller that requires a complete answer may grant one roomier
+                # retry when a reasoning model spends the initial budget on hidden
+                # thinking or the visible response reaches the token cap.
                 if (
-                    json_schema is not None
+                    (json_schema is not None or retry_on_truncation)
                     and choice.get("finish_reason") == "length"
                     and not bumped
                     and effective_max < _TRUNCATION_RETRY_MAX_TOKENS
@@ -173,6 +173,8 @@ class LLMClient:
                     bumped = True
                     effective_max = _TRUNCATION_RETRY_MAX_TOKENS
                     continue
+                if retry_on_truncation and choice.get("finish_reason") == "length":
+                    raise LLMError("LLM completion remained truncated after retry")
 
                 return content
 
@@ -217,6 +219,7 @@ class LLMClient:
                     headers=self._headers(),
                 ) as resp:
                     resp.raise_for_status()
+                    saw_completion_marker = False
                     async for raw_line in resp.aiter_lines():
                         line = raw_line.strip()
                         if not line or line.startswith(":"):
@@ -233,14 +236,21 @@ class LLMClient:
                             choice = choices[0]
                             delta = choice.get("delta") or choice.get("message") or {}
                             content = delta.get("content")
+                            finish_reason = choice.get("finish_reason")
                         except (json.JSONDecodeError, AttributeError, IndexError, TypeError) as exc:
                             raise LLMError("LLM stream returned an unexpected payload") from exc
+                        if finish_reason == "length":
+                            raise LLMError("LLM stream stopped at the token limit")
+                        if finish_reason is not None:
+                            saw_completion_marker = True
                         if isinstance(content, str) and content:
                             yield content
                         elif isinstance(content, list):
                             for part in content:
                                 if isinstance(part, dict) and isinstance(part.get("text"), str):
                                     yield part["text"]
+                    if not saw_completion_marker:
+                        raise LLMError("LLM stream ended without a completion marker")
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code if exc.response is not None else "?"
             raise LLMError(f"LLM stream HTTP {status}") from exc
