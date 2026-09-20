@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -400,6 +401,7 @@ async def test_ask_grounds_answer_and_cites(monkeypatch):
         async def chat(self, messages, **kw):
             captured["system"] = messages[0]["content"]
             captured["context"] = messages[1]["content"]
+            captured["chat_kwargs"] = kw
             return "You tend to lose when anxious and chasing [1]."
 
     monkeypatch.setattr(brain_service, "make_vector_store", lambda engine, dim: FakeStore())
@@ -418,6 +420,8 @@ async def test_ask_grounds_answer_and_cites(monkeypatch):
     # The note text was actually fed to the model as grounding context.
     assert "anxious" in captured["context"]
     assert "Treat time as evidence" in captured["system"]
+    assert captured["chat_kwargs"]["max_tokens"] == 2048
+    assert captured["chat_kwargs"]["retry_on_truncation"] is True
     assert out["citations"][0]["source"] == "journal"
     assert out["citations"][0]["route"] == "/equity/journal"
     assert out["citations"][0]["n"] == 1
@@ -593,6 +597,24 @@ async def test_stream_route_emits_ndjson_without_buffering_headers(monkeypatch):
         '{"type":"delta","text":"hello"}',
         '{"type":"done"}',
     ]
+
+
+@pytest.mark.asyncio
+async def test_stream_heartbeat_keeps_silent_model_connection_alive():
+    from backend.api.routes.brain import _with_heartbeats
+
+    release = asyncio.Event()
+
+    async def delayed_events():
+        await release.wait()
+        yield {"type": "done"}
+
+    stream = _with_heartbeats(delayed_events(), interval_seconds=0.001)
+
+    assert await anext(stream) == {"type": "heartbeat"}
+    release.set()
+    assert await anext(stream) == {"type": "done"}
+    await stream.aclose()
 
 
 @pytest.mark.asyncio

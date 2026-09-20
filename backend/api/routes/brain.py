@@ -7,8 +7,11 @@ and notes and never leaves the machine.
 
 from __future__ import annotations
 
+import asyncio
 import json
-from typing import Literal
+from collections.abc import AsyncIterator
+from contextlib import suppress
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -24,6 +27,38 @@ from backend.services.brain.indexer import reindex_user
 router = APIRouter(prefix="/brain", tags=["brain"])
 
 BrainSource = Literal["note", "journal", "portfolio", "holding", "transaction"]
+_STREAM_HEARTBEAT_SECONDS = 15.0
+
+
+async def _with_heartbeats(
+    source: AsyncIterator[dict[str, Any]],
+    *,
+    interval_seconds: float = _STREAM_HEARTBEAT_SECONDS,
+) -> AsyncIterator[dict[str, Any]]:
+    """Keep an otherwise-idle NDJSON response alive while the model reasons."""
+    pending: asyncio.Task[dict[str, Any]] | None = None
+    try:
+        while True:
+            pending = pending or asyncio.create_task(anext(source))
+            done, _ = await asyncio.wait({pending}, timeout=interval_seconds)
+            if not done:
+                yield {"type": "heartbeat"}
+                continue
+            try:
+                event = pending.result()
+            except StopAsyncIteration:
+                pending = None
+                return
+            pending = None
+            yield event
+    finally:
+        if pending is not None and not pending.done():
+            pending.cancel()
+            with suppress(asyncio.CancelledError):
+                await pending
+        close = getattr(source, "aclose", None)
+        if close is not None:
+            await close()
 
 
 class AskRequest(BaseModel):
@@ -97,13 +132,14 @@ async def brain_ask_stream(
     """Stream newline-delimited JSON while preserving complete fallback events."""
 
     async def events():
-        async for event in brain_service.ask_stream(
+        source = brain_service.ask_stream(
             db,
             current_user.id,
             payload.question,
             k=payload.k,
             sources=payload.sources,
-        ):
+        )
+        async for event in _with_heartbeats(source):
             yield json.dumps(event, separators=(",", ":")) + "\n"
 
     return StreamingResponse(

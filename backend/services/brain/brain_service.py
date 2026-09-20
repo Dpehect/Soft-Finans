@@ -34,6 +34,7 @@ _TEMPORAL_MIN_CANDIDATES = 20
 _TEMPORAL_RELEVANCE_WINDOW = 0.18
 _TEMPORAL_RECENCY_WEIGHT = 0.12
 _TEMPORAL_HALF_LIFE_DAYS = 120.0
+_SYNTHESIS_MAX_TOKENS = 2048
 
 SYSTEM_PROMPT = """You are the user's private "second brain" — a research partner \
 that helps them invest without being fooled by markets, by hype, or by themselves.
@@ -423,8 +424,11 @@ async def ask(
         answer = await client.chat(
             request.messages,
             temperature=0.2,
-            max_tokens=600,
+            max_tokens=_SYNTHESIS_MAX_TOKENS,
+            retry_on_truncation=True,
         )
+        if not answer.strip():
+            raise LLMError("LLM completion returned no answer text")
     except LLMError as exc:
         logger.warning("Brain synthesis failed: %s", exc)
         return _llm_unavailable(request)
@@ -468,7 +472,7 @@ async def ask_stream(
         async for text in client.chat_stream(
             request.messages,
             temperature=0.2,
-            max_tokens=600,
+            max_tokens=_SYNTHESIS_MAX_TOKENS,
         ):
             emitted = True
             yield {"type": "delta", "text": text}
@@ -486,7 +490,8 @@ async def ask_stream(
             answer = await client.chat(
                 request.messages,
                 temperature=0.2,
-                max_tokens=600,
+                max_tokens=_SYNTHESIS_MAX_TOKENS,
+                retry_on_truncation=True,
             )
             if not answer.strip():
                 raise LLMError("LLM completion returned no answer text")

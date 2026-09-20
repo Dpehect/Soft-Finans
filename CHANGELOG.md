@@ -30,7 +30,11 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 - **Provider-tolerant Second Brain answers** — an unsupported, empty, or
   interrupted provider stream now retries through the ordinary chat-completion
   contract and replaces partial output with the complete answer. The Brain only
-  reports the LLM unavailable when both provider paths fail.
+  reports the LLM unavailable when both provider paths fail. Streaming now emits
+  idle heartbeats for reasoning models, requires a provider completion marker,
+  raises the normal Second Brain synthesis budget from 600 to 2,048 tokens, and
+  retries token-limit truncation once at 6,144 rather than presenting a cut-off
+  answer as successful.
 
 ## [1.7.0] - 2026-09-15
 
