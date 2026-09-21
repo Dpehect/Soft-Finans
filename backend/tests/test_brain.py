@@ -22,6 +22,7 @@ def _chunk(vec, **kw):
         symbol=kw.get("symbol"),
         meta_json=kw.get("meta_json", {}),
         ref_id=kw.get("ref_id", "1"),
+        content_hash=kw.get("content_hash", "hash-1"),
     )
 
 
@@ -116,6 +117,24 @@ def test_context_exposes_temporal_evidence_to_the_model():
     assert "EFFECTIVE 2026-09-15" in context
     assert "RECORDED 2026-09-16" in context
     assert "thesis changed" in context
+
+
+def test_citation_snapshot_carries_content_identity():
+    match = VectorMatch(
+        chunk=_chunk(
+            [1.0, 0.0],
+            ref_id="chunk-key",
+            content_hash="b" * 64,
+            meta_json={"source_ref_id": "note-1", "chunk_index": 2},
+        ),
+        score=0.8,
+    )
+
+    citation = brain_service._citations([match])[0]
+
+    assert citation["ref_id"] == "note-1"
+    assert citation["chunk_index"] == 2
+    assert citation["content_hash"] == "b" * 64
 
 
 # ---- deterministic source chunking ---------------------------------------
@@ -427,6 +446,9 @@ async def test_ask_grounds_answer_and_cites(monkeypatch):
     assert out["citations"][0]["n"] == 1
     assert out["sources"] == ["journal"]
     assert captured["sources"] == ["journal"]
+    assert datetime.fromisoformat(out["generated_at"]).tzinfo is not None
+    assert out["llm_provider"]
+    assert out["llm_model"]
 
 
 @pytest.mark.asyncio
@@ -481,6 +503,9 @@ async def test_ask_stream_yields_metadata_deltas_and_done(monkeypatch):
 
     assert [event["type"] for event in events] == ["start", "delta", "delta", "done"]
     assert events[0]["sources"] == ["journal"]
+    assert datetime.fromisoformat(events[0]["generated_at"]).tzinfo is not None
+    assert events[0]["llm_provider"]
+    assert events[0]["llm_model"]
     assert "".join(event.get("text", "") for event in events) == "A grounded answer [1]."
 
 

@@ -15,6 +15,7 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
 
@@ -162,6 +163,22 @@ def _with_scope(payload: dict[str, Any], sources: list[str]) -> dict[str, Any]:
     return {**payload, "sources": sources}
 
 
+def _generation_metadata() -> dict[str, str]:
+    """Return non-secret provenance for a completed synthesis attempt."""
+    settings = get_settings()
+    hostname = (urlparse(settings.llm_base_url).hostname or "openai-compatible").lower()
+    provider = "local" if hostname in {"localhost", "127.0.0.1", "::1"} else hostname
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "llm_provider": provider,
+        "llm_model": settings.llm_model,
+    }
+
+
+def _with_generation(payload: dict[str, Any]) -> dict[str, Any]:
+    return {**payload, **_generation_metadata()}
+
+
 @dataclass(frozen=True)
 class _SynthesisRequest:
     sources: list[str]
@@ -191,6 +208,7 @@ def _citations(matches: list[VectorMatch]) -> list[dict[str, Any]]:
                 # stable across the v1.3 reindex.
                 "ref_id": str(meta.get("source_ref_id", m.chunk.ref_id)),
                 "chunk_index": meta.get("chunk_index"),
+                "content_hash": m.chunk.content_hash or None,
             }
         )
     return out
@@ -416,7 +434,7 @@ async def ask(
         sources=sources,
     )
     if immediate is not None:
-        return immediate
+        return _with_generation(immediate)
     assert request is not None
 
     try:
@@ -431,11 +449,13 @@ async def ask(
             raise LLMError("LLM completion returned no answer text")
     except LLMError as exc:
         logger.warning("Brain synthesis failed: %s", exc)
-        return _llm_unavailable(request)
+        return _with_generation(_llm_unavailable(request))
 
-    return _with_scope(
-        {"answer": answer.strip(), "citations": request.citations, "llm": True},
-        request.sources,
+    return _with_generation(
+        _with_scope(
+            {"answer": answer.strip(), "citations": request.citations, "llm": True},
+            request.sources,
+        )
     )
 
 
@@ -456,15 +476,17 @@ async def ask_stream(
         sources=sources,
     )
     if immediate is not None:
-        yield {"type": "result", "result": immediate}
+        yield {"type": "result", "result": _with_generation(immediate)}
         return
     assert request is not None
 
+    generation = _generation_metadata()
     yield {
         "type": "start",
         "sources": request.sources,
         "citations": request.citations,
         "llm": True,
+        **generation,
     }
     emitted = False
     client = get_llm_client()
@@ -500,18 +522,24 @@ async def ask_stream(
                 "Brain non-streaming synthesis fallback failed: %s",
                 completion_exc,
             )
-            yield {"type": "result", "result": _llm_unavailable(request)}
+            yield {
+                "type": "result",
+                "result": {**_llm_unavailable(request), **generation},
+            }
             return
         yield {
             "type": "result",
-            "result": _with_scope(
-                {
-                    "answer": answer.strip(),
-                    "citations": request.citations,
-                    "llm": True,
-                },
-                request.sources,
-            ),
+            "result": {
+                **_with_scope(
+                    {
+                        "answer": answer.strip(),
+                        "citations": request.citations,
+                        "llm": True,
+                    },
+                    request.sources,
+                ),
+                **generation,
+            },
         }
         return
     yield {"type": "done"}

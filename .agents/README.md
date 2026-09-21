@@ -93,12 +93,13 @@ release-level interpretation and safety boundaries.
   the older view as cited history. Manual Notes capture can set or clear the
   effective time, and its loading, failure, and queued-indexing states are
   visible; manual Brain reindexing also reports progress and final chunk totals.
-  The next planned memory surface is an owner-scoped **Brain Log**: users
-  explicitly save completed answers as immutable research memos with dated
-  citation snapshots. Memos stay out of retrieval by default and enter the
-  evidence layer only through reviewed promotion, beginning with **Promote to
-  Note**; theses and Journal remain canonical user-owned records. This remains
-  an iterative contract to evaluate against the growing Hermes corpus before
+  The owner-scoped **Brain Log** storage/API foundation now saves completed
+  answers as immutable research memos with dated citation/content snapshots and
+  model provenance. Organization metadata is editable; answer/evidence snapshots
+  are not. Memos stay out of retrieval by default. The browser Save/Log surface,
+  staleness comparison, and reviewed **Promote to Note** bridge remain next;
+  theses and Journal remain canonical user-owned records. This remains an
+  iterative contract to evaluate against the growing Hermes corpus before
   cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,

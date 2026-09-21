@@ -13,8 +13,8 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 
 ## Contract summary
 
-- **443 operations** across **398 paths** and **86 families**.
-- Authentication: **398 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
+- **448 operations** across **400 paths** and **86 families**.
+- Authentication: **403 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
 - API keys are created and revoked by an authenticated user under `/api/settings/api-keys`.
 - `read_write` is required for `PUT /api/v1/notes/external`; market-data automation endpoints require `read` or `read_write`.
 
@@ -43,7 +43,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 | `backtest` | `supported` | 1 |
 | `backtests` | `supported` | 17 |
 | `bonds` | `hidden` | 3 |
-| `brain` | `supported` | 4 |
+| `brain` | `supported` | 9 |
 | `chart` | `supported` | 12 |
 | `chart-workstation` | `supported` | 1 |
 | `charts` | `supported` | 1 |
@@ -257,6 +257,11 @@ State: **supported**
 |---|---|---|---|
 | `POST` | `/api/brain/ask` | Bearer token | Brain Ask |
 | `POST` | `/api/brain/ask/stream` | Bearer token | Brain Ask Stream |
+| `GET` | `/api/brain/memos` | Bearer token | List Brain Memos |
+| `POST` | `/api/brain/memos` | Bearer token | Create Brain Memo |
+| `DELETE` | `/api/brain/memos/{memo_id}` | Bearer token | Delete Brain Memo |
+| `GET` | `/api/brain/memos/{memo_id}` | Bearer token | Get Brain Memo |
+| `PATCH` | `/api/brain/memos/{memo_id}` | Bearer token | Update Brain Memo |
 | `POST` | `/api/brain/reindex` | Bearer token | Brain Reindex |
 | `GET` | `/api/brain/status` | Bearer token | Brain Status |
 

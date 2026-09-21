@@ -574,6 +574,17 @@
             ],
             "title": "Error"
           },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
           "indexed_chunks": {
             "anyOf": [
               {
@@ -595,6 +606,28 @@
               }
             ],
             "title": "Llm"
+          },
+          "llm_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Model"
+          },
+          "llm_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Provider"
           },
           "sources": {
             "items": {
@@ -1100,6 +1133,421 @@
         "title": "BondAnalyticsRequest",
         "type": "object"
       },
+      "BrainMemoCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "annotation": {
+            "default": "",
+            "maxLength": 10000,
+            "title": "Annotation",
+            "type": "string"
+          },
+          "answer": {
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationSnapshot"
+            },
+            "maxItems": 20,
+            "title": "Citations",
+            "type": "array"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "llm": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm"
+          },
+          "llm_model": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Model"
+          },
+          "llm_provider": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Provider"
+          },
+          "pinned": {
+            "default": false,
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "enum": [
+                "note",
+                "journal",
+                "portfolio",
+                "holding",
+                "transaction"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Sources",
+            "type": "array"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "default": "",
+            "maxLength": 256,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "answer",
+          "sources",
+          "generated_at"
+        ],
+        "title": "BrainMemoCreate",
+        "type": "object"
+      },
+      "BrainMemoOut": {
+        "properties": {
+          "annotation": {
+            "title": "Annotation",
+            "type": "string"
+          },
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "answer_preview": {
+            "title": "Answer Preview",
+            "type": "string"
+          },
+          "citation_count": {
+            "title": "Citation Count",
+            "type": "integer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationSnapshot"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "llm": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm"
+          },
+          "llm_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Model"
+          },
+          "llm_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Provider"
+          },
+          "pinned": {
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "enum": [
+                "note",
+                "journal",
+                "portfolio",
+                "holding",
+                "transaction"
+              ],
+              "type": "string"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "question",
+          "answer_preview",
+          "symbol",
+          "tags",
+          "annotation",
+          "pinned",
+          "citation_count",
+          "generated_at",
+          "created_at",
+          "updated_at",
+          "answer",
+          "sources",
+          "citations",
+          "llm",
+          "llm_provider",
+          "llm_model"
+        ],
+        "title": "BrainMemoOut",
+        "type": "object"
+      },
+      "BrainMemoSummary": {
+        "properties": {
+          "annotation": {
+            "title": "Annotation",
+            "type": "string"
+          },
+          "answer_preview": {
+            "title": "Answer Preview",
+            "type": "string"
+          },
+          "citation_count": {
+            "title": "Citation Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "pinned": {
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "question",
+          "answer_preview",
+          "symbol",
+          "tags",
+          "annotation",
+          "pinned",
+          "citation_count",
+          "generated_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BrainMemoSummary",
+        "type": "object"
+      },
+      "BrainMemoUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "annotation": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annotation"
+          },
+          "pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "BrainMemoUpdate",
+        "type": "object"
+      },
       "CapexPoint": {
         "properties": {
           "capex": {
@@ -1373,6 +1821,17 @@
             ],
             "title": "Chunk Index"
           },
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
           "effective_at": {
             "anyOf": [
               {
@@ -1462,6 +1921,140 @@
           "ref_id"
         ],
         "title": "Citation",
+        "type": "object"
+      },
+      "CitationSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "chunk_index": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunk Index"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "effective_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
+          },
+          "n": {
+            "minimum": 1.0,
+            "title": "N",
+            "type": "integer"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "ref_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Ref Id",
+            "type": "string"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route"
+          },
+          "score": {
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "snippet": {
+            "maxLength": 2000,
+            "title": "Snippet",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "note",
+              "journal",
+              "portfolio",
+              "holding",
+              "transaction"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "title": {
+            "maxLength": 256,
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "n",
+          "source",
+          "title",
+          "snippet",
+          "score",
+          "ref_id"
+        ],
+        "title": "CitationSnapshot",
         "type": "object"
       },
       "CockpitSummary": {
@@ -15068,6 +15661,322 @@
           }
         ],
         "summary": "Brain Ask Stream",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      }
+    },
+    "/api/brain/memos": {
+      "get": {
+        "operationId": "list_brain_memos_api_brain_memos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Symbol"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pinned",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pinned"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrainMemoSummary"
+                  },
+                  "title": "Response List Brain Memos Api Brain Memos Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Brain Memos",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      },
+      "post": {
+        "operationId": "create_brain_memo_api_brain_memos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrainMemoCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainMemoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Brain Memo",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      }
+    },
+    "/api/brain/memos/{memo_id}": {
+      "delete": {
+        "operationId": "delete_brain_memo_api_brain_memos__memo_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memo_id",
+            "required": true,
+            "schema": {
+              "title": "Memo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Brain Memo",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      },
+      "get": {
+        "operationId": "get_brain_memo_api_brain_memos__memo_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memo_id",
+            "required": true,
+            "schema": {
+              "title": "Memo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainMemoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Brain Memo",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      },
+      "patch": {
+        "operationId": "update_brain_memo_api_brain_memos__memo_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memo_id",
+            "required": true,
+            "schema": {
+              "title": "Memo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrainMemoUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainMemoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Brain Memo",
         "tags": [
           "brain"
         ],

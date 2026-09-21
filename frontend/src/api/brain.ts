@@ -15,6 +15,7 @@ export interface BrainCitation {
   route?: string | null;
   ref_id: string;
   chunk_index?: number | null;
+  content_hash?: string | null;
 }
 
 export interface BrainAskResponse {
@@ -24,6 +25,9 @@ export interface BrainAskResponse {
   indexed_chunks?: number | null;
   llm?: boolean | null;
   error?: string | null;
+  generated_at?: string | null;
+  llm_provider?: string | null;
+  llm_model?: string | null;
 }
 
 export interface BrainStatus {
@@ -43,7 +47,15 @@ export interface BrainReindexResult {
 }
 
 type BrainStreamEvent =
-  | { type: "start"; citations: BrainCitation[]; sources: BrainSource[]; llm: true }
+  | {
+      type: "start";
+      citations: BrainCitation[];
+      sources: BrainSource[];
+      llm: true;
+      generated_at?: string | null;
+      llm_provider?: string | null;
+      llm_model?: string | null;
+    }
   | { type: "delta"; text: string }
   | { type: "result"; result: BrainAskResponse }
   | { type: "heartbeat" }
@@ -83,6 +95,10 @@ export async function askBrainStream(
     let citations: BrainCitation[] = [];
     let activeSources = sources ?? [];
     let llm: boolean | null = null;
+    let generation: Pick<
+      BrainAskResponse,
+      "generated_at" | "llm_provider" | "llm_model"
+    > = {};
     let complete: BrainAskResponse | null = null;
     let buffer = "";
     const decoder = new TextDecoder();
@@ -94,15 +110,20 @@ export async function askBrainStream(
         citations = event.citations;
         activeSources = event.sources;
         llm = event.llm;
+        generation = {
+          ...(event.generated_at ? { generated_at: event.generated_at } : {}),
+          ...(event.llm_provider ? { llm_provider: event.llm_provider } : {}),
+          ...(event.llm_model ? { llm_model: event.llm_model } : {}),
+        };
       } else if (event.type === "delta") {
         answer += event.text;
       } else if (event.type === "result") {
         complete = event.result;
       } else if (event.type === "done") {
-        complete = { answer, citations, sources: activeSources, llm };
+        complete = { answer, citations, sources: activeSources, llm, ...generation };
       }
       if (event.type !== "done") {
-        onUpdate?.(complete ?? { answer, citations, sources: activeSources, llm });
+        onUpdate?.(complete ?? { answer, citations, sources: activeSources, llm, ...generation });
       }
     };
 

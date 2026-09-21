@@ -186,11 +186,12 @@ handling before cross-market synthesis depends on it.
 
 ### v2 derived memory — Brain Log and research memos
 
-Second Brain answers currently disappear with the page session. Neither a
-portfolio thesis nor a position note is the right default destination: those
-fields represent a current user-owned belief, while a Brain answer is a derived
-synthesis of cited evidence at one point in time. v2 therefore adds an
-owner-scoped **Brain Log** whose durable unit is a saved **research memo**.
+Second Brain answers disappear with the page session unless a client explicitly
+saves one. Neither a portfolio thesis nor a position note is the right default
+destination: those fields represent a current user-owned belief, while a Brain
+answer is a derived synthesis of cited evidence at one point in time. v2
+therefore adds an owner-scoped **Brain Log** whose durable unit is a saved
+**research memo**.
 
 The initial contract:
 
@@ -214,11 +215,13 @@ The initial contract:
   outcomes; Brain Log preserves what the system concluded from a dated evidence
   set.
 
-Implementation should begin with save/list/read/delete plus citation snapshots
-and **Promote to Note**. Memo staleness and thesis/Journal promotion follow once
-real usage shows which transitions are valuable. Automatic persistence,
-automatic re-indexing, autonomous thesis replacement, and treating model output
-as an independent fact are outside this first boundary.
+The owner-scoped storage/API foundation now provides save/list/read/delete,
+editable organization metadata, immutable citation/content snapshots, and model
+provenance without indexing memos. The browser Brain Log experience and reviewed
+**Promote to Note** bridge are next. Memo staleness and thesis/Journal promotion
+follow once real usage shows which transitions are valuable. Automatic
+persistence, automatic re-indexing, autonomous thesis replacement, and treating
+model output as an independent fact are outside this first boundary.
 
 ## Release plan
 
