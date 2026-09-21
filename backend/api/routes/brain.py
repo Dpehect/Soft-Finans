@@ -80,6 +80,7 @@ class Citation(BaseModel):
     route: str | None = None
     ref_id: str
     chunk_index: int | None = None
+    content_hash: str | None = None
 
 
 class AskResponse(BaseModel):
@@ -89,6 +90,9 @@ class AskResponse(BaseModel):
     indexed_chunks: int | None = None
     llm: bool | None = None
     error: str | None = None
+    generated_at: str | None = None
+    llm_provider: str | None = None
+    llm_model: str | None = None
 
 
 class ReindexResponse(BaseModel):

@@ -7,6 +7,11 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Brain Log persistence foundation** — authenticated users can explicitly save
+  completed Second Brain answers as owner-scoped, immutable research-memo
+  snapshots with dated citations and model provenance. Organization metadata can
+  be edited and memos can be listed, read, filtered, pinned, or deleted without
+  placing derived model output back into the retrieval index.
 - **Time-aware Second Brain evidence** — private-memory chunks and citations now
   carry effective, recorded, and updated timestamps. External note ingestion
   accepts an optional source `effective_at` distinct from ingestion time, and

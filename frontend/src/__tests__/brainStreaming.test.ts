@@ -45,7 +45,7 @@ describe("askBrainStream", () => {
   it("assembles NDJSON deltas and reports progressive updates", async () => {
     fetchApiMock.mockResolvedValue(
       streamedResponse([
-        '{"type":"start","citations":[],"sources":["journal"],"llm":true}\n',
+        '{"type":"start","citations":[],"sources":["journal"],"llm":true,"generated_at":"2026-09-20T12:00:00+00:00","llm_provider":"local","llm_model":"qwen3"}\n',
         '{"type":"heartbeat"}\n',
         '{"type":"delta","text":"Patterns "}\n{"type":"delta","text":"repeat."}\n',
         '{"type":"done"}\n',
@@ -62,6 +62,9 @@ describe("askBrainStream", () => {
       citations: [],
       sources: ["journal"],
       llm: true,
+      generated_at: "2026-09-20T12:00:00+00:00",
+      llm_provider: "local",
+      llm_model: "qwen3",
     });
     expect(updates.map((update) => update.answer)).toEqual([
       "",

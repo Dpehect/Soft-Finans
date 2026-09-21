@@ -631,6 +631,22 @@ recommended: it records when the source information applies or was published,
 which may differ from when Hermes ingested it. General MCP tooling remains
 deferred.
 
+### Brain Log research memos
+
+Authenticated clients can explicitly preserve a completed Second Brain answer
+through `POST /api/brain/memos`. The saved research memo snapshots the question,
+answer, selected evidence scope, dated citations and content hashes, generation
+time, and non-secret model provenance. `GET /api/brain/memos` lists the caller's
+own memos (with optional `symbol` and `pinned` filters), and
+`GET`, `PATCH`, or `DELETE /api/brain/memos/{memo_id}` read, organize, or remove
+one memo.
+
+The synthesis snapshot is immutable: `PATCH` accepts only title, tags,
+annotation, symbol, and pin state. Brain memos are not added to the Second Brain
+index, so model output cannot silently reinforce itself as source evidence. The
+browser Save/Brain Log experience and reviewed promotion into Notes are separate
+follow-up surfaces.
+
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other
 clients can consume the complete checked-in

@@ -111,6 +111,13 @@ time. The Second Brain carries effective, recorded, and updated timestamps into
 retrieval and citations so later conflicting evidence can be treated as the
 current view without erasing the older view from history.
 
+Explicitly saved answers use the separate `brain_memos` store behind
+`/api/brain/memos`. A memo is an immutable snapshot of the question, answer,
+evidence scope, dated citations/content identities, generation time, and model
+provenance; only owner-managed organization fields can change. This table is not
+an indexing source. A later reviewed promotion may create a Note, but saving a
+memo alone never feeds derived model prose back into retrieval.
+
 ## Frontend structure
 
 - `frontend/src/pages/` contains route-level screens.
@@ -138,6 +145,7 @@ because a direct route still exists.
 | Quote hub | `backend/services/marketdata_hub.py` |
 | LLM client | `backend/services/llm_client.py` |
 | Second Brain | `backend/services/brain/` |
+| Brain Log persistence | `backend/models/brain_memo.py`, `backend/api/routes/brain_memos.py` |
 | Frontend routes | `frontend/src/App.tsx` |
 | Primary navigation | `frontend/src/components/layout/` |
 | Surface contract | `docs/surface-inventory.json`, `docs/openapi.json`, `docs/API_REFERENCE.md` |

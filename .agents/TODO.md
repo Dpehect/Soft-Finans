@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-16**, from `main` at `e28f03b` (through post-release PR
-#149), plus the v2 temporal-memory work on this branch. The latest tag and
-published GitHub release are **v1.7.0** at `0473307`.
+Last audited: **2026-09-21**, from `main` at `d3515c4` (through Brain Log roadmap
+PR #154), plus the Brain Log persistence/API work on this branch. The latest tag
+and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -354,23 +354,27 @@ cross-market-intelligence promise into concrete journeys and contracts.
       cases with expected current and historical evidence, then tune topic
       identity, explicit supersession, source-specific decay, diversity, and
       index-freshness visibility from observed failures rather than intuition.
-- [ ] Add an owner-scoped Brain Log with explicit **Save answer**. Persist an
-      immutable research-memo snapshot of the question, complete answer, source
-      scope, dated citations, generation time, and provider/model metadata;
-      support title, tags, annotation, optional symbol, pinning, and deletion.
-- [ ] Keep saved Brain memos out of retrieval by default so derived model output
-      cannot recursively become its own evidence. Show when cited evidence has
-      changed instead of silently rewriting the historical memo.
+- [x] Add the owner-scoped Brain Log persistence/API foundation. Research memos
+      snapshot the question, complete answer, source scope, dated citations and
+      content hashes, generation time, and provider/model metadata; only title,
+      tags, annotation, optional symbol, and pin state can be edited. Listing,
+      reading, filtering, and deletion remain owner-scoped.
+- [x] Keep saved Brain memos out of retrieval by default so derived model output
+      cannot recursively become its own evidence.
+- [ ] Add the browser **Save answer** and Brain Log experience on top of the
+      stable memo contract, including organization controls and explicit delete.
+- [ ] Compare citation content identities with current evidence and show when a
+      saved memo is stale without silently rewriting its historical snapshot.
 - [ ] Add a reviewed **Promote to Note** bridge with provenance back to the memo.
       Defer position/portfolio-thesis and Journal promotion until observed Brain
       Log usage justifies those transitions; never replace canonical beliefs or
       record decisions without explicit user confirmation.
 
-**Boundary:** this establishes temporal evidence semantics and a planned durable
-home for derived synthesis. It does not make model output an independent source,
-automatically persist conversations, replace user-owned beliefs, make the full
-cross-market intelligence promise, or claim that contradiction handling is
-solved.
+**Boundary:** this establishes temporal evidence semantics and a durable backend
+home for explicitly saved derived synthesis. It does not yet expose the browser
+Brain Log, make model output an independent source, automatically persist
+conversations, replace user-owned beliefs, make the full cross-market
+intelligence promise, or claim that contradiction handling is solved.
 
 ## Current handoff boundary
 
