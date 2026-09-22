@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-21**, from `main` at `d3515c4` (through Brain Log roadmap
-PR #154), plus the Brain Log persistence/API work on this branch. The latest tag
-and published GitHub release are **v1.7.0** at `0473307`.
+Last audited: **2026-09-22**, from `main` at `f432827` (through Brain Log
+persistence PR #155), plus the browser Brain Log work on this branch. The latest
+tag and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -361,7 +361,7 @@ cross-market-intelligence promise into concrete journeys and contracts.
       reading, filtering, and deletion remain owner-scoped.
 - [x] Keep saved Brain memos out of retrieval by default so derived model output
       cannot recursively become its own evidence.
-- [ ] Add the browser **Save answer** and Brain Log experience on top of the
+- [x] Add the browser **Save answer** and Brain Log experience on top of the
       stable memo contract, including organization controls and explicit delete.
 - [ ] Compare citation content identities with current evidence and show when a
       saved memo is stale without silently rewriting its historical snapshot.
@@ -371,8 +371,8 @@ cross-market-intelligence promise into concrete journeys and contracts.
       record decisions without explicit user confirmation.
 
 **Boundary:** this establishes temporal evidence semantics and a durable backend
-home for explicitly saved derived synthesis. It does not yet expose the browser
-Brain Log, make model output an independent source, automatically persist
+home and browser surface for explicitly saved derived synthesis. It does not
+make model output an independent source, automatically persist
 conversations, replace user-owned beliefs, make the full cross-market
 intelligence promise, or claim that contradiction handling is solved.
 

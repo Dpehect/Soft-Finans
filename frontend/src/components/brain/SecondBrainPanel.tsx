@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Brain, RefreshCw, Send, Sparkles } from "lucide-react";
+import { Brain, RefreshCw, Save, Send, Sparkles } from "lucide-react";
 
 import {
   askBrainStream,
@@ -11,17 +11,24 @@ import {
   type BrainSource,
 } from "../../api/brain";
 import { extractApiErrorMessage } from "../../api/base";
+import { createBrainMemo } from "../../api/brainMemos";
+import { CitationCard, scopeLabel } from "./BrainEvidence";
 import { TerminalButton } from "../terminal/TerminalButton";
 import { TerminalInput } from "../terminal/TerminalInput";
 import { TerminalPanel } from "../terminal/TerminalPanel";
 
 interface Exchange {
+  id: number;
   question: string;
   answer: string;
   citations: BrainCitation[];
   sources: BrainSource[];
   llm?: boolean | null;
   error?: string | null;
+  generated_at?: string | null;
+  llm_provider?: string | null;
+  llm_model?: string | null;
+  savedMemoId?: string;
 }
 
 const SUGGESTIONS = [
@@ -30,14 +37,6 @@ const SUGGESTIONS = [
   "Summarize my thesis on my biggest position.",
   "Which mistakes do I keep repeating?",
 ];
-
-const sourceLabels: Record<string, string> = {
-  note: "Note",
-  journal: "Journal",
-  portfolio: "Portfolio",
-  holding: "Position",
-  transaction: "Transaction",
-};
 
 const sourceOptions: { value: BrainSource; label: string }[] = [
   { value: "note", label: "Notes" },
@@ -49,49 +48,13 @@ const sourceOptions: { value: BrainSource; label: string }[] = [
 
 const allSources = sourceOptions.map((option) => option.value);
 
-function scopeLabel(sources: BrainSource[]) {
-  if (sources.length === sourceOptions.length) return "All private sources";
-  return sources.map((source) => sourceOptions.find((option) => option.value === source)?.label ?? source).join(", ");
-}
-
-function CitationCard({ citation }: { citation: BrainCitation }) {
-  const label = sourceLabels[citation.source] ?? citation.source;
-  const evidenceTime = citation.effective_at ?? citation.updated_at ?? citation.recorded_at;
-  const evidenceDate = evidenceTime
-    ? new Date(evidenceTime).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : null;
-  const body = (
-    <div className="rounded-sm border border-terminal-border bg-terminal-bg/60 p-2.5 transition-colors hover:border-terminal-accent/40">
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[11px] font-semibold text-terminal-text">
-          <span className="flex h-4 w-4 items-center justify-center rounded-sm border border-terminal-accent/50 text-[9px] text-terminal-accent">
-            {citation.n}
-          </span>
-          {citation.title}
-        </span>
-        <span className="shrink-0 text-[9px] uppercase tracking-wide text-terminal-muted">
-          {label}
-          {evidenceDate ? ` · ${evidenceDate}` : ""}
-          {citation.score ? ` · ${(citation.score * 100).toFixed(0)}%` : ""}
-        </span>
-      </div>
-      <p className="mt-1 text-[11px] leading-relaxed text-terminal-muted">{citation.snippet}</p>
-    </div>
-  );
-  return citation.route ? (
-    <Link to={citation.route} className="block">
-      {body}
-    </Link>
-  ) : (
-    body
-  );
-}
-
-function ExchangeCard({ exchange }: { exchange: Exchange }) {
+function ExchangeCard({ exchange, onSave, saving, saveDisabled, saveError }: {
+  exchange: Exchange;
+  onSave?: () => void;
+  saving?: boolean;
+  saveDisabled?: boolean;
+  saveError?: string | null;
+}) {
   return (
     <div className="space-y-2 rounded-sm border border-terminal-border bg-terminal-bg/40 p-3">
       <p className="flex items-center gap-1.5 text-[11px] font-semibold text-terminal-text">
@@ -109,6 +72,22 @@ function ExchangeCard({ exchange }: { exchange: Exchange }) {
           degraded: {exchange.error}
         </p>
       ) : null}
+      {onSave ? (
+        <div className="flex items-center gap-2">
+          <TerminalButton
+            type="button"
+            size="sm"
+            leftIcon={<Save className="h-3 w-3" />}
+            loading={saving}
+            disabled={saveDisabled || Boolean(exchange.savedMemoId)}
+            onClick={onSave}
+          >
+            {exchange.savedMemoId ? "Saved to Brain Log" : "Save answer"}
+          </TerminalButton>
+          {exchange.savedMemoId ? <a href="#brain-log" className="text-[11px] text-terminal-accent hover:underline">View log</a> : null}
+          {saveError ? <span role="alert" className="text-[11px] text-terminal-neg">{saveError}</span> : null}
+        </div>
+      ) : null}
       {exchange.citations.length ? (
         <div className="space-y-1.5 pt-1">
           <p className="text-[10px] uppercase tracking-wide text-terminal-muted">
@@ -125,11 +104,13 @@ function ExchangeCard({ exchange }: { exchange: Exchange }) {
 
 export function SecondBrainPanel() {
   const queryClient = useQueryClient();
+  const nextExchangeId = useRef(0);
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<Exchange[]>([]);
   const [streamingExchange, setStreamingExchange] = useState<Exchange | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedSources, setSelectedSources] = useState<BrainSource[]>(allSources);
+  const [saveError, setSaveError] = useState<{ id: number; message: string } | null>(null);
 
   const statusQuery = useQuery({ queryKey: ["brain", "status"], queryFn: fetchBrainStatus });
 
@@ -137,6 +118,7 @@ export function SecondBrainPanel() {
     mutationFn: ({ question: q, sources }: { question: string; sources: BrainSource[] }) =>
       askBrainStream(q, 6, sources, (response) =>
         setStreamingExchange({
+          id: -1,
           question: q,
           answer: response.answer,
           citations: response.citations,
@@ -148,12 +130,16 @@ export function SecondBrainPanel() {
     onSuccess: (data, variables) => {
       setHistory((prev) => [
         {
+          id: ++nextExchangeId.current,
           question: variables.question,
           answer: data.answer,
           citations: data.citations,
           sources: data.sources ?? variables.sources,
           llm: data.llm,
           error: data.error,
+          generated_at: data.generated_at,
+          llm_provider: data.llm_provider,
+          llm_model: data.llm_model,
         },
         ...prev,
       ]);
@@ -165,6 +151,28 @@ export function SecondBrainPanel() {
       setStreamingExchange(null);
       setError(extractApiErrorMessage(err, "Failed to ask your second brain."));
     },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (exchange: Exchange) => createBrainMemo({
+      question: exchange.question,
+      answer: exchange.answer,
+      sources: exchange.sources,
+      citations: exchange.citations,
+      generated_at: exchange.generated_at!,
+      llm: exchange.llm ?? null,
+      llm_provider: exchange.llm_provider ?? null,
+      llm_model: exchange.llm_model ?? null,
+    }),
+    onMutate: () => setSaveError(null),
+    onSuccess: (memo, exchange) => {
+      setHistory((current) => current.map((item) => item.id === exchange.id ? { ...item, savedMemoId: memo.id } : item));
+      void queryClient.invalidateQueries({ queryKey: ["brain", "memos"] });
+    },
+    onError: (err, exchange) => setSaveError({
+      id: exchange.id,
+      message: extractApiErrorMessage(err, "Could not save this answer."),
+    }),
   });
 
   const reindexMutation = useMutation({
@@ -179,7 +187,7 @@ export function SecondBrainPanel() {
     if (!trimmed || askMutation.isPending) return;
     setError(null);
     const sources = [...selectedSources];
-    setStreamingExchange({ question: trimmed, answer: "", citations: [], sources });
+    setStreamingExchange({ id: -1, question: trimmed, answer: "", citations: [], sources });
     askMutation.mutate({ question: trimmed, sources });
   };
 
@@ -334,8 +342,17 @@ export function SecondBrainPanel() {
 
         <div className="space-y-4">
           {streamingExchange ? <ExchangeCard exchange={streamingExchange} /> : null}
-          {history.map((exchange, idx) => (
-            <ExchangeCard key={idx} exchange={exchange} />
+          {history.map((exchange) => (
+            <ExchangeCard
+              key={exchange.id}
+              exchange={exchange}
+              onSave={exchange.generated_at && exchange.answer.trim() && !exchange.error && exchange.llm
+                ? () => saveMutation.mutate(exchange)
+                : undefined}
+              saving={saveMutation.isPending && saveMutation.variables?.id === exchange.id}
+              saveDisabled={saveMutation.isPending}
+              saveError={saveError?.id === exchange.id ? saveError.message : null}
+            />
           ))}
         </div>
       </div>

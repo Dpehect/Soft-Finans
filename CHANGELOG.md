@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Browser Brain Log** — completed Second Brain answers can be saved explicitly
+  and revisited as dated research memos with their original citations. The log
+  supports title, symbol, tags, annotation, pinning, and confirmed deletion;
+  partial or degraded answers cannot be saved.
 - **Brain Log persistence foundation** — authenticated users can explicitly save
   completed Second Brain answers as owner-scoped, immutable research-memo
   snapshots with dated citations and model provenance. Organization metadata can
