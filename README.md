@@ -644,8 +644,9 @@ one memo.
 The synthesis snapshot is immutable: `PATCH` accepts only title, tags,
 annotation, symbol, and pin state. Brain memos are not added to the Second Brain
 index, so model output cannot silently reinforce itself as source evidence. The
-browser Save/Brain Log experience and reviewed promotion into Notes are separate
-follow-up surfaces.
+Second Brain page offers **Save answer** after a completed synthesis
+and a Brain Log for reading, organizing, pinning, and explicitly deleting saved
+memos. Reviewed promotion into Notes remains a separate follow-up surface.
 
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other

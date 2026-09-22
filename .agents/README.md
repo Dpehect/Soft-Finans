@@ -96,10 +96,11 @@ release-level interpretation and safety boundaries.
   The owner-scoped **Brain Log** storage/API foundation now saves completed
   answers as immutable research memos with dated citation/content snapshots and
   model provenance. Organization metadata is editable; answer/evidence snapshots
-  are not. Memos stay out of retrieval by default. The browser Save/Log surface,
-  staleness comparison, and reviewed **Promote to Note** bridge remain next;
-  theses and Journal remain canonical user-owned records. This remains an
-  iterative contract to evaluate against the growing Hermes corpus before
+  are not. Memos stay out of retrieval by default. The browser Second Brain
+  page now saves completed answers and exposes the Brain Log for reading and
+  organizing them. Staleness comparison and the reviewed **Promote to Note**
+  bridge remain next; theses and Journal remain canonical user-owned records.
+  This remains an iterative contract to evaluate against the growing Hermes corpus before
   cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,
