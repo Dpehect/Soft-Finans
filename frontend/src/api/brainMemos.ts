@@ -42,6 +42,19 @@ export async function getBrainMemo(id: string): Promise<BrainMemo> {
   return data;
 }
 
+export type CitationEvidenceState = "current" | "changed" | "unavailable" | "unverifiable";
+
+export interface BrainMemoEvidenceStatus {
+  status: "current" | "stale" | "unverifiable";
+  checked_at: string;
+  citations: { n: number; status: CitationEvidenceState }[];
+}
+
+export async function getBrainMemoEvidenceStatus(id: string): Promise<BrainMemoEvidenceStatus> {
+  const { data } = await api.get<BrainMemoEvidenceStatus>(`/brain/memos/${encodeURIComponent(id)}/evidence-status`);
+  return data;
+}
+
 export async function createBrainMemo(payload: BrainMemoCreate): Promise<BrainMemo> {
   const { data } = await api.post<BrainMemo>("/brain/memos", payload);
   return data;

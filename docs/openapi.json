@@ -1259,6 +1259,37 @@
         "title": "BrainMemoCreate",
         "type": "object"
       },
+      "BrainMemoEvidenceStatus": {
+        "properties": {
+          "checked_at": {
+            "title": "Checked At",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationEvidenceStatus"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "current",
+              "stale",
+              "unverifiable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "checked_at",
+          "citations"
+        ],
+        "title": "BrainMemoEvidenceStatus",
+        "type": "object"
+      },
       "BrainMemoOut": {
         "properties": {
           "annotation": {
@@ -1975,6 +2006,30 @@
           "ref_id"
         ],
         "title": "Citation",
+        "type": "object"
+      },
+      "CitationEvidenceStatus": {
+        "properties": {
+          "n": {
+            "title": "N",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "current",
+              "changed",
+              "unavailable",
+              "unverifiable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "n",
+          "status"
+        ],
+        "title": "CitationEvidenceStatus",
         "type": "object"
       },
       "CitationSnapshot": {
@@ -16031,6 +16086,61 @@
           }
         ],
         "summary": "Update Brain Memo",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      }
+    },
+    "/api/brain/memos/{memo_id}/evidence-status": {
+      "get": {
+        "description": "Compare the dated citation snapshot with live owner-scoped records.\n\nThis deliberately does not trust the embedding index, which may still be\nawaiting reindex after a source edit, and never rewrites the saved memo.\nA hash change means evidence *identity* changed, not that a claim was\ndisproven; callers should review the current source before reuse.",
+        "operationId": "get_brain_memo_evidence_status_api_brain_memos__memo_id__evidence_status_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memo_id",
+            "required": true,
+            "schema": {
+              "title": "Memo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainMemoEvidenceStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Brain Memo Evidence Status",
         "tags": [
           "brain"
         ],

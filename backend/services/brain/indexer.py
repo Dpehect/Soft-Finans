@@ -220,12 +220,21 @@ _NOTE_CONTEXT_ROUTES = {
 }
 
 
-def _collect_chunks(db: Session, user_id: str) -> list[dict]:
+def _collect_chunks(
+    db: Session, user_id: str, source_refs: dict[str, set[str]] | None = None
+) -> list[dict]:
+    """Build live evidence identities, optionally limited to cited source IDs."""
     chunks: list[dict] = []
+
+    def wants(source: str) -> bool:
+        return source_refs is None or bool(source_refs.get(source))
 
     # 0. Free-form notes — the frictionless capture layer (Notes hub + per-symbol
     #    composers on security/watchlist/news/portfolio). The richest brain source.
-    for row in db.query(NoteORM).filter(NoteORM.user_id == user_id).all():
+    note_query = db.query(NoteORM).filter(NoteORM.user_id == user_id)
+    if source_refs is not None:
+        note_query = note_query.filter(NoteORM.id.in_(source_refs.get("note", set())))
+    for row in note_query.all() if wants("note") else []:
         body = (row.body or "").strip()
         if not body:
             continue
@@ -265,7 +274,16 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
         )
 
     # 1. Journal entries — always embed (structured context is meaningful even without notes).
-    for row in db.query(JournalEntry).filter(JournalEntry.user_id == user_id).all():
+    journal_query = db.query(JournalEntry).filter(JournalEntry.user_id == user_id)
+    if source_refs is not None:
+        journal_ids = []
+        for ref in source_refs.get("journal", set()):
+            try:
+                journal_ids.append(int(ref))
+            except ValueError:
+                continue
+        journal_query = journal_query.filter(JournalEntry.id.in_(journal_ids))
+    for row in journal_query.all() if wants("journal") else []:
         text = _journal_text(row)
         when = row.entry_date.date().isoformat() if row.entry_date else ""
         chunks.extend(
@@ -292,11 +310,17 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
         )
 
     # User's portfolios (the join key for holding/transaction notes below).
-    portfolios = db.query(PortfolioORM).filter(PortfolioORM.user_id == user_id).all()
+    portfolios = (
+        db.query(PortfolioORM).filter(PortfolioORM.user_id == user_id).all()
+        if any(wants(source) for source in ("portfolio", "holding", "transaction"))
+        else []
+    )
     portfolio_ids = [p.id for p in portfolios]
 
     # 2. Portfolio theses (description).
     for p in portfolios:
+        if source_refs is not None and p.id not in source_refs.get("portfolio", set()):
+            continue
         desc = (p.description or "").strip()
         if not desc:
             continue
@@ -321,11 +345,12 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
 
     if portfolio_ids:
         # 3. Per-holding notes.
-        holdings = (
-            db.query(PortfolioHoldingORM)
-            .filter(PortfolioHoldingORM.portfolio_id.in_(portfolio_ids))
-            .all()
+        holding_query = db.query(PortfolioHoldingORM).filter(
+            PortfolioHoldingORM.portfolio_id.in_(portfolio_ids)
         )
+        if source_refs is not None:
+            holding_query = holding_query.filter(PortfolioHoldingORM.id.in_(source_refs.get("holding", set())))
+        holdings = holding_query.all() if wants("holding") else []
         for h in holdings:
             note = (h.notes or "").strip()
             if not note:
@@ -350,11 +375,12 @@ def _collect_chunks(db: Session, user_id: str) -> list[dict]:
             )
 
         # 4. Transaction notes.
-        txns = (
-            db.query(PortfolioTransactionORM)
-            .filter(PortfolioTransactionORM.portfolio_id.in_(portfolio_ids))
-            .all()
+        txn_query = db.query(PortfolioTransactionORM).filter(
+            PortfolioTransactionORM.portfolio_id.in_(portfolio_ids)
         )
+        if source_refs is not None:
+            txn_query = txn_query.filter(PortfolioTransactionORM.id.in_(source_refs.get("transaction", set())))
+        txns = txn_query.all() if wants("transaction") else []
         for t in txns:
             note = (t.notes or "").strip()
             if not note:

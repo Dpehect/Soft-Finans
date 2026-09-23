@@ -13,8 +13,8 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 
 ## Contract summary
 
-- **449 operations** across **401 paths** and **86 families**.
-- Authentication: **404 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
+- **450 operations** across **402 paths** and **86 families**.
+- Authentication: **405 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
 - API keys are created and revoked by an authenticated user under `/api/settings/api-keys`.
 - `read_write` is required for `PUT /api/v1/notes/external`; market-data automation endpoints require `read` or `read_write`.
 
@@ -43,7 +43,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 | `backtest` | `supported` | 1 |
 | `backtests` | `supported` | 17 |
 | `bonds` | `hidden` | 3 |
-| `brain` | `supported` | 10 |
+| `brain` | `supported` | 11 |
 | `chart` | `supported` | 12 |
 | `chart-workstation` | `supported` | 1 |
 | `charts` | `supported` | 1 |
@@ -262,6 +262,7 @@ State: **supported**
 | `DELETE` | `/api/brain/memos/{memo_id}` | Bearer token | Delete Brain Memo |
 | `GET` | `/api/brain/memos/{memo_id}` | Bearer token | Get Brain Memo |
 | `PATCH` | `/api/brain/memos/{memo_id}` | Bearer token | Update Brain Memo |
+| `GET` | `/api/brain/memos/{memo_id}/evidence-status` | Bearer token | Get Brain Memo Evidence Status |
 | `POST` | `/api/brain/memos/{memo_id}/promote-to-note` | Bearer token | Promote Brain Memo To Note |
 | `POST` | `/api/brain/reindex` | Bearer token | Brain Reindex |
 | `GET` | `/api/brain/status` | Bearer token | Brain Status |

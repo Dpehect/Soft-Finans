@@ -221,8 +221,11 @@ provenance without indexing memos. The browser Second Brain page now offers
 explicit Save answer and a Brain Log with dated snapshots, editable organization
 details, and confirmed deletion. A reviewed **Promote to Note** action now lets
 the user edit and confirm a draft before creating a separate, indexed Note with
-typed provenance back to the memo. Memo staleness and thesis/Journal promotion
-follow once real usage shows which transitions are valuable. Automatic
+typed provenance back to the memo. The memo detail view now compares saved
+citation identities with live owner-scoped source records, marking changed,
+unavailable, or unverifiable evidence while preserving the historical answer.
+That is a change signal, not factual verification or contradiction resolution.
+Thesis/Journal promotion follows only if real usage justifies it. Automatic
 persistence, automatic re-indexing, autonomous thesis replacement, and treating
 model output as an independent fact are outside this first boundary.
 

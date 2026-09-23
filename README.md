@@ -652,6 +652,12 @@ the reviewed Note is indexed as evidence. Authenticated clients can use
 transition. The Note retains its source memo ID and the Notes UI links back to
 the memo. Portfolio theses and Journal are not promotion targets yet.
 
+Opening a saved memo checks its cited chunk identities against the owner's
+current source records through `GET /api/brain/memos/{memo_id}/evidence-status`.
+The browser marks matching, changed, unavailable, and unverifiable citations;
+it never rewrites the historical answer. This check does not establish whether
+the answer's claims are correct, and it does not depend on a completed reindex.
+
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other
 clients can consume the complete checked-in

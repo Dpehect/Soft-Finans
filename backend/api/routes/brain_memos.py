@@ -20,6 +20,7 @@ from backend.models.brain_memo import BrainMemoORM
 from backend.models.notes import NoteORM
 from backend.models.user import User
 from backend.api.routes.notes import NoteOut, _reindex_user_brain, _serialize as serialize_note
+from backend.services.brain.indexer import _collect_chunks
 
 router = APIRouter(prefix="/brain/memos", tags=["brain"])
 
@@ -193,6 +194,17 @@ class BrainMemoOut(BrainMemoSummary):
     llm_model: str | None
 
 
+class CitationEvidenceStatus(BaseModel):
+    n: int
+    status: Literal["current", "changed", "unavailable", "unverifiable"]
+
+
+class BrainMemoEvidenceStatus(BaseModel):
+    status: Literal["current", "stale", "unverifiable"]
+    checked_at: str
+    citations: list[CitationEvidenceStatus]
+
+
 def _owned_memo(db: Session, memo_id: str, user_id: str) -> BrainMemoORM:
     row = (
         db.query(BrainMemoORM)
@@ -296,6 +308,57 @@ def get_brain_memo(
     current_user: User = Depends(get_current_user),
 ) -> BrainMemoOut:
     return _full(_owned_memo(db, memo_id, current_user.id))
+
+
+@router.get("/{memo_id}/evidence-status", response_model=BrainMemoEvidenceStatus)
+def get_brain_memo_evidence_status(
+    memo_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> BrainMemoEvidenceStatus:
+    """Compare the dated citation snapshot with live owner-scoped records.
+
+    This deliberately does not trust the embedding index, which may still be
+    awaiting reindex after a source edit, and never rewrites the saved memo.
+    A hash change means evidence *identity* changed, not that a claim was
+    disproven; callers should review the current source before reuse.
+    """
+    memo = _owned_memo(db, memo_id, current_user.id)
+    citations = [CitationSnapshot.model_validate(item) for item in memo.citations or []]
+    source_refs: dict[str, set[str]] = {}
+    for citation in citations:
+        if citation.content_hash and citation.chunk_index is not None:
+            source_refs.setdefault(citation.source, set()).add(citation.ref_id)
+    live_chunks = _collect_chunks(db, current_user.id, source_refs=source_refs)
+    live_hashes = {
+        (chunk["source"], chunk["meta_json"]["source_ref_id"], chunk["meta_json"]["chunk_index"]):
+        chunk["content_hash"]
+        for chunk in live_chunks
+    }
+
+    results: list[CitationEvidenceStatus] = []
+    for citation in citations:
+        if not citation.content_hash or citation.chunk_index is None:
+            status = "unverifiable"
+        else:
+            current_hash = live_hashes.get((citation.source, citation.ref_id, citation.chunk_index))
+            status = (
+                "unavailable" if current_hash is None else
+                "current" if current_hash == citation.content_hash else "changed"
+            )
+        results.append(CitationEvidenceStatus(n=citation.n, status=status))
+
+    if any(item.status in ("changed", "unavailable") for item in results):
+        overall = "stale"
+    elif results and all(item.status == "current" for item in results):
+        overall = "current"
+    else:
+        overall = "unverifiable"
+    return BrainMemoEvidenceStatus(
+        status=overall,
+        checked_at=datetime.now(timezone.utc).isoformat(),
+        citations=results,
+    )
 
 
 @router.post("/{memo_id}/promote-to-note", response_model=NoteOut, status_code=201)

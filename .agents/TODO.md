@@ -1,7 +1,7 @@
 # Current project state and backlog
 
-Last audited: **2026-09-23**, from `main` at `c548912` (through browser Brain Log
-PR #156), plus the reviewed promotion work on this branch. The latest
+Last audited: **2026-09-23**, from `main` at `0a27391` (through reviewed Brain
+memo promotion PR #157), plus citation staleness work on this branch. The latest
 tag and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
@@ -363,7 +363,7 @@ cross-market-intelligence promise into concrete journeys and contracts.
       cannot recursively become its own evidence.
 - [x] Add the browser **Save answer** and Brain Log experience on top of the
       stable memo contract, including organization controls and explicit delete.
-- [ ] Compare citation content identities with current evidence and show when a
+- [x] Compare citation content identities with current evidence and show when a
       saved memo is stale without silently rewriting its historical snapshot.
 - [x] Add a reviewed **Promote to Note** bridge with provenance back to the memo.
       Defer position/portfolio-thesis and Journal promotion until observed Brain
@@ -372,8 +372,9 @@ cross-market-intelligence promise into concrete journeys and contracts.
 
 **Boundary:** this establishes temporal evidence semantics and a durable backend
 home and browser surface for explicitly saved derived synthesis, plus an explicit
-reviewed bridge into Notes. It does not automatically make model output an
-independent source, persist
+reviewed bridge into Notes. Citation identity checks expose changed, missing, or
+unverifiable evidence; they do not adjudicate whether the answer is true. The
+system does not automatically make model output an independent source, persist
 conversations, replace user-owned beliefs, make the full cross-market
 intelligence promise, or claim that contradiction handling is solved.
 

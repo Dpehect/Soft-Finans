@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Brain Log evidence change signals** — opening a saved memo compares dated
+  citation identities with live owner-scoped records and marks matching,
+  changed, unavailable, or unverifiable evidence. The saved answer remains
+  immutable, and the UI warns before promoting a memo with changed evidence.
 - **Reviewed Brain-to-Note promotion** — a saved Brain memo can become an
   editable, user-confirmed Note with provenance back to its immutable source.
   The Note enters normal indexing; the memo itself stays out of retrieval.

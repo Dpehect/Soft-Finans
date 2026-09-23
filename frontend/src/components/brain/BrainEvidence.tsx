@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { BrainCitation, BrainSource } from "../../api/brain";
+import type { CitationEvidenceState } from "../../api/brainMemos";
 
 const sourceLabels: Record<BrainSource, string> = {
   note: "Notes",
@@ -14,7 +15,14 @@ export function scopeLabel(sources: BrainSource[]) {
   return sources.map((source) => sourceLabels[source] ?? source).join(", ");
 }
 
-export function CitationCard({ citation }: { citation: BrainCitation }) {
+const evidenceLabels: Record<CitationEvidenceState, string> = {
+  current: "Source matches",
+  changed: "Source changed",
+  unavailable: "Cited section unavailable",
+  unverifiable: "Cannot verify",
+};
+
+export function CitationCard({ citation, evidenceStatus }: { citation: BrainCitation; evidenceStatus?: CitationEvidenceState }) {
   const evidenceTime = citation.effective_at ?? citation.updated_at ?? citation.recorded_at;
   const evidenceDate = evidenceTime
     ? new Date(evidenceTime).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
@@ -34,6 +42,7 @@ export function CitationCard({ citation }: { citation: BrainCitation }) {
           {citation.score ? ` · ${(citation.score * 100).toFixed(0)}%` : ""}
         </span>
       </div>
+      {evidenceStatus ? <p className={`mt-1 text-[10px] uppercase tracking-wide ${evidenceStatus === "current" ? "text-terminal-pos" : evidenceStatus === "changed" || evidenceStatus === "unavailable" ? "text-terminal-neg" : "text-terminal-muted"}`}>{evidenceLabels[evidenceStatus]}</p> : null}
       <p className="mt-1 text-[11px] leading-relaxed text-terminal-muted">{citation.snippet}</p>
     </div>
   );
