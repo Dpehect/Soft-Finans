@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-23**, from `main` at `92d8d76` (through Brain Log citation
-staleness PR #158), plus retrieval evaluation harness work on this branch. The latest
-tag and published GitHub release are **v1.7.0** at `0473307`.
+Last audited: **2026-09-23**, from `main` at `eb13000` (through Brain retrieval
+evaluation harness PR #159). The latest tag and published GitHub release are
+**v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -465,6 +465,17 @@ ordered v1.7 milestone above.
 
 ## UX and domain follow-ups
 
+- [ ] **Link Journal trades to Portfolio transactions (v4 decision lifecycle).**
+      Let a user select existing portfolio buys/sells when journaling a trade, or
+      enter a missing transaction inline and create it in the chosen portfolio
+      with the journal link in one atomic operation. Track assigned quantities,
+      not just matched/unmatched IDs: one trade may span multiple buys/sells,
+      and one buy may be closed across multiple journaled trades. Keep portfolio
+      transactions authoritative for execution, holdings, cash, fees, currency,
+      and derived P&L; Journal owns strategy, reasoning, emotion, and review.
+      Prevent duplicate transactions, enforce owner/portfolio boundaries, and
+      keep SHORT entries journal-only until portfolio short-position accounting
+      exists. This is unscheduled, not a v2 release gate.
 - [ ] Finish remaining EUR/native-currency presentation cleanup in stock detail,
       F&O, screener, chart, heatmap, and backtesting surfaces. Convert values or
       display their native currency; never merely swap the symbol.

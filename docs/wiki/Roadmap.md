@@ -158,6 +158,26 @@ The version numbers continue to follow Semantic Versioning. A generation becomes
 a major release only when its product promise and stable contracts are ready; the
 table is direction, not permission to bump a major version for marketing alone.
 
+### Decision-lifecycle bridge — Journal and Portfolio transactions (unscheduled)
+
+Today Portfolio transactions are the execution/accounting ledger, while Journal
+entries independently describe and score trades. A future v4-aligned workflow
+should make the relationship explicit: when creating or editing a Journal trade,
+the user can attach existing transactions from an owned portfolio and create any
+missing transaction inline. For example, select an existing buy, enter a missing
+sell, then confirm once to create the portfolio sell and link both executions to
+the Journal entry. If the sell already exists, attach it rather than duplicate it.
+
+The link must allocate quantities, not mark whole transactions simply
+"matched": a trade may scale in/out across several executions, and one buy may
+be reviewed through multiple partial closes. The portfolio ledger remains the
+source of truth for quantities, cash, fees, currency, and realized accounting;
+Journal owns rationale, strategy, emotion, and review. Creating a missing
+transaction and its link must be atomic, owner-scoped, and idempotent. Existing
+Journal SHORT entries remain journal-only until Portfolio supports short
+positions. This is an unscheduled decision-lifecycle item, **not** a prerequisite
+for the v2 time-aware-memory opening or a claim of broker execution support.
+
 ## v2 opening principle — time-aware memory
 
 > **Intelligence begins with time-aware memory.** Before markets can explain one
