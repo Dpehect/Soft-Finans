@@ -13,8 +13,9 @@ function localDateTime(value: string): string {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 }
 
-export function BrainMemoPromotionModal({ memo, onClose, onPromoted }: {
+export function BrainMemoPromotionModal({ memo, evidenceStatus, onClose, onPromoted }: {
   memo: BrainMemo;
+  evidenceStatus: "current" | "stale" | "unverifiable" | "unknown";
   onClose: () => void;
   onPromoted: (noteId: string) => void;
 }) {
@@ -53,6 +54,8 @@ export function BrainMemoPromotionModal({ memo, onClose, onPromoted }: {
         <p className="text-[11px] text-terminal-muted">
           This is a dated model synthesis, not a verified fact. Review and edit it for accuracy and current relevance. The original memo stays unchanged; the new Note will enter Second Brain indexing.
         </p>
+        {evidenceStatus === "stale" ? <p role="alert" className="text-[11px] text-terminal-neg">Some cited evidence changed or is unavailable. Check current sources before confirming this Note.</p> : null}
+        {evidenceStatus === "unverifiable" || evidenceStatus === "unknown" ? <p role="alert" className="text-[11px] text-terminal-muted">Current evidence could not be fully verified. Check the cited sources before confirming this Note.</p> : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1 text-[11px] text-terminal-muted">Note title
             <TerminalInput value={title} maxLength={256} onChange={(event) => setTitle(event.target.value)} />

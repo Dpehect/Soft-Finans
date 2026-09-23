@@ -100,7 +100,10 @@ release-level interpretation and safety boundaries.
   page now saves completed answers and exposes the Brain Log for reading and
   organizing them. A reviewed **Promote to Note** action creates a separate,
   editable Note with a link back to its source memo; only that Note becomes
-  evidence. Staleness comparison remains next; theses and Journal remain
+  evidence. Opening a memo compares its cited chunk identities with live source
+  records without depending on the embedding index, and distinguishes changed,
+  unavailable, and unverifiable evidence. This is not fact-checking the answer.
+  Theses and Journal remain
   canonical user-owned records. This is an iterative contract to evaluate
   against the growing Hermes corpus before cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.

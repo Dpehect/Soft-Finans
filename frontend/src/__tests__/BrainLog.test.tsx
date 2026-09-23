@@ -11,6 +11,7 @@ const fetchBrainStatusMock = vi.fn();
 const createBrainMemoMock = vi.fn();
 const listBrainMemosMock = vi.fn();
 const getBrainMemoMock = vi.fn();
+const getBrainMemoEvidenceStatusMock = vi.fn();
 const updateBrainMemoMock = vi.fn();
 const deleteBrainMemoMock = vi.fn();
 const promoteBrainMemoToNoteMock = vi.fn();
@@ -24,6 +25,7 @@ vi.mock("../api/brainMemos", () => ({
   createBrainMemo: (...args: unknown[]) => createBrainMemoMock(...args),
   listBrainMemos: (...args: unknown[]) => listBrainMemosMock(...args),
   getBrainMemo: (...args: unknown[]) => getBrainMemoMock(...args),
+  getBrainMemoEvidenceStatus: (...args: unknown[]) => getBrainMemoEvidenceStatusMock(...args),
   updateBrainMemo: (...args: unknown[]) => updateBrainMemoMock(...args),
   deleteBrainMemo: (...args: unknown[]) => deleteBrainMemoMock(...args),
   promoteBrainMemoToNote: (...args: unknown[]) => promoteBrainMemoToNoteMock(...args),
@@ -61,6 +63,7 @@ describe("Brain Log browser flow", () => {
     createBrainMemoMock.mockResolvedValue(memo);
     listBrainMemosMock.mockResolvedValue([memo]);
     getBrainMemoMock.mockResolvedValue(memo);
+    getBrainMemoEvidenceStatusMock.mockResolvedValue({ status: "current", checked_at: "2026-09-23T10:00:00Z", citations: [{ n: 1, status: "current" }] });
     updateBrainMemoMock.mockImplementation(async (_id: string, changes: object) => ({ ...memo, ...changes }));
     deleteBrainMemoMock.mockResolvedValue(undefined);
     promoteBrainMemoToNoteMock.mockResolvedValue({ id: "note-1" });
@@ -151,5 +154,27 @@ describe("Brain Log browser flow", () => {
     renderWithProviders(<BrainLogPanel />, "/equity/brain?memo=memo-1#brain-log");
     expect(await screen.findByRole("region", { name: "Saved research memo" })).toBeInTheDocument();
     expect(getBrainMemoMock).toHaveBeenCalledWith("memo-1");
+  });
+
+  it("marks changed evidence without rewriting the saved answer", async () => {
+    getBrainMemoEvidenceStatusMock.mockResolvedValue({ status: "stale", checked_at: "2026-09-23T10:00:00Z", citations: [{ n: 1, status: "changed" }] });
+    renderWithProviders(<BrainLogPanel />);
+    fireEvent.click(await screen.findByRole("button", { name: /What changed\?/ }));
+    expect(await screen.findByText(/Some cited evidence changed or is unavailable/)).toBeInTheDocument();
+    expect(screen.getByText("Source changed")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Saved research memo" })).toHaveTextContent(memo.answer);
+    fireEvent.click(screen.getByRole("button", { name: "Promote to Note" }));
+    expect(screen.getByText(/Check current sources before confirming this Note/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Recheck" }));
+    await waitFor(() => expect(getBrainMemoEvidenceStatusMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("does not call evidence current when the check fails", async () => {
+    getBrainMemoEvidenceStatusMock.mockRejectedValue(new Error("offline"));
+    renderWithProviders(<BrainLogPanel />);
+    fireEvent.click(await screen.findByRole("button", { name: /What changed\?/ }));
+    expect(await screen.findByText(/Citation status is unknown/)).toBeInTheDocument();
+    expect(screen.queryByText(/Cited source identities match/)).not.toBeInTheDocument();
   });
 });

@@ -186,3 +186,79 @@ def test_reviewed_promotion_creates_linked_note_without_rewriting_memo(monkeypat
     assert len(indexed) == 1
     assert client.get("/api/notes", headers=other).json() == []
     assert client.get(f"/api/brain/memos/{memo['id']}", headers=owner).json()["answer"] == memo["answer"]
+
+
+def test_evidence_status_uses_live_owner_records_without_mutating_snapshot(monkeypatch) -> None:
+    from backend.api.routes import notes
+    from backend.models.journal import JournalEntry
+    from backend.models.notes import NoteORM
+    from backend.services.brain.indexer import _collect_chunks
+    from backend.shared.db import SessionLocal
+
+    async def skip_reindex(_user_id: str) -> None:
+        return None
+
+    monkeypatch.setattr(notes, "_reindex_user_brain", skip_reindex)
+    init_db()
+    client = TestClient(app)
+    owner = _auth(client, "evidence-owner")
+    other = _auth(client, "evidence-other")
+    created_note = client.post(
+        "/api/notes", headers=owner,
+        json={"title": "Current margin view", "body": "Guidance changed the margin outlook.", "symbol": "AAPL"},
+    )
+    assert created_note.status_code == 201, created_note.text
+    note_id = created_note.json()["id"]
+
+    with SessionLocal() as db:
+        note = db.query(NoteORM).filter(NoteORM.id == note_id).one()
+        current = _collect_chunks(db, note.user_id, {"note": {note_id}})
+        assert len(current) == 1
+        current_hash = current[0]["content_hash"]
+        journal = JournalEntry(
+            user_id=note.user_id, symbol="AAPL", direction="long",
+            entry_date=note.created_at, entry_price=100, quantity=1,
+        )
+        db.add(journal)
+        db.commit()
+        assert [chunk["source"] for chunk in _collect_chunks(db, note.user_id, {"journal": {str(journal.id)}})] == ["journal"]
+
+    payload = _payload()
+    payload["citations"][0]["ref_id"] = note_id  # type: ignore[index]
+    payload["citations"][0]["content_hash"] = current_hash  # type: ignore[index]
+    saved = client.post("/api/brain/memos", headers=owner, json=payload)
+    assert saved.status_code == 201, saved.text
+    memo_id = saved.json()["id"]
+    path = f"/api/brain/memos/{memo_id}/evidence-status"
+
+    assert client.get(path, headers=other).status_code == 404
+    initial = client.get(path, headers=owner)
+    assert initial.status_code == 200, initial.text
+    assert initial.json()["status"] == "current"
+    assert initial.json()["citations"] == [{"n": 1, "status": "current"}]
+
+    with SessionLocal() as db:
+        note = db.query(NoteORM).filter(NoteORM.id == note_id).one()
+        note.body = "Margin outlook was revised again."
+        db.commit()
+    changed = client.get(path, headers=owner)
+    assert changed.json()["status"] == "stale"
+    assert changed.json()["citations"] == [{"n": 1, "status": "changed"}]
+    assert client.get(f"/api/brain/memos/{memo_id}", headers=owner).json()["citations"][0]["content_hash"] == current_hash
+
+    with SessionLocal() as db:
+        note = db.query(NoteORM).filter(NoteORM.id == note_id).one()
+        db.delete(note)
+        db.commit()
+    missing = client.get(path, headers=owner)
+    assert missing.json()["status"] == "stale"
+    assert missing.json()["citations"] == [{"n": 1, "status": "unavailable"}]
+
+    legacy = _payload()
+    legacy["citations"][0].pop("content_hash")  # type: ignore[index]
+    legacy["citations"][0].pop("chunk_index")  # type: ignore[index]
+    legacy_memo = client.post("/api/brain/memos", headers=owner, json=legacy)
+    assert legacy_memo.status_code == 201
+    unknown = client.get(f"/api/brain/memos/{legacy_memo.json()['id']}/evidence-status", headers=owner)
+    assert unknown.json()["status"] == "unverifiable"
+    assert unknown.json()["citations"] == [{"n": 1, "status": "unverifiable"}]

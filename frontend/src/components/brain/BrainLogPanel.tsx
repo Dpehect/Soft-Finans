@@ -7,6 +7,7 @@ import { extractApiErrorMessage } from "../../api/base";
 import {
   deleteBrainMemo,
   getBrainMemo,
+  getBrainMemoEvidenceStatus,
   listBrainMemos,
   updateBrainMemo,
   type BrainMemo,
@@ -37,6 +38,11 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
   const [promoteOpen, setPromoteOpen] = useState(false);
   const [promotedNoteId, setPromotedNoteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const evidence = useQuery({
+    queryKey: ["brain", "memo-evidence", memo.id],
+    queryFn: () => getBrainMemoEvidenceStatus(memo.id),
+  });
+  const evidenceResult = evidence.isError || evidence.isFetching ? undefined : evidence.data;
 
   const update = useMutation({
     mutationFn: () => updateBrainMemo(memo.id, {
@@ -81,10 +87,22 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
         <p className="font-semibold">{memo.question}</p>
         <p className="whitespace-pre-wrap leading-relaxed">{memo.answer}</p>
       </div>
+      <div className="space-y-1.5 rounded-sm border border-terminal-border bg-terminal-bg/60 p-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[10px] uppercase tracking-wide text-terminal-muted">Evidence identity check</p>
+          <TerminalButton type="button" size="sm" variant="ghost" loading={evidence.isFetching} onClick={() => void evidence.refetch()}>Recheck</TerminalButton>
+        </div>
+        {evidence.isFetching ? <p role="status" className="text-[11px] text-terminal-muted">Checking saved citations against current sources…</p> : null}
+        {evidence.isError ? <p role="alert" className="text-[11px] text-terminal-neg">Could not check current evidence. Citation status is unknown.</p> : null}
+        {evidenceResult?.status === "current" ? <p role="status" className="text-[11px] text-terminal-pos">Cited source identities match current records. This does not verify the answer's claims.</p> : null}
+        {evidenceResult?.status === "stale" ? <p role="status" className="text-[11px] text-terminal-neg">Some cited evidence changed or is unavailable. Review current sources before reusing or promoting this answer.</p> : null}
+        {evidenceResult?.status === "unverifiable" ? <p role="status" className="text-[11px] text-terminal-muted">Citation status cannot be verified from this snapshot.</p> : null}
+        {evidenceResult ? <p className="text-[10px] text-terminal-muted">Checked {dateLabel(evidenceResult.checked_at)} · This compares source identity, not whether the conclusion is correct.</p> : null}
+      </div>
       {memo.citations.length ? (
         <div className="space-y-1.5">
           <p className="text-[10px] uppercase tracking-wide text-terminal-muted">Cited evidence at generation time</p>
-          {memo.citations.map((citation) => <CitationCard key={citation.n} citation={citation} />)}
+          {memo.citations.map((citation) => <CitationCard key={citation.n} citation={citation} evidenceStatus={evidenceResult?.citations.find((item) => item.n === citation.n)?.status} />)}
         </div>
       ) : null}
       <div className="space-y-2 border-t border-terminal-border pt-3">
@@ -122,7 +140,7 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
         footer={<div className="flex justify-end gap-2"><TerminalButton size="sm" onClick={() => setConfirmDelete(false)}>Cancel</TerminalButton><TerminalButton size="sm" variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>Delete permanently</TerminalButton></div>}>
         <p className="text-xs text-terminal-text">This removes the saved answer and citation snapshot. Notes promoted from it remain, but their source-memo link will no longer resolve. Original evidence is unaffected.</p>
       </TerminalModal>
-      {promoteOpen ? <BrainMemoPromotionModal memo={memo} onClose={() => setPromoteOpen(false)} onPromoted={(noteId) => { setPromotedNoteId(noteId); setPromoteOpen(false); }} /> : null}
+      {promoteOpen ? <BrainMemoPromotionModal memo={memo} evidenceStatus={evidenceResult?.status ?? "unknown"} onClose={() => setPromoteOpen(false)} onPromoted={(noteId) => { setPromotedNoteId(noteId); setPromoteOpen(false); }} /> : null}
     </section>
   );
 }
