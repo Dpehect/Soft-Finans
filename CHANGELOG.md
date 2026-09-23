@@ -7,6 +7,9 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Reviewed Brain-to-Note promotion** — a saved Brain memo can become an
+  editable, user-confirmed Note with provenance back to its immutable source.
+  The Note enters normal indexing; the memo itself stays out of retrieval.
 - **Browser Brain Log** — completed Second Brain answers can be saved explicitly
   and revisited as dated research memos with their original citations. The log
   supports title, symbol, tags, annotation, pinning, and confirmed deletion;

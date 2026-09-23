@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Pencil, Plus, RefreshCw, StickyNote, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import {
   createNote,
@@ -21,6 +22,7 @@ const contextBadge: Record<NoteContext, string> = {
   news: "News",
   holding: "Position",
   transaction: "Transaction",
+  brain_memo: "From Brain Log",
 };
 
 function toIsoDateTime(value: string): string | null {
@@ -251,6 +253,11 @@ export function NotesPanel({
                   {contextBadge[note.context]}
                 </span>
                 {note.symbol ? <span>{note.symbol}</span> : null}
+                {note.context === "brain_memo" && note.ref_id ? (
+                  <Link to={`/equity/brain?memo=${encodeURIComponent(note.ref_id)}#brain-log`} className="text-terminal-accent hover:underline">
+                    Source memo
+                  </Link>
+                ) : null}
                 {note.effective_at ? (
                   <span>Effective {displayDate(note.effective_at)}</span>
                 ) : note.updated_at ? (

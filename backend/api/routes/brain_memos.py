@@ -10,14 +10,16 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
 
 from backend.api.deps import get_db
 from backend.auth.deps import get_current_user
 from backend.models.brain_memo import BrainMemoORM
+from backend.models.notes import NoteORM
 from backend.models.user import User
+from backend.api.routes.notes import NoteOut, _reindex_user_brain, _serialize as serialize_note
 
 router = APIRouter(prefix="/brain/memos", tags=["brain"])
 
@@ -134,6 +136,37 @@ class BrainMemoUpdate(BaseModel):
         if any(len(value) > 64 for value in normalized):
             raise ValueError("tags must be at most 64 characters")
         return normalized
+
+
+class BrainMemoPromoteNote(BaseModel):
+    """User-reviewed copy, never a silent transcription of model output."""
+
+    title: str = Field(default="", max_length=256)
+    body: str = Field(min_length=1, max_length=10000)
+    symbol: str | None = Field(default=None, max_length=64)
+    tags: list[str] = Field(default_factory=list, max_length=32)
+    effective_at: datetime | None = None
+
+    @field_validator("body")
+    @classmethod
+    def require_reviewed_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("body must contain visible text")
+        return normalized
+
+    @field_validator("tags")
+    @classmethod
+    def normalize_tags(cls, values: list[str]) -> list[str]:
+        normalized = _tags(values)
+        if any(len(value) > 64 for value in normalized):
+            raise ValueError("tags must be at most 64 characters")
+        return normalized
+
+    @field_validator("effective_at")
+    @classmethod
+    def require_effective_timezone(cls, value: datetime | None) -> datetime | None:
+        return _utc(value) if value is not None else None
 
 
 class BrainMemoSummary(BaseModel):
@@ -263,6 +296,32 @@ def get_brain_memo(
     current_user: User = Depends(get_current_user),
 ) -> BrainMemoOut:
     return _full(_owned_memo(db, memo_id, current_user.id))
+
+
+@router.post("/{memo_id}/promote-to-note", response_model=NoteOut, status_code=201)
+def promote_brain_memo_to_note(
+    memo_id: str,
+    payload: BrainMemoPromoteNote,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> NoteOut:
+    memo = _owned_memo(db, memo_id, current_user.id)
+    note = NoteORM(
+        user_id=current_user.id,
+        context="brain_memo",
+        ref_id=memo.id,
+        title=payload.title.strip(),
+        body=payload.body,
+        symbol=_symbol(payload.symbol),
+        tags=payload.tags,
+        effective_at=payload.effective_at or memo.generated_at,
+    )
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    background.add_task(_reindex_user_brain, current_user.id)
+    return serialize_note(note)
 
 
 @router.patch("/{memo_id}", response_model=BrainMemoOut)

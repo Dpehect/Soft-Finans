@@ -57,6 +57,13 @@ class NoteCreate(BaseModel):
     def require_unambiguous_effective_time(cls, value: datetime | None) -> datetime | None:
         return _normalize_effective_at(value)
 
+    @field_validator("context")
+    @classmethod
+    def reserve_brain_memo_context(cls, value: str) -> str:
+        if value.strip().lower() == "brain_memo":
+            raise ValueError("brain_memo context is reserved for reviewed promotion")
+        return value
+
 
 class NoteUpdate(BaseModel):
     body: str | None = Field(default=None, max_length=10000)

@@ -6,7 +6,8 @@ export type NoteContext =
   | "watchlist"
   | "news"
   | "holding"
-  | "transaction";
+  | "transaction"
+  | "brain_memo";
 
 export interface Note {
   id: string;

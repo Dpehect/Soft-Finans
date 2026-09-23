@@ -207,10 +207,12 @@ _NOTE_CONTEXT_LABELS = {
     "news": "News note",
     "holding": "Position note",
     "transaction": "Transaction note",
+    "brain_memo": "Promoted research note",
 }
 
 # A note's context maps to a route the citation can deep-link to.
 _NOTE_CONTEXT_ROUTES = {
+    "brain_memo": "/equity/notes",
     "watchlist": "/equity/watchlist",
     "news": "/equity/news",
     "holding": "/equity/portfolio",

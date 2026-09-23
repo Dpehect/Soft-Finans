@@ -141,3 +141,48 @@ def test_brain_memo_list_filters_symbol_and_pin() -> None:
     apple = client.get("/api/brain/memos", headers=owner, params={"symbol": "aapl"})
     assert apple.status_code == 200
     assert [item["symbol"] for item in apple.json()] == ["AAPL"]
+
+
+def test_reviewed_promotion_creates_linked_note_without_rewriting_memo(monkeypatch) -> None:
+    from backend.api.routes import brain_memos
+
+    indexed: list[str] = []
+
+    async def fake_reindex(user_id: str) -> None:
+        indexed.append(user_id)
+
+    monkeypatch.setattr(brain_memos, "_reindex_user_brain", fake_reindex)
+    init_db()
+    client = TestClient(app)
+    owner = _auth(client, "promote-owner")
+    other = _auth(client, "promote-other")
+    created = client.post("/api/brain/memos", headers=owner, json=_payload())
+    assert created.status_code == 201, created.text
+    memo = created.json()
+    path = f"/api/brain/memos/{memo['id']}/promote-to-note"
+    reviewed = {
+        "title": "My reviewed margin note",
+        "body": "I checked the source; margins may improve, but guidance is provisional.",
+        "symbol": "msft",
+        "tags": ["reviewed", "reviewed"],
+        "effective_at": "2026-09-21T09:00:00+00:00",
+    }
+
+    assert client.post(path, headers=other, json=reviewed).status_code == 404
+    assert client.post(path, headers=owner, json={**reviewed, "body": "  "}).status_code == 422
+    assert client.post(path, headers=owner, json={**reviewed, "effective_at": "2026-09-21T09:00:00"}).status_code == 422
+    assert client.post("/api/notes", headers=owner, json={"context": "brain_memo", "body": "Forged"}).status_code == 422
+
+    promoted = client.post(path, headers=owner, json=reviewed)
+    assert promoted.status_code == 201, promoted.text
+    note = promoted.json()
+    assert note["context"] == "brain_memo"
+    assert note["ref_id"] == memo["id"]
+    assert note["body"] == reviewed["body"]
+    assert note["body"] != memo["answer"]
+    assert note["symbol"] == "MSFT"
+    assert note["tags"] == ["reviewed"]
+    assert note["effective_at"].startswith("2026-09-21T09:00:00")
+    assert len(indexed) == 1
+    assert client.get("/api/notes", headers=other).json() == []
+    assert client.get(f"/api/brain/memos/{memo['id']}", headers=owner).json()["answer"] == memo["answer"]

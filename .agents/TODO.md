@@ -1,7 +1,7 @@
 # Current project state and backlog
 
-Last audited: **2026-09-22**, from `main` at `f432827` (through Brain Log
-persistence PR #155), plus the browser Brain Log work on this branch. The latest
+Last audited: **2026-09-23**, from `main` at `c548912` (through browser Brain Log
+PR #156), plus the reviewed promotion work on this branch. The latest
 tag and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
@@ -365,14 +365,15 @@ cross-market-intelligence promise into concrete journeys and contracts.
       stable memo contract, including organization controls and explicit delete.
 - [ ] Compare citation content identities with current evidence and show when a
       saved memo is stale without silently rewriting its historical snapshot.
-- [ ] Add a reviewed **Promote to Note** bridge with provenance back to the memo.
+- [x] Add a reviewed **Promote to Note** bridge with provenance back to the memo.
       Defer position/portfolio-thesis and Journal promotion until observed Brain
       Log usage justifies those transitions; never replace canonical beliefs or
       record decisions without explicit user confirmation.
 
 **Boundary:** this establishes temporal evidence semantics and a durable backend
-home and browser surface for explicitly saved derived synthesis. It does not
-make model output an independent source, automatically persist
+home and browser surface for explicitly saved derived synthesis, plus an explicit
+reviewed bridge into Notes. It does not automatically make model output an
+independent source, persist
 conversations, replace user-owned beliefs, make the full cross-market
 intelligence promise, or claim that contradiction handling is solved.
 

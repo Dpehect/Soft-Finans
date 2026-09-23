@@ -1,5 +1,6 @@
 import { api } from "./base";
 import type { BrainCitation, BrainSource } from "./brain";
+import type { Note } from "./notes";
 
 export interface BrainMemoSummary {
   id: string;
@@ -53,4 +54,17 @@ export async function updateBrainMemo(id: string, payload: BrainMemoUpdate): Pro
 
 export async function deleteBrainMemo(id: string): Promise<void> {
   await api.delete(`/brain/memos/${encodeURIComponent(id)}`);
+}
+
+export interface BrainMemoPromotion {
+  title: string;
+  body: string;
+  symbol: string | null;
+  tags: string[];
+  effective_at: string | null;
+}
+
+export async function promoteBrainMemoToNote(id: string, payload: BrainMemoPromotion): Promise<Note> {
+  const { data } = await api.post<Note>(`/brain/memos/${encodeURIComponent(id)}/promote-to-note`, payload);
+  return data;
 }

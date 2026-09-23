@@ -13,6 +13,7 @@ const listBrainMemosMock = vi.fn();
 const getBrainMemoMock = vi.fn();
 const updateBrainMemoMock = vi.fn();
 const deleteBrainMemoMock = vi.fn();
+const promoteBrainMemoToNoteMock = vi.fn();
 
 vi.mock("../api/brain", () => ({
   askBrainStream: (...args: unknown[]) => askBrainStreamMock(...args),
@@ -25,6 +26,7 @@ vi.mock("../api/brainMemos", () => ({
   getBrainMemo: (...args: unknown[]) => getBrainMemoMock(...args),
   updateBrainMemo: (...args: unknown[]) => updateBrainMemoMock(...args),
   deleteBrainMemo: (...args: unknown[]) => deleteBrainMemoMock(...args),
+  promoteBrainMemoToNote: (...args: unknown[]) => promoteBrainMemoToNoteMock(...args),
 }));
 
 const citation = {
@@ -40,10 +42,10 @@ const memo = {
   llm: true, llm_provider: "test", llm_model: "test-model",
 };
 
-function renderWithProviders(element: React.ReactNode) {
+function renderWithProviders(element: React.ReactNode, entry = "/equity/brain") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[entry]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <QueryClientProvider client={client}>{element}</QueryClientProvider>
     </MemoryRouter>,
   );
@@ -61,6 +63,7 @@ describe("Brain Log browser flow", () => {
     getBrainMemoMock.mockResolvedValue(memo);
     updateBrainMemoMock.mockImplementation(async (_id: string, changes: object) => ({ ...memo, ...changes }));
     deleteBrainMemoMock.mockResolvedValue(undefined);
+    promoteBrainMemoToNoteMock.mockResolvedValue({ id: "note-1" });
   });
 
   it("offers Save only after a complete answer and preserves the answer snapshot", async () => {
@@ -124,5 +127,29 @@ describe("Brain Log browser flow", () => {
     await waitFor(() => expect(listBrainMemosMock).toHaveBeenCalledWith(0, 25, "MSFT", undefined));
     fireEvent.click(screen.getByLabelText("Pinned only"));
     await waitFor(() => expect(listBrainMemosMock).toHaveBeenCalledWith(0, 25, "MSFT", true));
+  });
+
+  it("requires review before promoting a memo and preserves provenance in the result", async () => {
+    renderWithProviders(<BrainLogPanel />);
+    fireEvent.click(await screen.findByRole("button", { name: /What changed\?/ }));
+    await screen.findByRole("region", { name: "Saved research memo" });
+    fireEvent.click(screen.getByRole("button", { name: "Promote to Note" }));
+    expect(screen.getByRole("button", { name: "Create reviewed Note" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Reviewed note text/), { target: { value: "I verified the guidance is still relevant." } });
+    fireEvent.click(screen.getByLabelText(/I reviewed this text/));
+    fireEvent.click(screen.getByRole("button", { name: "Create reviewed Note" }));
+    await waitFor(() => expect(promoteBrainMemoToNoteMock).toHaveBeenCalledWith("memo-1", {
+      title: memo.title, body: "I verified the guidance is still relevant.",
+      symbol: null, tags: [], effective_at: new Date(memo.generated_at).toISOString(),
+    }));
+    expect(await screen.findByText(/Reviewed Note created/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Notes" })).toHaveAttribute("href", "/equity/notes");
+  });
+
+  it("opens a memo from a provenance deep link even when it is not in the first list page", async () => {
+    listBrainMemosMock.mockResolvedValue([]);
+    renderWithProviders(<BrainLogPanel />, "/equity/brain?memo=memo-1#brain-log");
+    expect(await screen.findByRole("region", { name: "Saved research memo" })).toBeInTheDocument();
+    expect(getBrainMemoMock).toHaveBeenCalledWith("memo-1");
   });
 });
