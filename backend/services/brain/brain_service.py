@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from backend.config.settings import get_settings
 from backend.services.brain.indexer import reindex_user
-from backend.services.brain.vector_store import VectorMatch, make_vector_store
+from backend.services.brain.vector_store import VectorMatch, VectorStore, make_vector_store
 from backend.services.embeddings import EmbeddingError, get_embedding_service
 from backend.services.llm_client import LLMError, get_llm_client
 from backend.shared.db import engine
@@ -124,6 +124,22 @@ def _temporal_rerank(
         reverse=True,
     )
     return reranked[:k]
+
+
+def rank_brain_candidates(
+    store: VectorStore,
+    db: Session,
+    user_id: str,
+    query_vector: list[float],
+    *,
+    k: int,
+    sources: list[str] | None = None,
+    now: datetime | None = None,
+) -> list[VectorMatch]:
+    """Use the same candidate window and temporal ranking for answers and evals."""
+    candidate_k = max(k * _TEMPORAL_CANDIDATE_MULTIPLIER, _TEMPORAL_MIN_CANDIDATES)
+    candidates = store.search(db, user_id, query_vector, k=candidate_k, sources=sources)
+    return _temporal_rerank(candidates, k=k, now=now)
 
 
 def _format_context(matches: list[VectorMatch]) -> str:
@@ -350,15 +366,9 @@ async def _prepare_ask(
         )
 
     search_sources = None if sources is None else active_sources
-    candidate_k = max(k * _TEMPORAL_CANDIDATE_MULTIPLIER, _TEMPORAL_MIN_CANDIDATES)
-    candidates = store.search(
-        db,
-        user_id,
-        query_vector,
-        k=candidate_k,
-        sources=search_sources,
+    matches = rank_brain_candidates(
+        store, db, user_id, query_vector, k=k, sources=search_sources
     )
-    matches = _temporal_rerank(candidates, k=k)
     if not matches:
         return (
             _with_scope(

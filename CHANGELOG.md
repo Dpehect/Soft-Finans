@@ -7,6 +7,10 @@ adopt [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from `1.0.0`.
 ## [Unreleased]
 
 ### Added
+- **Private Brain retrieval evaluation harness** — a read-only runner scores
+  dated, owner-reviewed cases for current/history recall, chronology order,
+  unrelated-source intrusions, and index freshness. Real Hermes cases remain
+  private and must be measured before changing retrieval weights.
 - **Brain Log evidence change signals** — opening a saved memo compares dated
   citation identities with live owner-scoped records and marks matching,
   changed, unavailable, or unverifiable evidence. The saved answer remains

@@ -658,6 +658,9 @@ The browser marks matching, changed, unavailable, and unverifiable citations;
 it never rewrites the historical answer. This check does not establish whether
 the answer's claims are correct, and it does not depend on a completed reindex.
 
+To evaluate retrieval against a private, dated corpus without invoking the chat
+model or changing the index, see the [Brain retrieval evaluation guide](docs/wiki/Brain-Retrieval-Evaluation.md).
+
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other
 clients can consume the complete checked-in
