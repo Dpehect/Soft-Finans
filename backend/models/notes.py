@@ -19,7 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.shared.db import Base
 
 # Where a note was captured. "general" = standalone (the Notes hub).
-NOTE_CONTEXTS = ("general", "security", "watchlist", "news", "holding", "transaction")
+NOTE_CONTEXTS = ("general", "security", "watchlist", "news", "holding", "transaction", "brain_memo")
 
 
 class NoteORM(Base):

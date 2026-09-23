@@ -1401,6 +1401,60 @@
         "title": "BrainMemoOut",
         "type": "object"
       },
+      "BrainMemoPromoteNote": {
+        "description": "User-reviewed copy, never a silent transcription of model output.",
+        "properties": {
+          "body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "effective_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective At"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "default": "",
+            "maxLength": 256,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "BrainMemoPromoteNote",
+        "type": "object"
+      },
       "BrainMemoSummary": {
         "properties": {
           "annotation": {
@@ -15977,6 +16031,70 @@
           }
         ],
         "summary": "Update Brain Memo",
+        "tags": [
+          "brain"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "brain": "supported"
+        }
+      }
+    },
+    "/api/brain/memos/{memo_id}/promote-to-note": {
+      "post": {
+        "operationId": "promote_brain_memo_to_note_api_brain_memos__memo_id__promote_to_note_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memo_id",
+            "required": true,
+            "schema": {
+              "title": "Memo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrainMemoPromoteNote"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Promote Brain Memo To Note",
         "tags": [
           "brain"
         ],

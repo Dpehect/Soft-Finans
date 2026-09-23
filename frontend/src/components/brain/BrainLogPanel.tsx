@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bookmark, Pin, Trash2 } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { extractApiErrorMessage } from "../../api/base";
 import {
@@ -15,6 +16,7 @@ import { TerminalInput } from "../terminal/TerminalInput";
 import { TerminalPanel } from "../terminal/TerminalPanel";
 import { TerminalModal } from "../terminal/TerminalModal";
 import { CitationCard, scopeLabel } from "./BrainEvidence";
+import { BrainMemoPromotionModal } from "./BrainMemoPromotionModal";
 
 const PAGE_SIZE = 25;
 
@@ -32,6 +34,8 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
   const [annotation, setAnnotation] = useState(memo.annotation);
   const [pinned, setPinned] = useState(memo.pinned);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [promotedNoteId, setPromotedNoteId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const update = useMutation({
@@ -83,6 +87,11 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
           {memo.citations.map((citation) => <CitationCard key={citation.n} citation={citation} />)}
         </div>
       ) : null}
+      <div className="space-y-2 border-t border-terminal-border pt-3">
+        <p className="text-[11px] text-terminal-muted">Turn this historical synthesis into your own reviewed Note only if its claims are still useful. The memo stays unchanged.</p>
+        <TerminalButton type="button" size="sm" onClick={() => setPromoteOpen(true)}>Promote to Note</TerminalButton>
+        {promotedNoteId ? <p role="status" className="text-[11px] text-terminal-pos">Reviewed Note created; indexing was queued. <Link to="/equity/notes" className="underline">Open Notes</Link>.</p> : null}
+      </div>
       <form className="space-y-3 border-t border-terminal-border pt-3" onSubmit={(event) => { event.preventDefault(); update.mutate(); }}>
         <p className="text-[10px] uppercase tracking-wide text-terminal-muted">Organize this memo · answer and evidence are fixed</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -111,14 +120,22 @@ function MemoDetail({ memo, onDeleted }: { memo: BrainMemo; onDeleted: () => voi
       </form>
       <TerminalModal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete research memo?" busy={remove.isPending} size="sm"
         footer={<div className="flex justify-end gap-2"><TerminalButton size="sm" onClick={() => setConfirmDelete(false)}>Cancel</TerminalButton><TerminalButton size="sm" variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>Delete permanently</TerminalButton></div>}>
-        <p className="text-xs text-terminal-text">This removes the saved answer and citation snapshot. Original notes and other evidence are unaffected.</p>
+        <p className="text-xs text-terminal-text">This removes the saved answer and citation snapshot. Notes promoted from it remain, but their source-memo link will no longer resolve. Original evidence is unaffected.</p>
       </TerminalModal>
+      {promoteOpen ? <BrainMemoPromotionModal memo={memo} onClose={() => setPromoteOpen(false)} onPromoted={(noteId) => { setPromotedNoteId(noteId); setPromoteOpen(false); }} /> : null}
     </section>
   );
 }
 
 export function BrainLogPanel() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get("memo");
+  const setSelectedId = (id: string | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (id) next.set("memo", id);
+    else next.delete("memo");
+    setSearchParams(next);
+  };
   const [symbolInput, setSymbolInput] = useState("");
   const [symbolFilter, setSymbolFilter] = useState("");
   const [pinnedOnly, setPinnedOnly] = useState(false);
@@ -153,8 +170,8 @@ export function BrainLogPanel() {
           {list.isPending ? <p role="status" className="text-xs text-terminal-muted">Loading saved research…</p> : null}
           {list.isError ? <p role="alert" className="text-xs text-terminal-neg">{extractApiErrorMessage(list.error, "Could not load Brain Log.")}</p> : null}
           {list.isError ? <TerminalButton size="sm" onClick={() => void list.refetch()}>Retry</TerminalButton> : null}
-          {list.isSuccess && memos.length === 0 ? <p className="text-xs text-terminal-muted">{symbolFilter || pinnedOnly ? "No saved memos match these filters." : "No saved answers yet. Ask your Second Brain, then save a completed answer here."}</p> : null}
-          {memos.length ? (
+          {list.isSuccess && memos.length === 0 && !selectedId ? <p className="text-xs text-terminal-muted">{symbolFilter || pinnedOnly ? "No saved memos match these filters." : "No saved answers yet. Ask your Second Brain, then save a completed answer here."}</p> : null}
+          {memos.length || selectedId ? (
             <div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
               <div className="space-y-1.5" aria-label="Saved memos">
                 {memos.map((memo) => (

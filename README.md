@@ -646,7 +646,11 @@ annotation, symbol, and pin state. Brain memos are not added to the Second Brain
 index, so model output cannot silently reinforce itself as source evidence. The
 Second Brain page offers **Save answer** after a completed synthesis
 and a Brain Log for reading, organizing, pinning, and explicitly deleting saved
-memos. Reviewed promotion into Notes remains a separate follow-up surface.
+memos. **Promote to Note** opens an editable draft with a confirmation step; only
+the reviewed Note is indexed as evidence. Authenticated clients can use
+`POST /api/brain/memos/{memo_id}/promote-to-note` for the same owner-scoped
+transition. The Note retains its source memo ID and the Notes UI links back to
+the memo. Portfolio theses and Journal are not promotion targets yet.
 
 The generated [API reference](docs/API_REFERENCE.md) indexes every backend
 operation with its authentication and product-support state. Agents and other

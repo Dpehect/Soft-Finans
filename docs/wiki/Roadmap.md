@@ -219,9 +219,10 @@ The owner-scoped storage/API foundation now provides save/list/read/delete,
 editable organization metadata, immutable citation/content snapshots, and model
 provenance without indexing memos. The browser Second Brain page now offers
 explicit Save answer and a Brain Log with dated snapshots, editable organization
-details, and confirmed deletion. The reviewed **Promote to Note** bridge is next;
-memo staleness and thesis/Journal promotion follow once real usage shows which
-transitions are valuable. Automatic
+details, and confirmed deletion. A reviewed **Promote to Note** action now lets
+the user edit and confirm a draft before creating a separate, indexed Note with
+typed provenance back to the memo. Memo staleness and thesis/Journal promotion
+follow once real usage shows which transitions are valuable. Automatic
 persistence, automatic re-indexing, autonomous thesis replacement, and treating
 model output as an independent fact are outside this first boundary.
 

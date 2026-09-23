@@ -98,10 +98,11 @@ release-level interpretation and safety boundaries.
   model provenance. Organization metadata is editable; answer/evidence snapshots
   are not. Memos stay out of retrieval by default. The browser Second Brain
   page now saves completed answers and exposes the Brain Log for reading and
-  organizing them. Staleness comparison and the reviewed **Promote to Note**
-  bridge remain next; theses and Journal remain canonical user-owned records.
-  This remains an iterative contract to evaluate against the growing Hermes corpus before
-  cross-market synthesis relies on it.
+  organizing them. A reviewed **Promote to Note** action creates a separate,
+  editable Note with a link back to its source memo; only that Note becomes
+  evidence. Staleness comparison remains next; theses and Journal remain
+  canonical user-owned records. This is an iterative contract to evaluate
+  against the growing Hermes corpus before cross-market synthesis relies on it.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,
   persists transaction/native currency semantics, and normalizes ledger and
