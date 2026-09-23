@@ -1,7 +1,7 @@
 # Current project state and backlog
 
-Last audited: **2026-09-23**, from `main` at `0a27391` (through reviewed Brain
-memo promotion PR #157), plus citation staleness work on this branch. The latest
+Last audited: **2026-09-23**, from `main` at `92d8d76` (through Brain Log citation
+staleness PR #158), plus retrieval evaluation harness work on this branch. The latest
 tag and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
@@ -354,6 +354,9 @@ cross-market-intelligence promise into concrete journeys and contracts.
       cases with expected current and historical evidence, then tune topic
       identity, explicit supersession, source-specific decay, diversity, and
       index-freshness visibility from observed failures rather than intuition.
+      A read-only case runner now measures recall, unwanted hits, chronology
+      order, and index freshness; real host cases are not in this checkout and
+      this item is **not** complete until they drive at least one measured pass.
 - [x] Add the owner-scoped Brain Log persistence/API foundation. Research memos
       snapshot the question, complete answer, source scope, dated citations and
       content hashes, generation time, and provider/model metadata; only title,

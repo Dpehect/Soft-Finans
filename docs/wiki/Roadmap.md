@@ -184,6 +184,11 @@ Hermes corpus should drive evaluation of topic identity, explicit supersession,
 source-specific decay, retrieval diversity, index freshness, and contradiction
 handling before cross-market synthesis depends on it.
 
+A read-only [retrieval evaluation runner](Brain-Retrieval-Evaluation.md) now
+scores private, dated cases against the existing index without calling the chat
+model or reindexing. The checkout does not contain the host's Hermes corpus, so
+real case curation and measured tuning remain open.
+
 ### v2 derived memory — Brain Log and research memos
 
 Second Brain answers disappear with the page session unless a client explicitly

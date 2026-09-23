@@ -4,8 +4,8 @@ This directory is the repository-owned handoff for AI coding agents and new
 maintainers. Read it before making changes. It records decisions that may have
 previously existed only in a maintainer's chat or local agent memory.
 
-Last audited: **2026-09-16**, from `main` at `e28f03b` (through post-release PR
-#149), plus the v2 temporal-memory work on this branch. The latest tag and
+Last audited: **2026-09-23**, from `main` at `92d8d76` (through Brain Log PR
+#158), plus the retrieval evaluation harness on this branch. The latest tag and
 published GitHub release are **v1.7.0** at `0473307`.
 
 ## Read order and sources of truth
@@ -106,6 +106,8 @@ release-level interpretation and safety boundaries.
   Theses and Journal remain
   canonical user-owned records. This is an iterative contract to evaluate
   against the growing Hermes corpus before cross-market synthesis relies on it.
+  `docs/wiki/Brain-Retrieval-Evaluation.md` describes the read-only retrieval
+  runner; no real Hermes case file is checked in, so tuning remains open.
 - **v1.7.0 — multi-currency portfolio accounting** completed the v1 arc.
   It promotes the existing portfolio currency to an explicit reporting base,
   persists transaction/native currency semantics, and normalizes ledger and
