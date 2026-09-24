@@ -437,6 +437,12 @@ export function StockDetailPage() {
               hasOptions={stockClassification?.has_options}
             />
             <EarningsDateBadge event={nextEarnings} />
+            <Link
+              to={`/equity/market-context?symbol=${encodeURIComponent(ticker.toUpperCase())}`}
+              className="rounded border border-terminal-border px-2 py-1 text-terminal-accent hover:border-terminal-accent"
+            >
+              Cross-market context
+            </Link>
           </div>
           <SharedChartToolbar
             symbol={ticker}

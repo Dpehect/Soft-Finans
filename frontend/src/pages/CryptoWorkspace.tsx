@@ -715,6 +715,7 @@ export function CryptoWorkspacePage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <TerminalButton variant="accent" onClick={() => openChart(selectedAsset.symbol)}>Open Chart</TerminalButton>
+                <TerminalButton variant="default" onClick={() => navigate(`/equity/market-context?symbol=${encodeURIComponent(selectedAsset.symbol)}`)}>Cross-market context</TerminalButton>
                 <TerminalButton variant="default" onClick={() => setTab("movers")}>Mover Tape</TerminalButton>
                 <TerminalButton variant="default" onClick={() => setTab("heatmap")}>Depth Heatmap</TerminalButton>
                 <TerminalButton variant="default" onClick={() => setTab("derivatives")}>Derivatives</TerminalButton>

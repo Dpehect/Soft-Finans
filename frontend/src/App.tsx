@@ -47,6 +47,7 @@ const MultiTimeframePage = lazyWithRetry(() => import("./pages/MultiTimeframePag
 const LaunchpadPage = lazyWithRetry(() => import("./pages/Launchpad").then((m) => ({ default: m.LaunchpadPage })));
 const LaunchpadPopoutPage = lazyWithRetry(() => import("./pages/LaunchpadPopout").then((m) => ({ default: m.LaunchpadPopoutPage })));
 const SplitComparisonPage = lazyWithRetry(() => import("./pages/SplitComparison").then((m) => ({ default: m.SplitComparisonPage })));
+const MarketContextPage = lazyWithRetry(() => import("./pages/MarketContextPage").then((m) => ({ default: m.MarketContextPage })));
 const YieldCurveDashboard = lazyWithRetry(() => import("./pages/fixed-income/YieldCurveDashboard").then((m) => ({ default: m.YieldCurveDashboard })));
 const BondAnalyticsCalculator = lazyWithRetry(() => import("./pages/fixed-income/BondAnalyticsCalculator").then((m) => ({ default: m.BondAnalyticsCalculator })));
 const OptionGreeksCalculator = lazyWithRetry(() => import("./pages/fixed-income/OptionGreeksCalculator").then((m) => ({ default: m.OptionGreeksCalculator })));
@@ -169,6 +170,7 @@ function App() {
             <Route path="launchpad" element={<LaunchpadPage />} />
             <Route path="launchpad/popout" element={<LaunchpadPopoutPage />} />
             <Route path="compare" element={<SplitComparisonPage />} />
+            <Route path="market-context" element={<MarketContextPage />} />
             <Route path="yield-curve" element={<YieldCurveDashboard />} />
             <Route path="bond-analytics" element={<BondAnalyticsCalculator />} />
             <Route path="option-greeks" element={<OptionGreeksCalculator />} />

@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-24**, from `main` at `f321d85` (through the Journal–Portfolio
-roadmap PR #160), plus cross-market comparison work on this branch. The latest tag
-and published GitHub release are **v1.7.0** at `0473307`.
+Last audited: **2026-09-24**, from `main` at `00aed8e` (through the cross-market
+comparison API PR #161), plus browser comparison work on this branch. The latest
+tag and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -382,13 +382,15 @@ intelligence promise, or claim that contradiction handling is solved.
 
 ### v2 next — first cross-market evidence slice
 
-- [x] Add an experimental, owner-authenticated comparison API for one anchor and
+- [x] Add an experimental, authenticated comparison API for one anchor and
       selected market proxies. It aligns daily closes by shared UTC dates,
       reports the actual window/coverage/freshness, and leaves unavailable
       histories explicit instead of fabricating a cross-market signal.
-- [ ] Add a user-facing comparison journey after the API contract is reviewed:
-      start from an equity or crypto asset, choose relevant proxies, and show
-      dated side-by-side returns with missing/stale states and source caveats.
+- [x] Add a contextual browser comparison journey from equity and crypto
+      research. The user can choose one anchor and up to six proxies across
+      1/3/6-month windows; the page shows dated, pairwise returns, overlap,
+      current/stale/unavailable states, and source/FX caveats. Keep it
+      experimental while host testing confirms provider coverage and UX.
 - [ ] Extend from price co-movement into cross-market explanation only when
       fundamentals, macro, sentiment, and technical evidence have their own
       freshness/provenance contracts. Do not infer causation from correlated

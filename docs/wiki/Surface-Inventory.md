@@ -131,6 +131,7 @@ Routes not shown in the sidebar are classified by family:
 | `/`, `/home`, authentication, account | **supported** | Core entry, authentication, and account lifecycle |
 | Security detail, Launchpad popout, saved views | **supported** | Contextual destinations reached from retained workflows |
 | Data Quality, Factors, Intelligence Timeline | **experimental** | Reachable through contextual links/commands while their stable placement is reviewed |
+| Cross-market context | **experimental** | Contextual equity/crypto price comparison with dated overlap and explicit provider/FX limits; not yet a multi-source explanation |
 | Notes Hub | **supported** | Contextual capture UI with optional effective time and visible loading/indexing lifecycle; Second Brain remains the primary navigation entry |
 | Bond Analytics and Option Greeks calculators | **experimental** | Calculators do not imply that the hidden live Bonds feed exists |
 | F&O child routes | **configuration-gated** | India support is intentional; US option paths depend on available providers |
