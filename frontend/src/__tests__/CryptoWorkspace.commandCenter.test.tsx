@@ -157,4 +157,11 @@ describe("Crypto command center", () => {
     expect(setTickerMock).toHaveBeenCalledWith("ETH");
     expect(navigateMock).toHaveBeenCalledWith("/equity/chart-workstation");
   });
+
+  it("opens dated cross-market context for the selected crypto asset", async () => {
+    renderPage();
+    expect(await screen.findByRole("button", { name: "Cross-market context" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cross-market context" }));
+    expect(navigateMock).toHaveBeenCalledWith("/equity/market-context?symbol=BTC-USD");
+  });
 });

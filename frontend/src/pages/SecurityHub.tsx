@@ -296,7 +296,7 @@ export function SecurityHubPage() {
               <MetricCell label="Volume" value={fmtNum(stock.volume)} />
             </div>
           </div>
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <TerminalTabs
               items={HUB_TABS}
               value={tab}
@@ -307,26 +307,35 @@ export function SecurityHubPage() {
               }}
               variant="accent"
             />
-            <TerminalButton
-              size="sm"
-              variant="default"
-              leftIcon={<FileText size={14} />}
-              onClick={async () => {
-                try {
-                  const blob = await generateAdvancedReport("stock", { ticker: activeTicker });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `Report_${activeTicker}.pdf`;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                } catch (e) {
-                  console.error("Export failed", e);
-                }
-              }}
-            >
-              EXPORT REPORT
-            </TerminalButton>
+            <div className="flex items-center gap-2">
+              <TerminalButton
+                size="sm"
+                variant="default"
+                onClick={() => navigate(`/equity/market-context?symbol=${encodeURIComponent(activeTicker)}`)}
+              >
+                CROSS-MARKET CONTEXT
+              </TerminalButton>
+              <TerminalButton
+                size="sm"
+                variant="default"
+                leftIcon={<FileText size={14} />}
+                onClick={async () => {
+                  try {
+                    const blob = await generateAdvancedReport("stock", { ticker: activeTicker });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `Report_${activeTicker}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  } catch (e) {
+                    console.error("Export failed", e);
+                  }
+                }}
+              >
+                EXPORT REPORT
+              </TerminalButton>
+            </div>
           </div>
         </div>
 

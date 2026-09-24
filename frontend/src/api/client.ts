@@ -1,6 +1,7 @@
 export * from "./base";
 export * from "./types";
 export * from "./marketData";
+export * from "./marketContext";
 export * from "./equity";
 export * from "./insider";
 export * from "./screener";
