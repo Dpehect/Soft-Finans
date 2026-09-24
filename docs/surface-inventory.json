@@ -57,6 +57,7 @@
     "instruments": "supported",
     "journal": "supported",
     "kite": "configuration-gated",
+    "market-context": "experimental",
     "model-lab": "hidden",
     "mutual-funds": "supported",
     "news": "supported",

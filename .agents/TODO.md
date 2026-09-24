@@ -1,8 +1,8 @@
 # Current project state and backlog
 
-Last audited: **2026-09-23**, from `main` at `eb13000` (through Brain retrieval
-evaluation harness PR #159). The latest tag and published GitHub release are
-**v1.7.0** at `0473307`.
+Last audited: **2026-09-24**, from `main` at `f321d85` (through the Journal–Portfolio
+roadmap PR #160), plus cross-market comparison work on this branch. The latest tag
+and published GitHub release are **v1.7.0** at `0473307`.
 
 This is a handoff, not an immutable roadmap. Before taking an item, verify it
 against recent Git history, code, and tests. Move shipped work to the completed
@@ -350,13 +350,12 @@ cross-market-intelligence promise into concrete journeys and contracts.
       heartbeats, terminal-marker validation, a 2,048-token normal synthesis
       budget, and a 6,144-token truncation retry so a silent reasoning phase or
       truncated `200` cannot masquerade as a finished answer.
-- [ ] Evaluate retrieval against the growing Hermes corpus: build dated question
-      cases with expected current and historical evidence, then tune topic
-      identity, explicit supersession, source-specific decay, diversity, and
-      index-freshness visibility from observed failures rather than intuition.
-      A read-only case runner now measures recall, unwanted hits, chronology
-      order, and index freshness; real host cases are not in this checkout and
-      this item is **not** complete until they drive at least one measured pass.
+- [ ] **Deferred quality follow-up, not a v2 opening gate:** curate private dated
+      cases from the growing Hermes corpus and use the read-only evaluation
+      runner to measure recall, unwanted hits, chronology, and freshness before
+      tuning topic identity or source-specific decay. The maintainer accepted the
+      initial time-aware behavior after testing against a substantial live corpus;
+      no measured private-case run has been claimed or checked in.
 - [x] Add the owner-scoped Brain Log persistence/API foundation. Research memos
       snapshot the question, complete answer, source scope, dated citations and
       content hashes, generation time, and provider/model metadata; only title,
@@ -380,6 +379,20 @@ unverifiable evidence; they do not adjudicate whether the answer is true. The
 system does not automatically make model output an independent source, persist
 conversations, replace user-owned beliefs, make the full cross-market
 intelligence promise, or claim that contradiction handling is solved.
+
+### v2 next — first cross-market evidence slice
+
+- [x] Add an experimental, owner-authenticated comparison API for one anchor and
+      selected market proxies. It aligns daily closes by shared UTC dates,
+      reports the actual window/coverage/freshness, and leaves unavailable
+      histories explicit instead of fabricating a cross-market signal.
+- [ ] Add a user-facing comparison journey after the API contract is reviewed:
+      start from an equity or crypto asset, choose relevant proxies, and show
+      dated side-by-side returns with missing/stale states and source caveats.
+- [ ] Extend from price co-movement into cross-market explanation only when
+      fundamentals, macro, sentiment, and technical evidence have their own
+      freshness/provenance contracts. Do not infer causation from correlated
+      price moves or treat native-quote returns as FX-normalized performance.
 
 ## Current handoff boundary
 

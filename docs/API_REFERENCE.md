@@ -13,8 +13,8 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 
 ## Contract summary
 
-- **450 operations** across **402 paths** and **86 families**.
-- Authentication: **405 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
+- **451 operations** across **403 paths** and **87 families**.
+- Authentication: **406 bearer**, **5 read API-key**, **1 write API-key**, **39 unauthenticated** operations.
 - API keys are created and revoked by an authenticated user under `/api/settings/api-keys`.
 - `read_write` is required for `PUT /api/v1/notes/external`; market-data automation endpoints require `read` or `read_write`.
 
@@ -24,7 +24,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 |---|---:|---|
 | `supported` | 53 | Stable v1 product contract; upstream data can still degrade honestly. |
 | `configuration-gated` | 11 | Useful only in a supported market or with documented provider configuration. |
-| `experimental` | 11 | Retained for evaluation, outside the stable v1 promise. |
+| `experimental` | 12 | Retained for evaluation, outside the stable v1 promise. |
 | `hidden` | 11 | Compatibility API retained but not advertised in primary navigation. |
 | `remove` | 0 | Scheduled for removal after consumer and regression verification. |
 
@@ -80,6 +80,7 @@ requirements are documented in [`wiki/Limitations.md`](wiki/Limitations.md).
 | `instruments` | `supported` | 1 |
 | `journal` | `supported` | 10 |
 | `kite` | `configuration-gated` | 6 |
+| `market-context` | `experimental` | 1 |
 | `model-lab` | `hidden` | 12 |
 | `mutual-funds` | `supported` | 13 |
 | `news` | `supported` | 10 |
@@ -666,6 +667,14 @@ State: **configuration-gated**
 | `GET` | `/api/kite/latest/{symbol}` | Bearer token | Kite Latest Symbol |
 | `GET` | `/api/kite/ltp` | Bearer token | Kite Ltp |
 | `GET` | `/api/kite/profile` | Bearer token | Kite Profile |
+
+### `market-context`
+
+State: **experimental**
+
+| Method | Path | Authentication | Summary |
+|---|---|---|---|
+| `POST` | `/api/market-context/compare` | Bearer token | Compare Market Context |
 
 ### `model-lab`
 
