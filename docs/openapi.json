@@ -6722,6 +6722,250 @@
         "title": "LoginRequest",
         "type": "object"
       },
+      "MarketComparisonRequest": {
+        "properties": {
+          "anchor": {
+            "examples": [
+              "AAPL"
+            ],
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Anchor",
+            "type": "string"
+          },
+          "comparisons": {
+            "examples": [
+              [
+                "SPY",
+                "BTC-USD"
+              ]
+            ],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Comparisons",
+            "type": "array"
+          },
+          "period": {
+            "default": "1M",
+            "enum": [
+              "1M",
+              "3M",
+              "6M"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchor",
+          "comparisons"
+        ],
+        "title": "MarketComparisonRequest",
+        "type": "object"
+      },
+      "MarketComparisonResponse": {
+        "properties": {
+          "anchor": {
+            "title": "Anchor",
+            "type": "string"
+          },
+          "comparisons": {
+            "items": {
+              "$ref": "#/components/schemas/MarketComparisonRow"
+            },
+            "title": "Comparisons",
+            "type": "array"
+          },
+          "data_source": {
+            "const": "unified_history",
+            "title": "Data Source",
+            "type": "string"
+          },
+          "method": {
+            "const": "same_utc_date_daily_closes",
+            "title": "Method",
+            "type": "string"
+          },
+          "period": {
+            "enum": [
+              "1M",
+              "3M",
+              "6M"
+            ],
+            "title": "Period",
+            "type": "string"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "return_basis": {
+            "const": "native_quote_currency_unadjusted",
+            "title": "Return Basis",
+            "type": "string"
+          }
+        },
+        "required": [
+          "anchor",
+          "period",
+          "retrieved_at",
+          "data_source",
+          "return_basis",
+          "method",
+          "comparisons"
+        ],
+        "title": "MarketComparisonResponse",
+        "type": "object"
+      },
+      "MarketComparisonRow": {
+        "properties": {
+          "anchor_latest_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Latest Date"
+          },
+          "anchor_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Return Pct"
+          },
+          "comparison_latest_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Latest Date"
+          },
+          "comparison_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Return Pct"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "freshness": {
+            "anyOf": [
+              {
+                "enum": [
+                  "current",
+                  "stale"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Freshness"
+          },
+          "observations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observations"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "missing_history",
+                  "insufficient_overlap",
+                  "provider_error"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "relative_return_pp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Return Pp"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "status"
+        ],
+        "title": "MarketComparisonRow",
+        "type": "object"
+      },
       "ModelSpec": {
         "properties": {
           "id": {
@@ -23927,6 +24171,60 @@
         }
       }
     },
+    "/api/market-context/compare": {
+      "post": {
+        "description": "Return observed, date-aligned native-quote returns; never a causal claim.",
+        "operationId": "compare_market_context_api_market_context_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketComparisonResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Compare Market Context",
+        "tags": [
+          "market-context"
+        ],
+        "x-openterminalui-auth": {
+          "permission": "user",
+          "scheme": "bearer"
+        },
+        "x-openterminalui-feature-state": {
+          "market-context": "experimental"
+        }
+      }
+    },
     "/api/model-lab/compare": {
       "post": {
         "operationId": "compare_runs_api_model_lab_compare_post",
@@ -40322,6 +40620,7 @@
     "instruments": "supported",
     "journal": "supported",
     "kite": "configuration-gated",
+    "market-context": "experimental",
     "model-lab": "hidden",
     "mutual-funds": "supported",
     "news": "supported",

@@ -206,8 +206,10 @@ handling before cross-market synthesis depends on it.
 
 A read-only [retrieval evaluation runner](Brain-Retrieval-Evaluation.md) now
 scores private, dated cases against the existing index without calling the chat
-model or reindexing. The checkout does not contain the host's Hermes corpus, so
-real case curation and measured tuning remain open.
+model or reindexing. The maintainer accepted the initial recency/citation behavior
+after live corpus testing; real case curation and measured tuning remain optional
+quality work, not a gate on the first cross-market slice. The checkout does not
+contain the host's Hermes corpus.
 
 ### v2 derived memory — Brain Log and research memos
 
@@ -253,6 +255,25 @@ That is a change signal, not factual verification or contradiction resolution.
 Thesis/Journal promotion follows only if real usage justifies it. Automatic
 persistence, automatic re-indexing, autonomous thesis replacement, and treating
 model output as an independent fact are outside this first boundary.
+
+### v2 first cross-market slice — observed comparisons
+
+The first journey asks: **how did an asset move alongside selected market proxies
+over the same dated window?** The initial backend contract is an experimental
+`POST /api/market-context/compare`: one anchor, up to six selected comparison
+symbols, and a 1/3/6-month window. It returns pairwise daily-close returns only
+on shared UTC dates, with the actual start/end, observation count, latest source
+dates, freshness, and explicit unavailable reasons. It does not silently fill
+missing dates or treat a provider failure as a zero return.
+
+This is a comparison primitive, not yet a complete v2 product journey. The next
+step is a browser entry point from equity/crypto research with legible dated
+evidence, missing/stale states, and deliberate proxy selection. Returns are in
+each instrument's native quote currency, **not** FX-normalized portfolio returns;
+the unified history path does not yet expose the underlying provider identity.
+Neither relative returns nor co-movement establish causation. Fundamentals,
+macro, sentiment, and technical evidence become separate later layers only when
+they have honest coverage and provenance contracts.
 
 ## Release plan
 
