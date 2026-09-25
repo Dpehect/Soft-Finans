@@ -1,123 +1,67 @@
 from __future__ import annotations
 
+import logging
+from typing import Callable, Any
 from fastapi import APIRouter
 
-from backend.api.routes.ai import router as ai_router
-from backend.api.routes.analytics import router as analytics_router
-from backend.api.routes.brain import router as brain_router
-from backend.api.routes.brain_memos import router as brain_memos_router
-from backend.api.routes.external_notes import router as external_notes_router
-from backend.api.routes.notes import router as notes_router
-from backend.api.routes.bonds import router as bonds_router
-from backend.api.routes.correlation import router as correlation_router
-from backend.api.routes.pair_trading import router as pair_trading_router
-from backend.api.routes.economics import router as economics_router
-from backend.api.routes.etf import router as etf_router
-from backend.api.routes.factor_analysis import router as factor_analysis_router
-from backend.api.routes.fixed_income import router as fixed_income_router
-from backend.api.routes.framework import router as framework_router
-from backend.api.routes.heatmap import router as heatmap_router
-from backend.api.routes.insider import router as insider_router
-from backend.api.routes.journal import router as journal_router
-from backend.api.routes.market_context import router as market_context_router
-from backend.api.routes.notifications import router as notifications_router
-from backend.api.routes.portfolio_optimizer import router as portfolio_optimizer_router
-from backend.api.routes.statlab import router as statlab_router
-from backend.api.routes.stress_test import router as stress_test_router
-from backend.api.routes.tape import router as tape_router
-from backend.api.routes.watchlists import router as watchlists_router
-from backend.cockpit.routes import router as cockpit_router
-from backend.data_quality.admin_routes import router as admin_data_quality_router
-from backend.data_quality.routes import router as data_quality_router
-from backend.equity.routes import equity_router
-from backend.experiments.routes import router as experiments_router
-from backend.fno.routes import fno_router
-from backend.fno.routes.flow import router as fno_flow_router
-from backend.instruments.routes import router as instruments_router
-from backend.nlp.routes import router as conviction_router
-from backend.portfolio_backtests.routes import router as portfolio_backtests_router
-from backend.reports.tearsheet_routes import tearsheet_router
-from backend.screener.factor_routes import router as factor_ideas_router
-from backend.risk_engine.routes import router as risk_router
-from backend.routers.chart_workstation import router as chart_workstation_router
-from backend.routers.charts import router as charts_router
-from backend.saved_views.routes import router as saved_views_router
-from backend.tca.routes import router as tca_router
-
+logger = logging.getLogger(__name__)
 api_router = APIRouter()
 
-# Register the canonical owner-scoped watchlist contract explicitly.
-api_router.include_router(watchlists_router)
-api_router.include_router(equity_router)
-api_router.include_router(fno_router)
-api_router.include_router(factor_analysis_router, prefix="/api")
-api_router.include_router(ai_router, prefix="/api")
-# Private second-brain RAG (per-user, authed). Router carries "/brain"; the "/api"
-# prefix here resolves it to /api/brain/{ask,reindex,status}.
-api_router.include_router(brain_router, prefix="/api")
-# Explicitly saved, immutable Second Brain answer snapshots. These stay outside
-# the retrieval index unless a later reviewed promotion creates a real note.
-api_router.include_router(brain_memos_router, prefix="/api")
-# API-key-authenticated, idempotent ingestion for external private notes.
-api_router.include_router(external_notes_router, prefix="/api")
-# Generic per-user notes — the capture layer feeding the second brain.
-api_router.include_router(notes_router, prefix="/api")
-# These routers already carry their full "/api/..." prefix internally,
-# so they must be included WITHOUT an extra prefix (avoids "/api/api/...").
-api_router.include_router(analytics_router)
-# correlation router carries its own "/api/correlation" prefix. It was imported but never
-# mounted, leaving the Correlation Dashboard's POST /api/correlation/{matrix,rolling,clusters}
-# a 405 (every matrix/rolling/cluster request failed).
-api_router.include_router(correlation_router)
-api_router.include_router(market_context_router)
-# pair trading router carries its own "/api/pairs" prefix.
-api_router.include_router(pair_trading_router)
-api_router.include_router(fno_flow_router)
-api_router.include_router(heatmap_router, prefix="/api/heatmap")
-api_router.include_router(journal_router)
-api_router.include_router(notifications_router)
-api_router.include_router(stress_test_router, prefix="/api")
-api_router.include_router(insider_router)
-api_router.include_router(etf_router, prefix="/api")
-api_router.include_router(tape_router, prefix="/api/tape")
-api_router.include_router(admin_data_quality_router)
 
-# Quant Feature Pack Routers (Swarm 0 Stubs)
-api_router.include_router(cockpit_router, prefix="/api")
-api_router.include_router(portfolio_backtests_router, prefix="/api")
-api_router.include_router(risk_router, prefix="/api")
-api_router.include_router(experiments_router, prefix="/api")
-api_router.include_router(instruments_router, prefix="/api")
-api_router.include_router(data_quality_router, prefix="/api")
-api_router.include_router(tca_router, prefix="/api")
-api_router.include_router(chart_workstation_router)
-api_router.include_router(charts_router)
+def _safe_include(router_getter: Callable[[], Any], *args: Any, **kwargs: Any) -> None:
+    try:
+        r = router_getter()
+        if r is not None:
+            api_router.include_router(r, *args, **kwargs)
+    except Exception as exc:
+        logger.info("Optional router skipped in serverless environment: %s", exc)
 
-# Product Feature Pack (Wave 1): backtesting + stock-picking
-api_router.include_router(tearsheet_router, prefix="/api")
-api_router.include_router(factor_ideas_router, prefix="/api")
-api_router.include_router(conviction_router, prefix="/api")
-api_router.include_router(saved_views_router, prefix="/api")
 
-# Fixed income & bonds: these routers already carry their full "/api/..." prefix
-# internally, so include them WITHOUT an extra prefix. (Previously imported but
-# never mounted, leaving every /api/fixed-income/* and /api/bonds/* endpoint a 404.)
-api_router.include_router(fixed_income_router)
-api_router.include_router(bonds_router)
+# 1. Core financial & market data routers
+_safe_include(lambda: __import__("backend.api.routes.watchlists", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.equity.routes", fromlist=["equity_router"]).equity_router)
+_safe_include(lambda: __import__("backend.fno.routes", fromlist=["fno_router"]).fno_router)
+_safe_include(lambda: __import__("backend.api.routes.analytics", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.market_context", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.fno.routes.flow", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.heatmap", fromlist=["router"]).router, prefix="/api/heatmap")
+_safe_include(lambda: __import__("backend.api.routes.journal", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.notifications", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.insider", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.etf", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.tape", fromlist=["router"]).router, prefix="/api/tape")
+_safe_include(lambda: __import__("backend.data_quality.admin_routes", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.data_quality.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.instruments.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.routers.chart_workstation", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.routers.charts", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.saved_views.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.tca.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.fixed_income", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.bonds", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.economics", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.correlation", fromlist=["router"]).router)
 
-# Economics calendar + macro indicators. Router carries its own "/api/economics"
-# prefix internally. (Previously imported but never mounted, leaving every
-# /api/economics/* endpoint a 404 — same class as the fixed-income/bonds bug above.)
-api_router.include_router(economics_router)
+# 2. Notes, AI & Brain routers
+_safe_include(lambda: __import__("backend.api.routes.ai", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.brain", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.brain_memos", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.external_notes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.notes", fromlist=["router"]).router, prefix="/api")
 
-# Lean-inspired Algorithm Framework (modular alpha/PC/risk/execution backtest pipeline).
-# Router carries its own "/api/framework" prefix internally.
-api_router.include_router(framework_router)
-
-# Portfolio Optimizer API
-api_router.include_router(portfolio_optimizer_router)
-
-# Statlab API
-api_router.include_router(statlab_router)
+# 3. Optional heavy analytics & quant feature routers (safely loaded if dependencies are present)
+_safe_include(lambda: __import__("backend.api.routes.pair_trading", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.factor_analysis", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.stress_test", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.cockpit.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.portfolio_backtests.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.risk_engine.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.experiments.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.reports.tearsheet_routes", fromlist=["tearsheet_router"]).tearsheet_router, prefix="/api")
+_safe_include(lambda: __import__("backend.screener.factor_routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.nlp.routes", fromlist=["router"]).router, prefix="/api")
+_safe_include(lambda: __import__("backend.api.routes.framework", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.portfolio_optimizer", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.statlab", fromlist=["router"]).router)
 
 __all__ = ["api_router"]
