@@ -235,7 +235,8 @@ def generate_custom_candles(
         progress = i / max(1, num_bars - 1)
 
         norm_curve = (1.0 / (1.0 + math.exp(-6.0 * (progress - 0.45))) - s0) / (s1 - s0)
-        wave = math.sin(i * 0.7) * (0.000003 if is_umy else 0.015)
+        # Balanced small micro-fluctuations (+ and - variations)
+        wave = (math.sin(i * 0.95) * 0.000004 + math.cos(i * 1.6) * 0.000002) if is_umy else (math.sin(i * 0.7) * 0.015)
 
         if i == 0:
             o = start_price
@@ -246,7 +247,7 @@ def generate_custom_candles(
         else:
             o = current_o
             c = round(start_price + total_gain * norm_curve + wave, decimals)
-            c = max(start_price * 0.98, min(target_close * 1.03, c))
+            c = max(start_price * 0.95, min(target_close * 1.05, c))
 
         spread = abs(c - o)
         buffer = (0.000002 if is_umy else 0.012) + spread * 0.3

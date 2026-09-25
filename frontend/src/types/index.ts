@@ -1186,7 +1186,7 @@ export type AccountConnectionSettings = {
   accountAlias: string;
   preferredCountry: CountryCode;
   preferredExchange: MarketCode;
-  defaultCurrency: "INR" | "USD" | "EUR" | "TRY";
+  defaultCurrency: "INR" | "USD" | "EUR" | "TRY" | "GBP";
 };
 
 export type AccountAggregatorSettings = {

@@ -16,6 +16,7 @@ import { useMarketStatus, useTopBarTickers } from "../../hooks/useStocks";
 import { useQuotesStore } from "../../realtime/useQuotesStream";
 import { useSettingsStore } from "../../store/settingsStore";
 import { useStockStore } from "../../store/stockStore";
+import { useUmayLiveStore } from "../../store/umayLiveStore";
 import { COUNTRY_DEFAULT_MARKET, COUNTRY_MARKETS } from "../../types";
 import type { CountryCode, MarketCode } from "../../types";
 import type { DisplayCurrency } from "../../store/settingsStore";
@@ -52,6 +53,8 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
   const { breadcrumbs } = useNavigationHistory({ autoTrack: true });
   const { startTour, openHelp } = useGuideStore();
   const { t } = useTranslation();
+  const umayChangePct = useUmayLiveStore((s) => s.changePct24h);
+  const umayTickDirection = useUmayLiveStore((s) => s.tickDirection);
 
   const { data: polledStatus } = useMarketStatus();
   const realtimeStatus = useQuotesStore((s) => s.marketStatus);
@@ -383,7 +386,17 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
           <span className="bg-gradient-to-r from-amber-400 via-yellow-200 to-cyan-300 bg-clip-text text-transparent font-black tracking-wider">
             UMY
           </span>
-          <span className="hidden lg:inline text-[11px] text-cyan-300/90 font-medium">+24%</span>
+          <span
+            className={`hidden lg:inline text-[11px] font-bold tabular-nums transition-colors duration-300 ${
+              umayTickDirection === "up"
+                ? "text-emerald-400"
+                : umayTickDirection === "down"
+                  ? "text-rose-400"
+                  : "text-cyan-300"
+            }`}
+          >
+            {umayChangePct >= 0 ? `+${umayChangePct.toFixed(1)}%` : `${umayChangePct.toFixed(1)}%`}
+          </span>
         </Link>
         {/* REHBER & YARDIM BUTONLARI */}
         <button

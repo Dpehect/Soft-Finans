@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { COUNTRY_DEFAULT_MARKET, DEFAULT_COUNTRY, type CountryCode, type MarketCode } from "../types/markets";
 
-export type DisplayCurrency = "INR" | "USD" | "EUR" | "TRY";
+export type DisplayCurrency = "INR" | "USD" | "EUR" | "TRY" | "GBP";
 export type RealtimeMode = "polling" | "ws";
 export type ThemeVariant = "renkli" | "dengeli" | "dark" | "terminal-noir" | "classic-bloomberg" | "light-desk" | "custom";
 export type RecentSecurityAssetClass = "equity" | "fno" | "crypto" | "commodity" | "forex" | "etf" | "mf";

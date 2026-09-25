@@ -156,7 +156,7 @@ function usdLeg(currency: CurrencyCode, pairs: PairQuotes): number | null {
   if (direct && direct > 0) return direct;
   const inverse = pairs[`USD${currency}`];
   if (inverse && inverse > 0) return 1 / inverse;
-  if (currency === "TRY") return 1 / 34.5;
+  if (currency === "TRY") return 1 / 40.3;
   return null;
 }
 
