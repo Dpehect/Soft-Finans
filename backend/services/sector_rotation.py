@@ -8,7 +8,10 @@ from typing import Any, Dict, List
 
 import pandas as pd
 import requests
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 from backend.shared.cache import cache
 from backend.shared.degraded import (
     DEGRADED_KEY,

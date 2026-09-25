@@ -6,7 +6,10 @@ from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 from backend.config.settings import get_settings
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,11 @@
+backend/tests/**
+docs/**
+playwright/**
+test-results/**
+.yf_cache/**
+*.db
+*.db-shm
+*.db-wal
+*.png
+*.jpg
+*.jpeg

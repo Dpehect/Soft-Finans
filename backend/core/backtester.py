@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pandas as pd
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 
 from backend.shared.market_defaults import DEFAULT_BENCHMARK_SYMBOL, DEFAULT_EQUITY_MARKET
 

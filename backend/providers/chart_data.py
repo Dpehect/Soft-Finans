@@ -9,7 +9,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Literal
 
 import httpx
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 
 from backend.db.ohlcv_cache import get_ohlcv_cache
 from backend.services.instrument_map import get_instrument_map_service

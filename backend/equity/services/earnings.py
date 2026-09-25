@@ -4,7 +4,10 @@ import asyncio
 from datetime import date, datetime, timedelta
 from typing import Any, Optional
 
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 from pydantic import BaseModel
 
 from backend.api.deps import get_unified_fetcher

@@ -10,7 +10,10 @@ from typing import Protocol
 
 import pandas as pd
 import requests
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 
 from backend.core.symbols import Symbol, normalize_symbol
 from backend.shared.market_defaults import DEFAULT_EQUITY_MARKET

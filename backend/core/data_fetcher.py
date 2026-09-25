@@ -9,7 +9,10 @@ from typing import Any
 
 import pandas as pd
 import requests
-import yfinance as yf
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
 
 from backend.shared.nse_access import disable_nse_public, nse_public_enabled, require_nse_public
 
