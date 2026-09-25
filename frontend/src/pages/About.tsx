@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import logo from "../assets/logo.png";
+import { SoftBridgeLogo } from "../components/common/SoftBridgeLogo";
 import { TerminalBadge } from "../components/terminal/TerminalBadge";
 import { TerminalButton } from "../components/terminal/TerminalButton";
 import { TerminalPanel } from "../components/terminal/TerminalPanel";
@@ -331,8 +331,8 @@ export function AboutPage({ terminalType = "market" }: AboutProps) {
               </div>
 
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-                <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-sm border border-terminal-accent/60 bg-terminal-panel/85 p-4 shadow-[0_0_40px_rgba(255,184,77,0.12)] lg:h-36 lg:w-36">
-                  <img src={logo} alt="SoftBridge Finans logo" className="h-full w-full object-contain" />
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl border border-terminal-accent/60 bg-terminal-panel/85 p-3 shadow-[0_0_40px_rgba(255,184,77,0.12)] lg:h-36 lg:w-36">
+                  <SoftBridgeLogo size={80} className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0 space-y-3">
                   <div className="text-[11px] uppercase tracking-[0.24em] text-terminal-muted">SoftBridge Finans</div>

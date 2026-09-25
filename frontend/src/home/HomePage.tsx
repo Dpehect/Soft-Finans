@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useMarketStatus } from "../hooks/useStocks";
-import logo from "../assets/logo.png";
+import { SoftBridgeLogo } from "../components/common/SoftBridgeLogo";
 import { AsciiHero } from "./AsciiHero";
 
 function fmt(value?: number | null): string {
@@ -54,7 +54,7 @@ export function HomePage() {
     <div className="flex h-screen flex-col bg-terminal-bg text-terminal-text">
       <div className="border-b border-terminal-border bg-terminal-panel px-4 py-3">
         <div className="flex items-start justify-between gap-4">
-          <img src={logo} alt="OpenTerminalUI" className="h-12 w-auto object-contain" />
+          <SoftBridgeLogo size={44} />
           <div className="text-right">
             <div className="text-lg font-semibold uppercase tracking-widest text-terminal-accent">OpenTerminal UI</div>
             <div className="text-xs uppercase tracking-wide text-terminal-muted">Trading Analytics Workspace</div>
