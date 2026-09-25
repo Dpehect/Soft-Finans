@@ -24,7 +24,7 @@ class AppSettings(BaseModel):
             "http://127.0.0.1:5174",
         ]
     )
-    sqlite_url: str = "sqlite:///data/openterminalui.db"
+    sqlite_url: str = "sqlite:////tmp/openterminalui.db" if os.getenv("VERCEL") else "sqlite:///data/openterminalui.db"
     redis_url: str = "redis://localhost:6379/0"
     redis_quote_channels_ttl: int = 300
     redis_max_connections: int = 50

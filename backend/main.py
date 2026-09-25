@@ -75,6 +75,11 @@ async def lifespan(app: FastAPI):
     validate_runtime_secrets()
     init_db()
 
+    if os.getenv("VERCEL"):
+        # Serverless execution: DB is initialized, skip long-running background loops
+        yield
+        return
+
     if _instrument_autoseed:
         from backend.instruments.populate import run_refresh_loop
 
@@ -154,6 +159,7 @@ app = FastAPI(title=settings.app_name, version=settings.app_version, lifespan=li
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"^https?://.*" if os.getenv("VERCEL") else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -166,8 +172,11 @@ app.include_router(api_router)
 
 
 @app.get("/health", tags=["health"])
+@app.get("/api/health", tags=["health"])
+@app.get("/api", tags=["health"])
+@app.get("/api/", tags=["health"])
 def health() -> dict[str, str]:
-    return {"status": "ok", "version": settings.app_version}
+    return {"status": "ok", "app": "SoftBridge Finans API", "version": settings.app_version}
 
 
 @app.get("/healthz", tags=["health"])

@@ -1,13 +1,14 @@
 {
-  "name": "openterminalui",
+  "name": "softbridge-finans",
   "version": "1.7.0",
   "private": true,
-  "description": "OpenTerminalUI - Trading and Financial Analysis Terminal",
+  "description": "SoftBridge Finans & Kripto Ticaret Platformu",
   "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "dev": "node dev.js",
     "start": "node dev.js",
-    "frontend:install": "cd frontend && npm install",
-    "frontend:dev": "cd frontend && npm run dev",
-    "frontend:build": "cd frontend && npm run build"
+    "frontend:install": "npm --prefix frontend install",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build"
   }
 }
