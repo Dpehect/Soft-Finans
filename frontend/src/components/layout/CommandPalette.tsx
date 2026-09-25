@@ -284,7 +284,7 @@ export function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/60 p-4 md:p-10" onClick={() => setOpen(false)}>
+    <div className="fixed inset-0 z-[120] bg-slate-900/35 dark:bg-black/60 backdrop-blur-sm p-4 md:p-10" onClick={() => setOpen(false)}>
       <div
         className="mx-auto max-w-2xl rounded border border-terminal-border bg-terminal-panel shadow-2xl"
         onClick={(e) => e.stopPropagation()}

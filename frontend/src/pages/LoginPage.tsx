@@ -116,18 +116,18 @@ export function LoginPage() {
     <div className="ot-login-unified-layout">
       {/* Running Fox authenticating overlay */}
       {authenticating || isLoading ? (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#06080c]/85 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="flex flex-col items-center rounded-3xl border border-orange-500/35 bg-[#0b101c]/95 p-8 shadow-[0_16px_50px_rgba(249,115,22,0.3)] max-w-sm w-full mx-4">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="flex flex-col items-center rounded-3xl border border-terminal-border/80 bg-terminal-panel/95 p-8 shadow-2xl max-w-sm w-full mx-4">
             <RunningFox size="lg" showTrack={true} showParticles={true} />
             <div className="mt-4 flex flex-col items-center text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-400 flex items-center gap-2">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-500 dark:text-orange-400 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
                 {t("connecting")}
               </p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-terminal-muted">
                 {t("authSuccess")}
               </p>
-              <div className="mt-4 h-1.5 w-48 overflow-hidden rounded-full bg-slate-800">
+              <div className="mt-4 h-1.5 w-48 overflow-hidden rounded-full bg-terminal-border/50">
                 <div className="h-full w-full bg-gradient-to-r from-orange-500 via-amber-400 to-sky-400 animate-pulse" />
               </div>
             </div>

@@ -16,7 +16,9 @@ module.exports = {
       colors: {
         terminal: {
           bg: "var(--ot-color-canvas)",
+          canvas: "var(--ot-color-canvas)",
           panel: "var(--ot-color-surface-1)",
+          surface: "var(--ot-color-surface-2)",
           border: "var(--ot-color-border-default)",
           text: "var(--ot-color-text-primary)",
           muted: "var(--ot-color-text-muted)",
@@ -33,7 +35,13 @@ module.exports = {
         md: "0.75rem", // 12px
         lg: "1rem", // 16px
         xl: "1.25rem", // 20px
-        "2xl": "1.5rem" // 24px
+        "2xl": "1.5rem", // 24px
+        "3xl": "2rem"
+      },
+      boxShadow: {
+        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        card: "0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 0 1px 1px rgba(0, 0, 0, 0.025)",
+        glow: "0 0 25px -5px var(--ot-color-accent-glow)"
       }
     }
   },

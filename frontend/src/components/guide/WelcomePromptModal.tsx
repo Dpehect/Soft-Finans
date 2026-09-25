@@ -12,7 +12,7 @@ export function WelcomePromptModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9990] flex items-center justify-center bg-slate-900/35 dark:bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="welcome-modal-title"

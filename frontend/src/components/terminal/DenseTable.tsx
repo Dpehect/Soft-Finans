@@ -405,7 +405,7 @@ export function DenseTable<T>({
           role="columnheader"
           aria-colindex={orderedColumns.findIndex((ordered) => ordered.key === col.key) + 1}
           aria-sort={isSorted === "asc" ? "ascending" : isSorted === "desc" ? "descending" : col.sortable ? "none" : undefined}
-          className="group relative flex h-7 shrink-0 items-center border-r border-[#242d3a] bg-[#1A2332]"
+          className="group relative flex h-7 shrink-0 items-center border-r border-terminal-border/70 bg-terminal-panel"
           style={{ width }}
           draggable
           onDragStart={(e) => {
@@ -424,7 +424,7 @@ export function DenseTable<T>({
         >
           <button
             type="button"
-            className={`flex min-w-0 flex-1 items-center gap-1 px-2 ot-type-table-header uppercase ${col.align === "right" ? "justify-end text-right" : "text-left"} text-[#8B949E] hover:text-terminal-text`}
+            className={`flex min-w-0 flex-1 items-center gap-1 px-2 ot-type-table-header uppercase ${col.align === "right" ? "justify-end text-right" : "text-left"} text-terminal-muted hover:text-terminal-text`}
             onClick={() => toggleSort(col)}
             onContextMenu={(e) => {
               e.preventDefault();
@@ -460,16 +460,16 @@ export function DenseTable<T>({
             aria-label={`Resize column ${col.title}`}
           />
           {columnMenuKey === col.key ? (
-            <div className="absolute right-1 top-7 z-30 w-44 rounded-sm border border-terminal-border bg-[#0F141B] p-1 shadow-xl">
-              <button type="button" className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-panel" onClick={() => moveColumn(col.key, -1)}>
+            <div className="absolute right-1 top-7 z-30 w-44 rounded-sm border border-terminal-border bg-terminal-panel p-1 shadow-xl">
+              <button type="button" className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-bg" onClick={() => moveColumn(col.key, -1)}>
                 <GripVertical className="h-3.5 w-3.5" /> Move Left
               </button>
-              <button type="button" className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-panel" onClick={() => moveColumn(col.key, 1)}>
+              <button type="button" className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-bg" onClick={() => moveColumn(col.key, 1)}>
                 <GripVertical className="h-3.5 w-3.5" /> Move Right
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-panel"
+                className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-xs hover:bg-terminal-bg"
                 onClick={() => {
                   setColumnState((prev) => ({ ...prev, hidden: [...new Set([...prev.hidden, col.key])] }));
                   setColumnMenuKey(null);
@@ -484,7 +484,7 @@ export function DenseTable<T>({
     });
 
   return (
-    <div className={`relative rounded-sm border border-terminal-border bg-[#0D1117] ${className}`.trim()}>
+    <div className={`relative rounded-sm border border-terminal-border bg-terminal-bg ${className}`.trim()}>
       <div className="flex items-center justify-between border-b border-terminal-border bg-terminal-panel px-2 py-1">
         <div className="inline-flex flex-wrap items-center gap-2 text-[11px] text-terminal-muted">
           <span className="ot-type-label text-terminal-accent">Dense Table</span>
@@ -545,7 +545,7 @@ export function DenseTable<T>({
           <div style={{ minWidth: totalWidth }}>
             <div role="row" aria-rowindex={1} className="sticky top-0 z-20 flex border-b border-terminal-border">
               {frozenColumns.length ? (
-                <div className="sticky left-0 z-30 flex bg-[#1A2332] shadow-[2px_0_0_0_rgba(0,0,0,0.18)]">{headerCells(frozenColumns)}</div>
+                <div className="sticky left-0 z-30 flex bg-terminal-panel shadow-[2px_0_0_0_rgba(0,0,0,0.1)]">{headerCells(frozenColumns)}</div>
               ) : null}
               <div className="flex">{headerCells(normalColumns)}</div>
             </div>
@@ -556,11 +556,11 @@ export function DenseTable<T>({
               const key = rowKey(row, originalIndex);
               const selected = selectedRows.has(originalIndex);
               const bgClass = selected
-                ? "bg-[#0D2137] border-l-[#FF6B00]"
+                ? "bg-terminal-accent/15 border-l-terminal-accent"
                 : (startIndex + visibleIdx) % 2 === 0
-                  ? "bg-[#0D1117]"
-                  : "bg-[#0F1319]";
-              const rowCls = `${bgClass} hover:bg-[#1A2332] border-l-2 border-l-transparent`;
+                  ? "bg-terminal-bg"
+                  : "bg-terminal-panel/30";
+              const rowCls = `${bgClass} hover:bg-terminal-accent/10 border-l-2 border-l-transparent transition-colors`;
               const renderRowCells = (cols: DenseTableColumn<T>[]) =>
                 cols.map((col) => {
                   const width = (col as DenseTableColumn<T> & { width?: number }).width ?? 120;
@@ -572,7 +572,7 @@ export function DenseTable<T>({
                       role="gridcell"
                       aria-rowindex={originalIndex + 2}
                       aria-colindex={orderedColumns.findIndex((ordered) => ordered.key === col.key) + 1}
-                      className={`flex h-[26px] shrink-0 items-center border-r border-[#1b2230] px-2 ${cellAlignClass(col)} ${cellTypographyClass(col)} ${
+                      className={`flex h-[26px] shrink-0 items-center border-r border-terminal-border/50 px-2 ${cellAlignClass(col)} ${cellTypographyClass(col)} ${
                         flash === "up" ? "bg-emerald-500/10" : flash === "down" ? "bg-rose-500/10" : ""
                       }`}
                       style={{ width }}
@@ -590,7 +590,7 @@ export function DenseTable<T>({
                   aria-selected={selected}
                   tabIndex={selected ? 0 : -1}
                   data-row-index={originalIndex}
-                  className={`relative flex h-[26px] border-b border-[#141b25] ${rowCls}`}
+                  className={`relative flex h-[26px] border-b border-terminal-border/60 ${rowCls}`}
                   onClick={(e) => {
                     if (e.shiftKey && selectionAnchor != null) {
                       setSelectedRows(rowSelectionRange(selectionAnchor, originalIndex));

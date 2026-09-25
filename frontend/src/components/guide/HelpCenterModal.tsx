@@ -229,14 +229,14 @@ export function HelpCenterModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/75 p-3 md:p-6 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9990] flex items-center justify-center bg-slate-900/35 dark:bg-black/75 p-3 md:p-6 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="help-center-title"
     >
       <div className="relative flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-terminal-border/80 bg-terminal-panel shadow-2xl">
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-terminal-border px-5 py-3.5 bg-terminal-canvas">
+        <div className="flex shrink-0 items-center justify-between border-b border-terminal-border px-5 py-3.5 bg-terminal-panel">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded bg-terminal-accent/15 text-terminal-accent">
               <HelpCircle className="h-5 w-5" />

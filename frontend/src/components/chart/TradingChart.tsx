@@ -3021,7 +3021,7 @@ export function TradingChart({
       ) : null}
       {contextMenu ? (
         <div
-          className="fixed z-[120] w-44 rounded-sm border border-terminal-border bg-[#0F141B] p-1 shadow-2xl"
+          className="fixed z-[120] w-44 rounded-sm border border-terminal-border bg-terminal-panel p-1 shadow-2xl"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           {onRequestCreateAlert ? (

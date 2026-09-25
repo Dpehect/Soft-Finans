@@ -103,7 +103,7 @@ const CockpitDashboard = lazyWithRetry(() => import("./pages/Cockpit"));
 
 const RouteLoadingFallback = (
   <div className="flex min-h-[50vh] flex-col items-center justify-center p-8">
-    <div className="rounded-2xl border border-orange-500/25 bg-[#0b101b]/90 p-6 shadow-2xl backdrop-blur-md">
+    <div className="rounded-3xl border border-terminal-border/80 bg-terminal-panel/95 p-6 shadow-2xl backdrop-blur-md">
       <RunningFox size="md" text="Finans Masası Hazırlanıyor..." subtext="SoftBridge Finans Veri Akışı" />
     </div>
   </div>

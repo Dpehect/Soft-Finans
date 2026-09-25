@@ -2,7 +2,7 @@ import { UmayTokenHub } from "../components/crypto/UmayTokenHub";
 
 export function UmayTokenPage() {
   return (
-    <div className="min-h-screen bg-[#06080c] text-slate-100 p-4 lg:p-6">
+    <div className="min-h-full bg-terminal-bg text-terminal-text p-3 sm:p-4 lg:p-6 transition-colors duration-200">
       <UmayTokenHub />
     </div>
   );

@@ -788,7 +788,7 @@ export function CommandBar({ onExecute }: Props) {
       </div>
 
       {focused && (previewLoading || preview) && value.trim() ? (
-        <div className="pointer-events-none absolute right-3 top-[calc(100%+4px)] z-[55] w-[280px] overflow-hidden rounded-sm border border-terminal-border bg-[#0F141B]/98 shadow-2xl">
+        <div className="pointer-events-none absolute right-3 top-[calc(100%+4px)] z-[55] w-[280px] overflow-hidden rounded-sm border border-terminal-border bg-terminal-panel/98 shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-terminal-border px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-terminal-muted">
             <span>Security Preview</span>
             {preview ? <span>{preview.marketLabel}</span> : null}
@@ -952,7 +952,7 @@ export function CommandBar({ onExecute }: Props) {
       )}
 
       {isOpen && (suggestions.length > 0 || searchingTickers) ? (
-        <div id="command-bar-suggestions" role="listbox" aria-label="Command suggestions" className="absolute left-3 right-3 top-[calc(100%-2px)] z-50 mt-1 overflow-hidden rounded-sm border border-terminal-border bg-[#0F141B] shadow-2xl">
+        <div id="command-bar-suggestions" role="listbox" aria-label="Command suggestions" className="absolute left-3 right-3 top-[calc(100%-2px)] z-50 mt-1 overflow-hidden rounded-sm border border-terminal-border bg-terminal-panel shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-terminal-border px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-terminal-muted">
             <div className="inline-flex items-center gap-2">
               {reverseSearchOpen ? <History className="h-3.5 w-3.5" /> : <CommandIcon className="h-3.5 w-3.5" />}

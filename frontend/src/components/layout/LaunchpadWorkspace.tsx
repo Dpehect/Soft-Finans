@@ -284,7 +284,7 @@ export function LaunchpadWorkspace({ toolbarActions }: { toolbarActions?: ReactN
               <Plus className="h-3.5 w-3.5" /> Panel
             </button>
             {panelTypeOpen ? (
-              <div className="absolute right-0 top-8 z-40 w-48 rounded-sm border border-terminal-border bg-[#0F141B] p-2 shadow-xl">
+              <div className="absolute right-0 top-8 z-40 w-48 rounded-sm border border-terminal-border bg-terminal-panel p-2 shadow-xl">
                 <div className="relative mb-2">
                   <Search className="absolute left-2 top-1.5 h-3 w-3 text-terminal-muted" />
                   <input
@@ -305,7 +305,7 @@ export function LaunchpadWorkspace({ toolbarActions }: { toolbarActions?: ReactN
                         setPanelTypeOpen(false);
                         setPanelSearch("");
                       }}
-                      className="block w-full rounded px-2 py-1 text-left text-xs hover:bg-terminal-panel capitalize"
+                      className="block w-full rounded px-2 py-1 text-left text-xs hover:bg-terminal-bg capitalize"
                     >
                       {type.replace(/-/g, " ")}
                     </button>
@@ -323,7 +323,7 @@ export function LaunchpadWorkspace({ toolbarActions }: { toolbarActions?: ReactN
         </div>
       </div>
 
-      <div className="rounded-sm border border-terminal-border bg-[#0B1018] px-2 py-1 text-[11px] text-terminal-muted">
+      <div className="rounded-sm border border-terminal-border bg-terminal-panel/60 px-2 py-1 text-[11px] text-terminal-muted">
         Linked symbol broadcast: <span className="ot-type-data text-terminal-text">{lastBroadcastSymbol || globalTicker || "NONE"}</span>
         <span className="ml-2">event #{symbolEventVersion}</span>
         <span className="ml-4">Tip: drag panel headers to reorder; resize with CSS resize handle at panel bottom-right.</span>

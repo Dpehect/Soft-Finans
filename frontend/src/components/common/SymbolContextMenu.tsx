@@ -205,7 +205,7 @@ export function SymbolContextMenu({
       ref={menuRef}
       role="menu"
       aria-label={title ? `${title} for ${activeSymbol}` : `Context menu for ${activeSymbol}`}
-      className="fixed z-[220] w-[17rem] overflow-hidden rounded-sm border border-terminal-border bg-[#0F141B] shadow-2xl"
+      className="fixed z-[220] w-[17rem] overflow-hidden rounded-sm border border-terminal-border bg-terminal-panel shadow-2xl"
       style={{ left: menuLeft, top: menuTop }}
       onKeyDown={(event) => {
         if (!actions.length) return;

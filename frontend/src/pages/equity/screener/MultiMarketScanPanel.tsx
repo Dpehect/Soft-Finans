@@ -325,9 +325,9 @@ export function MultiMarketScanPanel() {
             <textarea
               value={formula}
               onChange={(e) => setFormula(e.target.value)}
-              className="h-16 w-full resize-none rounded border border-terminal-border bg-[#0D1117] px-2 py-1 font-mono text-[11px] text-terminal-text outline-none focus:border-terminal-accent"
+              className="h-16 w-full resize-none rounded border border-terminal-border bg-terminal-panel px-2 py-1 font-mono text-[11px] text-terminal-text outline-none focus:border-terminal-accent"
             />
-            <div className="mt-1 rounded border border-terminal-border bg-[#0B0F14] px-2 py-1 font-mono text-[11px]" dangerouslySetInnerHTML={{ __html: highlightFormula(formula) }} />
+            <div className="mt-1 rounded border border-terminal-border bg-terminal-panel/50 px-2 py-1 font-mono text-[11px]" dangerouslySetInnerHTML={{ __html: highlightFormula(formula) }} />
           </div>
         ) : null}
 

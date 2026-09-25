@@ -624,16 +624,16 @@ export function HomePage() {
       <div className="relative min-h-full bg-terminal-bg">
         {initializing ? (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-terminal-bg/95 backdrop-blur-sm" role="status" aria-live="polite">
-            <div className="flex flex-col items-center rounded-3xl border border-orange-500/30 bg-[#0b101c]/95 p-8 shadow-[0_16px_50px_rgba(249,115,22,0.25)]">
+            <div className="flex flex-col items-center rounded-3xl border border-terminal-border/80 bg-terminal-panel/95 p-8 shadow-2xl backdrop-blur-md">
               <RunningFox size="lg" showTrack={true} showParticles={true} />
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-orange-400 flex items-center gap-2">
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-orange-500 dark:text-orange-400 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
                 SoftBridge Finans Masası Hazırlanıyor...
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-terminal-muted">
                 Portföy, Piyasa ve Kripto Verileri Getiriliyor
               </p>
-              <div className="mt-4 h-1.5 w-52 overflow-hidden rounded-full bg-slate-800">
+              <div className="mt-4 h-1.5 w-52 overflow-hidden rounded-full bg-terminal-border/50">
                 <div className="h-full w-full bg-gradient-to-r from-orange-500 via-amber-400 to-sky-400 animate-pulse" />
               </div>
             </div>

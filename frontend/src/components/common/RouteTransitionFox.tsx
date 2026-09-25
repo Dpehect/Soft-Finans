@@ -81,15 +81,15 @@ export function RouteTransitionFox() {
       }`}
       aria-hidden="true"
     >
-      {/* Gentle dark backdrop blur */}
-      <div className="absolute inset-0 bg-[#06080c]/60 backdrop-blur-[3px]" />
+      {/* Gentle backdrop blur */}
+      <div className="absolute inset-0 bg-black/25 dark:bg-black/70 backdrop-blur-[4px]" />
 
       {/* Floating high-tech fox transition card */}
-      <div className="relative z-10 flex flex-col items-center justify-center rounded-2xl border border-orange-500/30 bg-[#0b101b]/90 px-8 py-5 shadow-[0_12px_40px_rgba(249,115,22,0.25)] backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 flex flex-col items-center justify-center rounded-3xl border border-terminal-border/80 bg-terminal-panel/95 px-8 py-5 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
         <RunningFox size="md" showTrack={true} showParticles={true} />
         <div className="mt-3 flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
-          <span className="text-xs font-semibold tracking-wider text-orange-300">
+          <span className="text-xs font-bold tracking-wider text-orange-500 dark:text-orange-300">
             {currentLabel}
           </span>
         </div>

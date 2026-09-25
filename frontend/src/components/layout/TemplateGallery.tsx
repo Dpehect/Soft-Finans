@@ -67,7 +67,7 @@ function TemplatePreview({ template }: { template: WorkspaceTemplate }) {
   const maxRows = Math.max(...template.panels.map((panel) => panel.grid.y + panel.grid.h), 10);
 
   return (
-    <div className="relative h-28 overflow-hidden rounded-sm border border-terminal-border bg-[#06090F]">
+    <div className="relative h-28 overflow-hidden rounded-sm border border-terminal-border bg-terminal-bg">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(94,111,135,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(94,111,135,0.1)_1px,transparent_1px)] bg-[length:8.333%_10%]" />
       {template.panels.map((panel) => (
         <div

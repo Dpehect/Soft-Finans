@@ -27,7 +27,7 @@ export function ShortcutOverlay() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/35 dark:bg-black/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-2xl">
         <TerminalPanel title="Keyboard Shortcuts" actions={
           <button onClick={() => setIsOpen(false)} className="text-terminal-muted hover:text-terminal-text">Close (Esc)</button>

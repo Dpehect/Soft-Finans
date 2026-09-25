@@ -58,9 +58,9 @@ function MiniRangeBar({ low, high, current }: { low: number | null; high: number
   }
   const pct = Math.max(0, Math.min(100, ((current - low) / (high - low)) * 100));
   return (
-    <div className="relative h-2 rounded bg-[#1A2332]">
-      <div className="absolute inset-y-0 left-0 rounded bg-[#FF6B00]/20" style={{ width: `${pct}%` }} />
-      <div className="absolute top-[-3px] h-3 w-[2px] bg-[#FF6B00]" style={{ left: `${pct}%` }} />
+    <div className="relative h-2 rounded bg-terminal-border/40">
+      <div className="absolute inset-y-0 left-0 rounded bg-terminal-accent/25" style={{ width: `${pct}%` }} />
+      <div className="absolute top-[-3px] h-3 w-[2px] bg-terminal-accent" style={{ left: `${pct}%` }} />
     </div>
   );
 }
@@ -361,7 +361,7 @@ export function SecurityHubPage() {
                 <div className="rounded-sm border border-terminal-border bg-terminal-bg p-2">
                   <div className="mb-1 ot-type-label text-terminal-muted">Analyst Consensus</div>
                   <div className="flex items-center gap-2">
-                    <div className="relative h-3 flex-1 rounded bg-[#1A2332]">
+                    <div className="relative h-3 flex-1 rounded bg-terminal-border/40">
                       <div className="absolute inset-y-0 left-0 bg-emerald-500/35" style={{ width: `${Math.min(100, Math.max(0, Number(analyst.buy_pct) || 0))}%` }} />
                       <div className="absolute inset-y-0 bg-amber-500/35" style={{ left: `${Math.min(100, Math.max(0, Number(analyst.buy_pct) || 0))}%`, width: `${Math.min(100, Math.max(0, Number(analyst.hold_pct) || 0))}%` }} />
                       <div className="absolute inset-y-0 bg-rose-500/35" style={{ left: `${Math.min(100, Math.max(0, (Number(analyst.buy_pct) || 0) + (Number(analyst.hold_pct) || 0)))}%`, width: `${Math.min(100, Math.max(0, Number(analyst.sell_pct) || 0))}%` }} />

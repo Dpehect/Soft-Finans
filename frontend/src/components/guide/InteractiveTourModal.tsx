@@ -53,7 +53,7 @@ export function InteractiveTourModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[9995] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[9995] flex items-center justify-center bg-slate-900/35 dark:bg-black/70 p-4 backdrop-blur-sm animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-step-title"

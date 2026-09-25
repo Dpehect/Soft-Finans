@@ -127,7 +127,7 @@ export function SectorRotationMap({ defaultBenchmark = "SPY", width = "100%", he
         </div>
       </div>
 
-      <div className="flex-1 relative overflow-hidden bg-[#0a0a0a]" style={{ width, height, minHeight: 300 }}>
+      <div className="flex-1 relative overflow-hidden bg-terminal-bg" style={{ width, height, minHeight: 300 }}>
         <svg width="100%" height="100%" viewBox="80 80 40 40" preserveAspectRatio="xMidYMid meet" className="absolute inset-0">
           <defs>
             <marker id="arrowhead" markerWidth="3" markerHeight="3" refX="2.5" refY="1.5" orient="auto">

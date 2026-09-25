@@ -519,7 +519,7 @@ export function LaunchpadHeatmapPanel(_: PanelProps) {
               <span className="text-terminal-text">{row.sector}</span>
               <span className="ot-type-data text-terminal-muted">{row.weight_pct.toFixed(2)}%</span>
             </div>
-            <div className="h-2 rounded bg-[#1A2332]">
+            <div className="h-2 rounded bg-terminal-border/40">
               <div className="h-2 rounded bg-terminal-accent/60" style={{ width: `${(row.weight_pct / max) * 100}%` }} />
             </div>
           </div>

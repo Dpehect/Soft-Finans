@@ -76,7 +76,7 @@ export function TerminalModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/55 p-3"
+      className="fixed inset-0 z-50 grid place-items-center bg-slate-900/35 dark:bg-black/60 backdrop-blur-sm p-3"
       onMouseDown={(event) => {
         if (!closeOnOverlayClick || busy) return;
         if (event.target === event.currentTarget) onClose();

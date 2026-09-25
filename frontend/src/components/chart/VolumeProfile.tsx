@@ -242,7 +242,7 @@ export function VolumeProfile({ profile, liveQuote = null }: Props) {
 
   return (
     <div
-      className="pointer-events-none absolute bottom-10 right-2 top-10 z-[6] w-[120px] rounded border border-terminal-border/70 bg-[#0D1117]/70 p-1"
+      className="pointer-events-none absolute bottom-10 right-2 top-10 z-[6] w-[120px] rounded border border-terminal-border/70 bg-terminal-panel/80 backdrop-blur-xs p-1"
       data-testid="volume-profile-overlay"
     >
       <div className="relative h-full w-full">

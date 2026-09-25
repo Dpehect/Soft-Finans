@@ -512,7 +512,7 @@ export function EquityLayout() {
       <Suspense
         fallback={
           <div className="flex min-h-[50vh] flex-col items-center justify-center p-8">
-            <div className="rounded-2xl border border-orange-500/25 bg-[#0b101b]/90 p-6 shadow-2xl backdrop-blur-md">
+            <div className="rounded-3xl border border-terminal-border/80 bg-terminal-panel/95 p-6 shadow-2xl backdrop-blur-md">
               <RunningFox size="md" text="Masaya Geçiliyor..." subtext="SoftBridge Finans Piyasa Verileri Yükleniyor" />
             </div>
           </div>
