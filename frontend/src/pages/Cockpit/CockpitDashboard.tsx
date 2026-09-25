@@ -695,7 +695,7 @@ export function CockpitDashboard() {
     <div className="h-full min-h-0 overflow-auto p-2">
       <div className="grid gap-2">
         <DegradedBanner info={cockpit?.degraded} />
-        <section className="rounded-sm border border-terminal-border bg-[radial-gradient(circle_at_top_left,rgba(255,107,0,0.18),transparent_38%),linear-gradient(135deg,rgba(16,22,32,0.98),rgba(10,14,20,0.96))] px-3 py-3">
+        <section className="rounded-xl border border-terminal-border/80 bg-gradient-to-br from-terminal-panel via-terminal-panel/95 to-terminal-bg/60 dark:from-[#101620] dark:to-[#0a0e14] px-4 py-4 shadow-sm backdrop-blur-md">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">

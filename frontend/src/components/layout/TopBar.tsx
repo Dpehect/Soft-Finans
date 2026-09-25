@@ -414,9 +414,9 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
           <button
             type="button"
             onClick={() => setThemeVariant("renkli")}
-            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-all ${
               themeVariant === "renkli"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm font-bold scale-[1.02]"
+                ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-md font-bold scale-[1.02] ring-1 ring-white/20"
                 : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
             }`}
             title="Renkli Mod: Canlı, enerjik ve eğlenceli renkler"
@@ -428,9 +428,9 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
           <button
             type="button"
             onClick={() => setThemeVariant("dengeli")}
-            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-all ${
               themeVariant === "dengeli" || themeVariant === "terminal-noir" || themeVariant === "light-desk" || !themeVariant
-                ? "bg-slate-700 text-white shadow-sm font-bold scale-[1.02]"
+                ? "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white border border-slate-300 dark:border-slate-600 shadow-sm font-bold scale-[1.02]"
                 : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
             }`}
             title="Dengeli Mod: Göz yormayan dinlendirici mat tonlar (Ne parlak ne karanlık)"
@@ -442,9 +442,9 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
           <button
             type="button"
             onClick={() => setThemeVariant("dark")}
-            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+            className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-all ${
               themeVariant === "dark" || themeVariant === "classic-bloomberg"
-                ? "bg-slate-950 text-cyan-400 border border-cyan-500/40 shadow-sm font-bold scale-[1.02]"
+                ? "bg-slate-900 text-cyan-400 border border-cyan-500/40 shadow-sm font-bold scale-[1.02]"
                 : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
             }`}
             title="Dark Mod: Şık, derin ve modern karanlık tema"

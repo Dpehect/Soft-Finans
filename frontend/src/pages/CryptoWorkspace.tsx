@@ -141,9 +141,9 @@ function MetricCard({
   tone?: string;
 }) {
   return (
-    <div className="rounded border border-terminal-border bg-terminal-bg/80 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-terminal-muted">{label}</div>
-      <div className={`mt-1 text-lg ${tone}`}>{value}</div>
+    <div className="rounded-xl border border-terminal-border/80 bg-terminal-panel/80 p-3.5 shadow-sm backdrop-blur-sm transition-all hover:border-terminal-accent/40">
+      <div className="text-[11px] font-bold uppercase tracking-wider text-terminal-muted">{label}</div>
+      <div className={`mt-1.5 text-xl font-extrabold tracking-tight ${tone}`}>{value}</div>
       <div className="mt-1 text-xs text-terminal-muted">{detail}</div>
     </div>
   );
@@ -615,10 +615,10 @@ export function CryptoWorkspacePage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-terminal-text text-sm">UMAY (UMY) Token</span>
-              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-400">
+              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:text-cyan-400">
                 0,0040 ₺ / +24.0%
               </span>
-              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 hidden md:inline">
+              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400 hidden md:inline">
                 Açılış Rallisi
               </span>
             </div>
@@ -640,25 +640,25 @@ export function CryptoWorkspacePage() {
       </div>
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
-        <div className="rounded border border-terminal-border bg-[radial-gradient(circle_at_top_left,rgba(38,140,255,0.16),transparent_42%),linear-gradient(180deg,rgba(12,16,21,0.96),rgba(10,13,18,0.98))] p-4">
+        <div className="rounded-2xl border border-terminal-border/80 bg-gradient-to-br from-terminal-panel via-terminal-panel/95 to-terminal-bg/60 dark:from-[#0c1015] dark:to-[#0a0d12] p-5 shadow-sm backdrop-blur-md">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1.5">
                 <TerminalBadge variant="accent">crypto</TerminalBadge>
                 <TerminalBadge variant="info">command center</TerminalBadge>
                 <TerminalBadge variant="live">live market map</TerminalBadge>
               </div>
               <div>
-                <div className="ot-type-heading-lg text-terminal-text">Crypto Command Center</div>
-                <div className="max-w-3xl text-xs text-terminal-muted">
+                <div className="text-xl font-bold text-terminal-text tracking-tight">Crypto Command Center</div>
+                <div className="max-w-3xl text-xs text-terminal-muted mt-1 leading-relaxed">
                   TradingView-style crypto navigation with a focus asset, ranked market board, mover radar, and direct entry into heatmap, derivatives, DeFi, and correlation modules.
                 </div>
               </div>
             </div>
 
-            <div className="w-full max-w-[360px] rounded border border-terminal-border bg-terminal-bg/80 p-2">
+            <div className="w-full max-w-[360px] rounded-xl border border-terminal-border/80 bg-terminal-panel/90 p-2.5 shadow-sm">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-[11px] uppercase tracking-wide text-terminal-muted">Active module</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-terminal-muted">Active module</div>
                 <TerminalBadge variant="neutral">{tab}</TerminalBadge>
               </div>
               <div className="flex flex-wrap gap-1">
@@ -667,10 +667,10 @@ export function CryptoWorkspacePage() {
                     key={id}
                     type="button"
                     onClick={() => setTab(id)}
-                    className={`rounded border px-2 py-1 text-xs uppercase ${
+                    className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-all ${
                       tab === id
-                        ? "border-terminal-accent bg-terminal-accent/20 text-terminal-accent"
-                        : "border-terminal-border text-terminal-muted hover:border-terminal-accent hover:text-terminal-text"
+                        ? "border-terminal-accent bg-terminal-accent text-white shadow-sm scale-[1.02]"
+                        : "border-terminal-border/60 bg-terminal-bg/50 text-terminal-muted hover:border-terminal-accent hover:text-terminal-text"
                     }`}
                   >
                     {id}
@@ -727,21 +727,21 @@ export function CryptoWorkspacePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded border border-terminal-border bg-terminal-bg p-2">
-                  <div className="text-terminal-muted">24h Volume</div>
-                  <div className="text-terminal-text">{formatCurrencyCompact(selectedAsset.volume_24h)}</div>
+                <div className="rounded-xl border border-terminal-border/80 bg-terminal-panel/80 p-2.5 shadow-sm">
+                  <div className="text-[11px] font-medium text-terminal-muted">24h Volume</div>
+                  <div className="text-terminal-text font-bold mt-0.5">{formatCurrencyCompact(selectedAsset.volume_24h)}</div>
                 </div>
-                <div className="rounded border border-terminal-border bg-terminal-bg p-2">
-                  <div className="text-terminal-muted">Market Cap</div>
-                  <div className="text-terminal-text">{formatCurrencyCompact(selectedAsset.market_cap)}</div>
+                <div className="rounded-xl border border-terminal-border/80 bg-terminal-panel/80 p-2.5 shadow-sm">
+                  <div className="text-[11px] font-medium text-terminal-muted">Market Cap</div>
+                  <div className="text-terminal-text font-bold mt-0.5">{formatCurrencyCompact(selectedAsset.market_cap)}</div>
                 </div>
-                <div className="rounded border border-terminal-border bg-terminal-bg p-2">
-                  <div className="text-terminal-muted">Universe Share</div>
-                  <div className="text-terminal-text">{focusShare.toFixed(2)}%</div>
+                <div className="rounded-xl border border-terminal-border/80 bg-terminal-panel/80 p-2.5 shadow-sm">
+                  <div className="text-[11px] font-medium text-terminal-muted">Universe Share</div>
+                  <div className="text-terminal-text font-bold mt-0.5">{focusShare.toFixed(2)}%</div>
                 </div>
-                <div className="rounded border border-terminal-border bg-terminal-bg p-2">
-                  <div className="text-terminal-muted">Volume Share</div>
-                  <div className="text-terminal-text">{focusVolumeShare.toFixed(2)}%</div>
+                <div className="rounded-xl border border-terminal-border/80 bg-terminal-panel/80 p-2.5 shadow-sm">
+                  <div className="text-[11px] font-medium text-terminal-muted">Volume Share</div>
+                  <div className="text-terminal-text font-bold mt-0.5">{focusVolumeShare.toFixed(2)}%</div>
                 </div>
               </div>
 

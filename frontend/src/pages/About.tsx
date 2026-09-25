@@ -321,7 +321,7 @@ export function AboutPage({ terminalType = "market" }: AboutProps) {
       <section aria-label="Product dossier header" className="rounded-sm border border-terminal-border bg-terminal-panel p-2">
         <div className="relative overflow-hidden rounded-sm border border-terminal-border/70">
           <AsciiHero className="h-[340px] w-full" palette="amber" quality="med" glow={0.55} />
-          <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(255,184,77,0.16),transparent_42%),linear-gradient(135deg,rgba(7,12,16,0.16),rgba(7,12,16,0.9))]" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-terminal-panel/95 via-terminal-panel/50 to-transparent dark:bg-[radial-gradient(circle_at_top,rgba(255,184,77,0.16),transparent_42%),linear-gradient(135deg,rgba(7,12,16,0.16),rgba(7,12,16,0.9))]" />
           <div className="absolute inset-0 z-20 grid gap-4 px-4 py-5 lg:grid-cols-[minmax(0,1.3fr)_320px] lg:px-6 lg:py-6">
             <div className="flex min-w-0 flex-col justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
