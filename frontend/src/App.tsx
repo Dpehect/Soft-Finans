@@ -6,6 +6,9 @@ import { CompatibilityRedirect } from "./components/CompatibilityRedirect";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { TerminalBackground } from "./components/TerminalBackground";
 import { ThemeRuntime } from "./components/layout/ThemeRuntime";
+import { TerminalGuideManager } from "./components/guide/TerminalGuideManager";
+import { RouteTransitionFox } from "./components/common/RouteTransitionFox";
+import { RunningFox } from "./components/common/RunningFox";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 
 const EquityLayout = lazyWithRetry(() => import("./equity/EquityLayout").then((m) => ({ default: m.EquityLayout })));
@@ -54,6 +57,7 @@ const OptionGreeksCalculator = lazyWithRetry(() => import("./pages/fixed-income/
 const EconomicTerminal = lazyWithRetry(() => import("./pages/economics/EconomicTerminal").then((m) => ({ default: m.EconomicTerminal })));
 const SectorRotationPage = lazyWithRetry(() => import("./pages/SectorRotation").then((m) => ({ default: m.SectorRotationPage })));
 const CryptoWorkspacePage = lazyWithRetry(() => import("./pages/CryptoWorkspace").then((m) => ({ default: m.CryptoWorkspacePage })));
+const UmayTokenPage = lazyWithRetry(() => import("./pages/UmayTokenPage").then((m) => ({ default: m.UmayTokenPage })));
 const BondsPage = lazyWithRetry(() => import("./pages/equity/bonds/Bonds").then((m) => ({ default: m.BondsPage })));
 const FactorDashboardPage = lazyWithRetry(() => import("./pages/FactorDashboard").then((m) => ({ default: m.FactorDashboardPage })));
 const IntelligenceTimelinePage = lazyWithRetry(() => import("./pages/IntelligenceTimelinePage").then((m) => ({ default: m.IntelligenceTimelinePage })));
@@ -98,23 +102,22 @@ const AccountPage = lazyWithRetry(() => import("./pages/Account").then((m) => ({
 const CockpitDashboard = lazyWithRetry(() => import("./pages/Cockpit"));
 
 const RouteLoadingFallback = (
-  <div className="flex min-h-[50vh] items-center justify-center p-4">
-    <div className="rounded-sm border border-terminal-border bg-terminal-panel px-4 py-3 text-xs text-terminal-muted">
-      Loading workspace...
+  <div className="flex min-h-[50vh] flex-col items-center justify-center p-8">
+    <div className="rounded-2xl border border-orange-500/25 bg-[#0b101b]/90 p-6 shadow-2xl backdrop-blur-md">
+      <RunningFox size="md" text="Finans Masası Hazırlanıyor..." subtext="SoftBridge Finans Veri Akışı" />
     </div>
   </div>
 );
 
 function App() {
   return (
-    <div className="ot-app-shell">
+    <div className="ot-app-shell bg-terminal-bg text-terminal-text antialiased min-h-screen">
       <ThemeRuntime />
-      <TerminalBackground />
-      <div className="ot-vignette-overlay" />
-      <div className="ot-scanline-overlay" />
-      <div className="ot-route-layer">
+      <div className="ot-route-layer min-h-screen">
         <ErrorBoundary>
+          <RouteTransitionFox />
           <Suspense fallback={RouteLoadingFallback}>
+            <TerminalGuideManager />
             <Routes>
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
@@ -177,6 +180,7 @@ function App() {
             <Route path="economics" element={<EconomicTerminal />} />
             <Route path="sector-rotation" element={<SectorRotationPage />} />
             <Route path="crypto" element={<CryptoWorkspacePage />} />
+            <Route path="umy" element={<UmayTokenPage />} />
             <Route path="etf-analytics" element={<ETFAnalyticsPage />} />
             <Route path="cockpit" element={<CockpitDashboard />} />
             <Route path="saved-views" element={<SavedViewsPage />} />
@@ -236,6 +240,8 @@ function App() {
           <Route path="/settings" element={<Navigate to="/equity/settings" replace />} />
           <Route path="/plugins" element={<Navigate to="/equity/plugins" replace />} />
           <Route path="/saved-views" element={<Navigate to="/equity/saved-views" replace />} />
+          <Route path="/umy" element={<Navigate to="/equity/umy" replace />} />
+          <Route path="/tokens/umy" element={<Navigate to="/equity/umy" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

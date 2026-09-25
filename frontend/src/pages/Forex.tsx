@@ -293,7 +293,7 @@ export function ForexPage() {
   return (
     <div className="space-y-4 px-3 py-3">
       <TerminalPanel
-        title="Forex Terminal"
+        title="Forex Desk"
         subtitle="Cross rates, pair detail, central banks, and major-currency relative strength"
         actions={
           <div className="flex items-center gap-2">

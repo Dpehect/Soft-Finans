@@ -454,6 +454,47 @@ async def get_chart(
     if isinstance(cursor, bool) or not isinstance(cursor, int):
         cursor = None
 
+    norm_ticker = ticker.strip().upper()
+    if norm_ticker in ("UMY", "UMY-USD", "UMAY", "UMAY-USD", "SFT", "SFT-USD"):
+        coin_sym = "UMY-USD" if ("UMY" in norm_ticker or "UMAY" in norm_ticker) else "SFT-USD"
+        from backend.services.custom_crypto import generate_custom_candles
+        bars_raw = generate_custom_candles(coin_sym, interval=interval, range_str=period or range or "1y")
+        if normalized or period is not None or start is not None or end is not None:
+            return {
+                "symbol": coin_sym,
+                "interval": interval,
+                "count": len(bars_raw),
+                "market_hint": "CRYPTO",
+                "data": [
+                    {
+                        "t": int(b["t"] * 1000),
+                        "o": float(b["o"]),
+                        "h": float(b["h"]),
+                        "l": float(b["l"]),
+                        "c": float(b["c"]),
+                        "v": float(b["v"]),
+                    }
+                    for b in bars_raw
+                ],
+            }
+        return {
+            "ticker": coin_sym,
+            "interval": interval,
+            "currency": "USD",
+            "data": [
+                {
+                    "t": int(b["t"]),
+                    "o": float(b["o"]),
+                    "h": float(b["h"]),
+                    "l": float(b["l"]),
+                    "c": float(b["c"]),
+                    "v": float(b["v"]),
+                }
+                for b in bars_raw
+            ],
+            "meta": {"warnings": [], "degraded": None},
+        }
+
     # Unified OHLCV branch for the new chart workstation endpoint contract.
     # Keep the legacy ChartResponse branch below intact for pagination/backfill consumers.
     if normalized or period is not None or start is not None or end is not None:

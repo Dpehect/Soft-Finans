@@ -47,9 +47,9 @@ export function TerminalButton({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={[
-        "inline-flex items-center justify-center gap-1.5 rounded-sm border uppercase tracking-wide",
-        "ot-type-label transition-colors outline-none focus-visible:ring-1 focus-visible:ring-terminal-accent/40",
-        "disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-1.5 rounded-xl border font-medium tracking-normal",
+        "transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-terminal-accent/30 active:scale-[0.98] shadow-xs",
+        "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100",
         sizes[size],
         variants[variant],
         className,
@@ -57,7 +57,7 @@ export function TerminalButton({
         .join(" ")
         .trim()}
     >
-      {loading ? <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-sm bg-current opacity-80" aria-hidden="true" /> : leftIcon}
+      {loading ? <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-current opacity-80" aria-hidden="true" /> : leftIcon}
       <span>{children}</span>
       {rightIcon}
     </button>

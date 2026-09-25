@@ -1,19 +1,35 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  type User as FirebaseUser,
+} from "firebase/auth";
 
+import { auth } from "../lib/firebase";
 import { setAccessTokenGetter, setRefreshHandler } from "../api/client";
 import { setAccessTokenGetter as setFnoAccessTokenGetter } from "../fno/api/fnoApi";
 
 export type AuthRole = "admin" | "trader" | "viewer";
 
-type AuthUser = {
+export type AuthUser = {
   id: string;
   email: string;
   role: AuthRole;
 };
 
-type AuthContextValue = {
+export type AuthContextValue = {
   user: AuthUser | null;
+  firebaseUser: FirebaseUser | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -22,248 +38,159 @@ type AuthContextValue = {
   register: (email: string, password: string, role?: AuthRole) => Promise<void>;
   logout: () => void;
   hasRole: (required: AuthRole) => boolean;
+  resetPassword: (email: string) => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+/** Unauthenticated default — safe to use outside AuthProvider */
+export const DEFAULT_AUTH_VALUE: AuthContextValue = {
+  user: null,
+  firebaseUser: null,
+  accessToken: null,
+  isAuthenticated: false,
+  isLoading: false,
+  isInitializing: true,
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+  hasRole: () => false,
+  resetPassword: async () => {},
+};
+
+const AuthContext = createContext<AuthContextValue>(DEFAULT_AUTH_VALUE);
 /** Raw context ref for optional (non-throwing) usage outside AuthProvider */
 export { AuthContext as AuthContextRef };
-const ACCESS_TOKEN_KEY = "ot-access-token";
-const REFRESH_TOKEN_KEY = "ot-refresh-token";
-const E2E_AUTO_LOGIN_ENABLED = import.meta.env.VITE_E2E_AUTO_LOGIN === "1";
 
-function encodeJwtPayload(payload: Record<string, unknown>): string {
-  const encoded = btoa(JSON.stringify(payload))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-  return `x.${encoded}.y`;
-}
+const ADMIN_EMAILS = [
+  "gurlekyunusemre2@gmail.com",
+  "admin@openterminal.local",
+  "admin@softbridge.local",
+];
 
-function getE2eAuthTokens(): { accessToken: string; refreshToken: string } {
-  const nowSeconds = Math.floor(Date.now() / 1000);
+function firebaseUserToAuthUser(fbUser: FirebaseUser): AuthUser {
+  const email = (fbUser.email ?? "").toLowerCase();
+  const isAdmin = ADMIN_EMAILS.includes(email);
   return {
-    accessToken: encodeJwtPayload({
-      sub: "e2e-user",
-      email: "e2e@example.com",
-      role: "trader",
-      exp: nowSeconds + 3600,
-    }),
-    refreshToken: encodeJwtPayload({
-      exp: nowSeconds + 7200,
-    }),
+    id: fbUser.uid,
+    email: fbUser.email ?? "",
+    role: isAdmin ? "admin" : "trader",
   };
 }
 
-function parseJwtExp(token: string | null): number | null {
-  if (!token) return null;
-  try {
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
-    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(atob(normalized));
-    return typeof decoded.exp === "number" ? decoded.exp : null;
-  } catch {
-    return null;
-  }
-}
-
-function parseJwtUser(token: string | null): AuthUser | null {
-  if (!token) return null;
-  try {
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
-    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(atob(normalized));
-    if (!decoded.sub || !decoded.email || !decoded.role) return null;
-    return {
-      id: String(decoded.sub),
-      email: String(decoded.email),
-      role: String(decoded.role) as AuthRole,
-    };
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const refreshTimerRef = useRef<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const authApi = useMemo(
-    () =>
-      axios.create({
-        baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
-        timeout: 30000,
-      }),
-    [],
-  );
-
-  const clearRefreshTimer = useCallback(() => {
-    if (refreshTimerRef.current != null) {
-      window.clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
-  }, []);
-
-  const logout = useCallback(() => {
-    clearRefreshTimer();
-    setAccessToken(null);
-    setRefreshToken(null);
-    setUser(null);
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-  }, [clearRefreshTimer]);
-
-  const performRefresh = useCallback(async (): Promise<string | null> => {
-    if (!refreshToken) return null;
-    try {
-      const { data } = await authApi.post<{ access_token: string; refresh_token: string; token_type: string }>("/auth/refresh", {
-        refresh_token: refreshToken,
-      });
-      setAccessToken(data.access_token);
-      setRefreshToken(data.refresh_token);
-      setUser(parseJwtUser(data.access_token));
-      localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      return data.access_token;
-    } catch {
-      logout();
-      return null;
-    }
-  }, [authApi, logout, refreshToken]);
-
-  const scheduleRefresh = useCallback(
-    (token: string | null) => {
-      clearRefreshTimer();
-      const exp = parseJwtExp(token);
-      if (!exp) return;
-      const nowSec = Math.floor(Date.now() / 1000);
-      const inSec = Math.max(5, exp - nowSec - 60);
-      refreshTimerRef.current = window.setTimeout(() => {
-        void performRefresh();
-      }, inSec * 1000);
-    },
-    [clearRefreshTimer, performRefresh],
-  );
-
+  // Subscribe to Firebase auth state once on mount
   useEffect(() => {
-    let storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    let storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!storedAccessToken && E2E_AUTO_LOGIN_ENABLED) {
-      const e2eTokens = getE2eAuthTokens();
-      storedAccessToken = e2eTokens.accessToken;
-      storedRefreshToken = e2eTokens.refreshToken;
-      localStorage.setItem(ACCESS_TOKEN_KEY, storedAccessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, storedRefreshToken);
-    }
-    const storedUser = parseJwtUser(storedAccessToken);
-    const accessExp = parseJwtExp(storedAccessToken);
-    const now = Math.floor(Date.now() / 1000);
-
-    if (storedAccessToken && storedUser && accessExp && accessExp > now) {
-      setAccessToken(storedAccessToken);
-      setRefreshToken(storedRefreshToken);
-      setUser(storedUser);
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
+        const token = await fbUser.getIdToken();
+        setAccessToken(token);
+        let cachedToken: string | null = token;
+        const getter = () => cachedToken;
+        setAccessTokenGetter(getter);
+        setFnoAccessTokenGetter(getter);
+        setRefreshHandler(async () => {
+          const refreshed = await fbUser.getIdToken(true);
+          cachedToken = refreshed;
+          setAccessToken(refreshed);
+          return refreshed;
+        });
+      } else {
+        setAccessToken(null);
+        setAccessTokenGetter(null);
+        setFnoAccessTokenGetter(null);
+        setRefreshHandler(null);
+      }
       setIsInitializing(false);
-      return;
-    }
+    });
 
-    if (!storedRefreshToken) {
-      setIsInitializing(false);
-      return;
-    }
-
-    setRefreshToken(storedRefreshToken);
-    void authApi
-      .post<{ access_token: string; refresh_token: string; token_type: string }>("/auth/refresh", {
-        refresh_token: storedRefreshToken,
-      })
-      .then(({ data }) => {
-        setAccessToken(data.access_token);
-        setRefreshToken(data.refresh_token);
-        setUser(parseJwtUser(data.access_token));
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      })
-      .catch(() => {
-        logout();
-      })
-      .finally(() => {
-        setIsInitializing(false);
-      });
-  }, [authApi, logout]);
-
-  useEffect(() => {
-    setAccessTokenGetter(() => accessToken);
-    setFnoAccessTokenGetter(() => accessToken);
-    setRefreshHandler(() => performRefresh());
-    scheduleRefresh(accessToken);
     return () => {
+      unsubscribe();
       setAccessTokenGetter(null);
       setFnoAccessTokenGetter(null);
       setRefreshHandler(null);
-      clearRefreshTimer();
     };
-  }, [accessToken, clearRefreshTimer, scheduleRefresh, performRefresh]);
+  }, []);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      setIsLoading(true);
-      try {
-        const { data } = await authApi.post<{ access_token: string; refresh_token: string; token_type: string }>("/auth/login", {
-          email,
-          password,
-        });
-        setAccessToken(data.access_token);
-        setRefreshToken(data.refresh_token);
-        setUser(parseJwtUser(data.access_token));
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [authApi],
-  );
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged will update state automatically
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const register = useCallback(
-    async (email: string, password: string, role: AuthRole = "viewer") => {
+    async (email: string, password: string, _role?: AuthRole) => {
       setIsLoading(true);
       try {
-        await authApi.post("/auth/register", { email, password, role });
+        await createUserWithEmailAndPassword(auth, email, password);
       } finally {
         setIsLoading(false);
       }
     },
-    [authApi],
+    [],
   );
+
+  const logout = useCallback(() => {
+    void signOut(auth);
+  }, []);
+
+  const resetPassword = useCallback(async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  }, []);
 
   const hasRole = useCallback(
     (required: AuthRole) => {
-      if (!user) return false;
-      const rank: Record<AuthRole, number> = { viewer: 1, trader: 2, admin: 3 };
-      return rank[user.role] >= rank[required];
+      if (!firebaseUser) return false;
+      const user = firebaseUserToAuthUser(firebaseUser);
+      const ROLE_RANK: Record<AuthRole, number> = {
+        viewer: 1,
+        trader: 2,
+        admin: 3,
+      };
+      return (ROLE_RANK[user.role] ?? 0) >= (ROLE_RANK[required] ?? 99);
     },
-    [user],
+    [firebaseUser],
+  );
+
+  const user = useMemo<AuthUser | null>(
+    () => (firebaseUser ? firebaseUserToAuthUser(firebaseUser) : null),
+    [firebaseUser],
   );
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      firebaseUser,
       accessToken,
-      isAuthenticated: Boolean(accessToken && user),
+      isAuthenticated: firebaseUser !== null,
       isLoading,
       isInitializing,
       login,
       register,
       logout,
       hasRole,
+      resetPassword,
     }),
-    [accessToken, hasRole, isInitializing, isLoading, login, logout, register, user],
+    [
+      user,
+      firebaseUser,
+      accessToken,
+      isLoading,
+      isInitializing,
+      login,
+      register,
+      logout,
+      hasRole,
+      resetPassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -271,6 +198,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  return ctx ?? DEFAULT_AUTH_VALUE;
 }

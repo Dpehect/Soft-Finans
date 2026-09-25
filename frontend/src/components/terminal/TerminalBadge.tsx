@@ -23,16 +23,16 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm: "px-1.5 py-0.5 text-[10px]",
-  md: "px-2 py-0.5 text-[11px]",
+  sm: "px-2 py-0.5 text-[10px]",
+  md: "px-2.5 py-0.5 text-[11px]",
 };
 
 export function TerminalBadge({ children, variant = "neutral", size = "sm", className = "", dot = false }: Props) {
   return (
     <span
       className={[
-        "inline-flex items-center rounded-sm border ot-type-badge",
-        dot ? "gap-1" : "",
+        "inline-flex items-center rounded-full border ot-type-badge font-medium shadow-xs",
+        dot ? "gap-1.5" : "",
         sizes[size],
         variants[variant],
         className,
@@ -40,7 +40,7 @@ export function TerminalBadge({ children, variant = "neutral", size = "sm", clas
         .join(" ")
         .trim()}
     >
-      {dot ? <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-[1px] bg-current opacity-90" /> : null}
+      {dot ? <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-90" /> : null}
       {children}
     </span>
   );

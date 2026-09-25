@@ -10,10 +10,10 @@ export function ThemeRuntime() {
     const root = document.documentElement;
     root.setAttribute("data-ot-theme", themeVariant);
     root.style.setProperty("--ot-custom-accent", customAccentColor);
-    if (themeVariant === "light-desk") {
-      root.style.setProperty("color-scheme", "light");
-    } else {
+    if (themeVariant === "dark" || themeVariant === "classic-bloomberg") {
       root.style.setProperty("color-scheme", "dark");
+    } else {
+      root.style.setProperty("color-scheme", "light");
     }
   }, [themeVariant, customAccentColor]);
 

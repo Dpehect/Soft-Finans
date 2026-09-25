@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useStockStore } from "../../store/stockStore";
-import logo from "../../assets/logo.png";
+import { SoftBridgeLogo } from "../common/SoftBridgeLogo";
 import { useAlertsStore } from "../../store/alertsStore";
 import { PRIMARY_NAV_ITEMS } from "./navigation";
 import { UserAccountPanel } from "./UserAccountPanel";
@@ -10,8 +10,9 @@ export function Sidebar() {
   const unreadCount = useAlertsStore((s) => s.unreadCount);
   return (
     <aside className="relative z-30 flex h-full w-48 shrink-0 flex-col border-r border-terminal-border bg-terminal-panel p-0">
-      <div className="border-b border-terminal-border bg-terminal-panel px-3 py-2">
-        <img src={logo} alt="OpenTerminalUI" className="h-8 w-auto object-contain" />
+      <div className="flex items-center gap-2.5 border-b border-terminal-border bg-terminal-panel px-3 py-2.5">
+        <SoftBridgeLogo size={30} className="shrink-0" />
+        <div className="text-[11px] font-bold tracking-wider text-terminal-accent">SOFTBRIDGE FINANS</div>
       </div>
       <div className="border-b border-terminal-border px-3 py-2 text-[11px] text-terminal-muted">
         EQUITY ANALYTICS

@@ -11,7 +11,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../common/ErrorBoundary";
 import { InstallPromptBanner } from "./InstallPromptBanner";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { IconRail } from "./IconRail";
+import { ModernSidebar } from "./ModernSidebar";
 import { StatusBar } from "./StatusBar";
 import { TopBar } from "./TopBar";
 import { CommandBar } from "./CommandBar";
@@ -169,10 +169,10 @@ function WorkspaceControlBar({
             value={themeVariant}
             onChange={(e) => setThemeVariant(e.target.value as ThemeVariant)}
           >
-            <option value="terminal-noir">Terminal Noir</option>
-            <option value="classic-bloomberg">Classic Bloomberg</option>
-            <option value="light-desk">Light Desk</option>
-            <option value="custom">Custom</option>
+            <option value="renkli">🎨 Renkli Mod</option>
+            <option value="dengeli">⚖️ Dengeli Mod</option>
+            <option value="dark">🌙 Dark Mod</option>
+            <option value="custom">Özel Renk</option>
           </TerminalSelect>
         </label>
         {themeVariant === "custom" ? (
@@ -222,7 +222,7 @@ export function TerminalShell({
   showMobileBottomNav = false,
   workspacePresetStorageKey,
   defaultPreset = "trader",
-  showWorkspaceControls = true,
+  showWorkspaceControls = false,
   rightRailTitle = "Context Rail",
   rightRailSections,
   rightRailContent,
@@ -267,16 +267,9 @@ export function TerminalShell({
   return (
     <TerminalShellContext.Provider value={shellCtx}>
       <div className="flex h-screen overflow-hidden bg-terminal-bg text-terminal-text">
-        <IconRail />
+        <ModernSidebar />
 
         <div className="relative z-10 flex min-w-0 flex-1 flex-col">
-          <CommandBar
-            onExecute={async (command) => {
-              const parsed = parseCommand(command);
-              return executeParsedCommand(parsed, navigate);
-            }}
-          />
-          <TickerTape />
           <TopBar hideTickerLoader={hideTickerLoader} />
           {showWorkspaceControls ? (
             <WorkspaceControlBar

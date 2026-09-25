@@ -1,26 +1,35 @@
 import type { ReactElement } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
-import { useAuth, type AuthRole } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
+import type { AuthRole } from "../contexts/AuthContext";
 
-export function ProtectedRoute({ children, requiredRole }: { children: ReactElement; requiredRole?: AuthRole }) {
-  const { isAuthenticated, hasRole, isInitializing } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactElement;
+  requiredRole?: AuthRole;
+}
+
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const { isAuthenticated, isInitializing, hasRole } = useAuth();
   const location = useLocation();
 
+  // Still loading Firebase auth state — show nothing (avoids flash)
   if (isInitializing) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center p-4">
-        <div className="rounded-sm border border-terminal-border bg-terminal-panel px-4 py-3 text-xs text-terminal-muted">
-          Restoring workspace...
+      <div className="flex min-h-screen items-center justify-center bg-terminal-bg">
+        <div className="rounded-2xl border border-terminal-border/80 bg-terminal-panel px-6 py-4 text-xs font-medium text-terminal-muted shadow-sm">
+          Platform hazırlanıyor...
         </div>
       </div>
     );
   }
 
+  // Not logged in — redirect to /login, preserving the intended destination
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
+  // Optionally enforce role
   if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to="/" replace />;
   }

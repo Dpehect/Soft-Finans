@@ -1,0 +1,39 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sbFoxOrange" x1="6" y1="8" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#ff781f" />
+      <stop offset="40%" stopColor="#f97316" />
+      <stop offset="75%" stopColor="#ea580c" />
+      <stop offset="100%" stopColor="#c2410c" />
+    </linearGradient>
+    <linearGradient id="sbFoxCrest" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#f97316" />
+      <stop offset="45%" stopColor="#fbbf24" />
+      <stop offset="85%" stopColor="#00d4ff" />
+      <stop offset="100%" stopColor="#6366f1" />
+    </linearGradient>
+    <linearGradient id="sbFoxGold" x1="16" y1="14" x2="32" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#fde047" />
+      <stop offset="100%" stopColor="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="10" stroke="url(#sbFoxCrest)" stroke-width="2" fill="#0b101c" />
+  <g>
+    <polygon points="24,18 11,8 17,23" fill="#ff781f" />
+    <polygon points="24,18 37,8 31,23" fill="#ea580c" />
+    <polygon points="14,12 18,21 13,20" fill="#ffedd5" />
+    <polygon points="34,12 30,21 35,20" fill="#fed7aa" />
+    <polygon points="24,16 19,23 24,28 29,23" fill="url(#sbFoxGold)" />
+    <polygon points="19,23 7,27 16,31 24,28" fill="#f97316" />
+    <polygon points="29,23 41,27 32,31 24,28" fill="#c2410c" />
+    <polygon points="7,27 16,31 24,36 14,35" fill="#ffffff" opacity="0.95" />
+    <polygon points="41,27 32,31 24,36 34,35" fill="#f1f5f9" opacity="0.95" />
+    <polygon points="24,28 20,34 24,37.5 28,34" fill="#ea580c" />
+    <polygon points="22.2,36.5 25.8,36.5 24,38.5" fill="#090d16" />
+    <path d="M15.5 24.5 Q18.5 23 20.5 25.5 Q18 26.5 15.5 24.5 Z" fill="#090d16" />
+    <circle cx="18.8" cy="24.8" r="0.9" fill="#00e5ff" />
+    <path d="M32.5 24.5 Q29.5 23 27.5 25.5 Q30 26.5 32.5 24.5 Z" fill="#090d16" />
+    <circle cx="29.2" cy="24.8" r="0.9" fill="#00e5ff" />
+    <path d="M10 40.5 C16 38 32 38 38 40.5" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round" opacity="0.8" />
+  </g>
+</svg>

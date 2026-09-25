@@ -8,6 +8,7 @@ import { TerminalTable } from "../components/terminal/TerminalTable";
 import { TerminalBadge } from "../components/terminal/TerminalBadge";
 import { DataManager } from "../components/settings/DataManager";
 import { APIKeyManager } from "../components/settings/APIKeyManager";
+import { useAuth } from "../contexts/AuthContext";
 import { ErrorBoundary } from "../components/common/ErrorBoundary";
 import { useSettingsStore } from "../store/settingsStore";
 import { COUNTRY_MARKETS } from "../types";
@@ -15,6 +16,7 @@ import type { AlertRule, CountryCode, MarketCode } from "../types";
 import type { ScheduledReport } from "../types";
 
 export function SettingsPage() {
+  const { user } = useAuth();
   const selectedCountry = useSettingsStore((s) => s.selectedCountry);
   const selectedMarket = useSettingsStore((s) => s.selectedMarket);
   const displayCurrency = useSettingsStore((s) => s.displayCurrency);
@@ -60,6 +62,44 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-3 p-3">
+      {user?.role === "admin" && (
+        <TerminalPanel
+          title="SoftBridge Finans - Yönetici Kontrol Paneli"
+          subtitle={`Yönetici: ${user.email} (Tam Yetkili Sistem Erişimi)`}
+          actions={<TerminalBadge variant="accent">ADMIN AKTİF</TerminalBadge>}
+        >
+          <div className="rounded border border-terminal-accent/40 bg-terminal-accent/5 p-3 text-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-terminal-accent">SİSTEM YÖNETİCİSİ AYARLARI &amp; ERİŞİM KONTROLÜ</span>
+              <TerminalBadge variant="live">TÜM YETKİLER AÇIK</TerminalBadge>
+            </div>
+            <p className="text-terminal-text">
+              Sayın <strong>{user.email}</strong>, SoftBridge Finans sisteminin tam yetkili yöneticisisiniz.
+              Piyasa veri kaynakları, API anahtarları, veri yönetim motoru, otomatik raporlar ve sistem alarmları dahil olmak üzere
+              tüm parametreleri bu ekrandan ve ilgili modüllerden doğrudan konfigüre edebilirsiniz.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
+              <div className="border border-terminal-border bg-terminal-panel p-2 rounded text-[11px]">
+                <div className="text-terminal-muted">YETKİ DERECESİ</div>
+                <div className="text-terminal-accent font-semibold">ROOT ADMIN (L3)</div>
+              </div>
+              <div className="border border-terminal-border bg-terminal-panel p-2 rounded text-[11px]">
+                <div className="text-terminal-muted">VERİ KAYNAKLARI</div>
+                <div className="text-terminal-text font-semibold">SINIRSIZ / AKTİF</div>
+              </div>
+              <div className="border border-terminal-border bg-terminal-panel p-2 rounded text-[11px]">
+                <div className="text-terminal-muted">GÜVENLİK PROTOKOLÜ</div>
+                <div className="text-terminal-pos font-semibold">FIREBASE RS256</div>
+              </div>
+              <div className="border border-terminal-border bg-terminal-panel p-2 rounded text-[11px]">
+                <div className="text-terminal-muted">SİSTEM DURUMU</div>
+                <div className="text-terminal-accent font-semibold">TAM ÇALIŞIR</div>
+              </div>
+            </div>
+          </div>
+        </TerminalPanel>
+      )}
+
       <TerminalPanel title="UI Settings" subtitle="Dense terminal defaults">
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-6">
           <TerminalInput as="select" value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}>

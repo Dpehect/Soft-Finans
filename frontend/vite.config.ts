@@ -16,6 +16,12 @@ const appVersion = process.env.npm_package_version ?? "0.0.0";
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    dedupe: ["react", "react-dom", "react-router-dom", "firebase"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router-dom", "firebase/app", "firebase/auth"],
+  },
   define: {
     __BUILD_DATE__: JSON.stringify(buildDate),
     __GIT_COMMIT__: JSON.stringify(gitCommit),

@@ -25,7 +25,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/sw.js");
-  });
+  if (import.meta.env.DEV) {
+    // In dev mode, unregister any cached service workers so Vite's fresh module
+    // graph is always used — stale SW caches cause duplicate React instances and
+    // the "Cannot read properties of null (reading 'useContext')" crash.
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
+  } else {
+    window.addEventListener("load", () => {
+      void navigator.serviceWorker.register("/sw.js");
+    });
+  }
 }

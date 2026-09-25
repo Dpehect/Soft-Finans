@@ -52,10 +52,18 @@ function toPanelType(value: string | null): LaunchpadPanelType {
 
 function normalizeThemeVariant(value: string | null | undefined): string {
   const raw = String(value || "").trim();
-  if (raw === "terminal-noir" || raw === "classic-bloomberg" || raw === "light-desk" || raw === "custom") {
+  if (
+    raw === "renkli" ||
+    raw === "dengeli" ||
+    raw === "dark" ||
+    raw === "terminal-noir" ||
+    raw === "classic-bloomberg" ||
+    raw === "light-desk" ||
+    raw === "custom"
+  ) {
     return raw;
   }
-  return "terminal-noir";
+  return "dengeli";
 }
 
 function readOpenerTheme(): string | null {

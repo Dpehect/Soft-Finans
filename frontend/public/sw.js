@@ -1,4 +1,4 @@
-const CACHE_NAME = "otui-static-v4";
+const CACHE_NAME = "otui-static-v5";
 const ASSETS = ["/manifest.json", "/favicon.png", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {

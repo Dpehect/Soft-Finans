@@ -297,10 +297,11 @@ export function StockDetailPage() {
       : displayedChangePct >= 0
       ? "text-terminal-pos"
       : "text-terminal-neg";
+  const changePrecision = displayedChange !== null && Math.abs(displayedChange) < 0.05 && Math.abs(displayedChange) > 0 ? (Math.abs(displayedChange) < 0.001 ? 6 : 5) : 2;
   const changeText =
     displayedChange === null
       ? "-"
-      : `${displayedChange >= 0 ? "+" : ""}${displayedChange.toFixed(2)}`;
+      : `${displayedChange >= 0 ? "+" : ""}${displayedChange.toFixed(changePrecision)}`;
   const changePctText =
     displayedChangePct === null ? "-" : `${displayedChangePct >= 0 ? "+" : ""}${displayedChangePct.toFixed(2)}%`;
   const timeframe = selectedChartTimeframe;

@@ -845,6 +845,8 @@ export function AccountPage() {
               >
                 <option value="INR">INR</option>
                 <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="TRY">TRY (₺)</option>
               </select>
             </label>
 

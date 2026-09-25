@@ -1,6 +1,7 @@
 import { Suspense, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { RunningFox } from "../components/common/RunningFox";
 
 import {
   fetchAlerts,
@@ -510,9 +511,9 @@ export function EquityLayout() {
           bar, top bar, ticker tape) stays mounted instead of remounting. */}
       <Suspense
         fallback={
-          <div className="flex min-h-[50vh] items-center justify-center p-4">
-            <div className="rounded-sm border border-terminal-border bg-terminal-panel px-4 py-3 text-xs text-terminal-muted">
-              Loading workspace...
+          <div className="flex min-h-[50vh] flex-col items-center justify-center p-8">
+            <div className="rounded-2xl border border-orange-500/25 bg-[#0b101b]/90 p-6 shadow-2xl backdrop-blur-md">
+              <RunningFox size="md" text="Masaya Geçiliyor..." subtext="SoftBridge Finans Piyasa Verileri Yükleniyor" />
             </div>
           </div>
         }

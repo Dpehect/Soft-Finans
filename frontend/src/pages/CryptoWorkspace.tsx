@@ -18,6 +18,7 @@ import { CryptoCorrelationMatrixPanel } from "../components/crypto/CryptoCorrela
 import { CryptoDefiPanel } from "../components/crypto/CryptoDefiPanel";
 import { CryptoDerivativesPanel } from "../components/crypto/CryptoDerivativesPanel";
 import { CryptoHeatmapPanel } from "../components/crypto/CryptoHeatmapPanel";
+import { UmayFoxLogo } from "../components/crypto/UmayFoxLogo";
 import { TerminalBadge } from "../components/terminal/TerminalBadge";
 import { TerminalButton } from "../components/terminal/TerminalButton";
 import { TerminalInput } from "../components/terminal/TerminalInput";
@@ -607,6 +608,37 @@ export function CryptoWorkspacePage() {
 
   return (
     <div className="space-y-3 p-3">
+      {/* Umay (UMY) Token Ekosistem Bannerı */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-terminal-panel to-cyan-500/10 p-3.5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <UmayFoxLogo size={36} className="drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]" />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-terminal-text text-sm">UMAY (UMY) Token</span>
+              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-400">
+                0,0040 ₺ / +24.0%
+              </span>
+              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 hidden md:inline">
+                Açılış Rallisi
+              </span>
+            </div>
+            <p className="text-xs text-terminal-muted">
+              Türk mitolojisinin koruyucu simgesi Umay Ana'dan ilham alan SoftBridge bağımsız FinTech tokeni.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => navigate("/equity/umy")}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3.5 py-1.5 text-xs font-bold text-slate-950 shadow-sm transition-all hover:shadow-[0_0_15px_rgba(245,158,11,0.35)] hover:scale-105 active:scale-95"
+          >
+            <UmayFoxLogo size={16} />
+            UMY Masasına Git
+          </button>
+        </div>
+      </div>
+
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
         <div className="rounded border border-terminal-border bg-[radial-gradient(circle_at_top_left,rgba(38,140,255,0.16),transparent_42%),linear-gradient(180deg,rgba(12,16,21,0.96),rgba(10,13,18,0.98))] p-4">
           <div className="flex flex-wrap items-start justify-between gap-4">

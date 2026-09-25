@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MarketTicker } from "../../components/MarketTicker";
 import { StatusBar } from "../../components/StatusBar";
 import { useAuth, type AuthRole } from "../../contexts/AuthContext";
-import logo from "../../assets/logo.png";
+import { SoftBridgeLogo } from "../../components/common/SoftBridgeLogo";
 
 export function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -43,30 +43,33 @@ export function RegisterPage() {
 
   return (
     <div className="ot-login-layout">
-      <StatusBar left="OPENTERMINALUI" center="SYSTEM STATUS: ONLINE" centerDotColor="green" />
+      <StatusBar left="SOFTBRIDGE FINANS" center="SYSTEM STATUS: ONLINE" centerDotColor="green" />
 
       <section className="ot-login-hero">
+        <div className="ot-login-radar" aria-hidden="true" />
+        <div className="ot-radar-sweep" aria-hidden="true" />
+
         <div className="ot-login-ticker-wrap">
           <MarketTicker />
         </div>
 
         <div className="ot-login-metrics">
-          <span className="ot-value-up">UPTIME 99.97%</span>
+          <span className="ot-value-up flex items-center gap-1.5"><span className="ot-live-dot ot-live-dot-green" />UPTIME 99.99%</span>
           <span className="ot-muted">|</span>
-          <span className="ot-value-cyan">LATENCY 2ms</span>
+          <span className="ot-value-cyan flex items-center gap-1.5"><span className="ot-live-dot ot-live-dot-cyan" />LATENCY 1ms</span>
           <span className="ot-muted">|</span>
-          <span className="ot-value-amber">SESSIONS 1,247</span>
+          <span className="ot-value-amber flex items-center gap-1.5"><span className="ot-live-dot ot-live-dot-amber" />SECURITY: ACTIVE</span>
         </div>
 
         <div className="ot-brand-block">
           <div className="ot-brand-logo-row">
-            <img src={logo} alt="OpenTerminalUI" className="ot-brand-logo" />
-            <span className="ot-brand-kicker">OPEN-SOURCE TRADING TERMINAL</span>
+            <SoftBridgeLogo size={56} className="ot-brand-logo" />
+            <span className="ot-brand-kicker">KURUMSAL FİNANS &amp; ANALİZ PLATFORMU</span>
           </div>
           <h1 className="ot-brand-title">
-            <span className="ot-brand-title-open">OPENTERMINALUI</span>
+            <span className="ot-brand-title-open">SOFTBRIDGE FINANS</span>
           </h1>
-          <p className="ot-brand-subtitle">Create secure terminal access.</p>
+          <p className="ot-brand-subtitle">Create secure platform access.</p>
         </div>
       </section>
 
@@ -74,11 +77,11 @@ export function RegisterPage() {
         <div className="ot-login-panel-inner">
           <header className="ot-stagger" style={{ ["--stagger-index" as string]: 1 }}>
             <div className="ot-panel-logo-wrap">
-              <img src={logo} alt="OpenTerminalUI logo" className="ot-panel-logo" />
+              <SoftBridgeLogo size={62} className="ot-panel-logo" />
             </div>
             <p className="ot-panel-kicker">NEW OPERATOR</p>
             <h2 className="ot-panel-title">REQUEST ACCESS</h2>
-            <p className="ot-panel-subtitle">Provision your terminal credentials</p>
+            <p className="ot-panel-subtitle">Provision your platform credentials</p>
             <span className="ot-panel-divider" />
           </header>
 
@@ -159,7 +162,7 @@ export function RegisterPage() {
 
             <footer className="ot-login-footer ot-stagger" style={{ ["--stagger-index" as string]: 11 }}>
               <p>
-                Already registered? <Link to="/login">Access terminal</Link>
+                Already registered? <Link to="/login">Access platform</Link>
               </p>
             </footer>
           </form>

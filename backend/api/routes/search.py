@@ -80,6 +80,13 @@ async def search(q: str = Query(default=""), market: str = Query(default=DEFAULT
         if query in gi.ticker.lower() or query in gi.name.lower():
             _append_match(gi)
 
+    # Check custom crypto coins (UMY / UMAY & SFT)
+    q_upper = query.upper()
+    if "UMY" in q_upper or "UMAY" in q_upper:
+        _append_match(SearchResult(ticker="UMY-USD", name="Umay (UMY)", exchange="CRYPTO"))
+    if "SFT" in q_upper or "SOFT" in q_upper:
+        _append_match(SearchResult(ticker="SFT-USD", name="Soft Coin (SFT)", exchange="CRYPTO"))
+
     # Simple search
     for row in rows:
         ticker = (row.get("Symbol") or row.get("SYMBOL") or row.get("symbol") or "").upper()

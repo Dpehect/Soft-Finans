@@ -1,6 +1,6 @@
-export const APP_NAME = "OpenTerminalUI";
+export const APP_NAME = "SoftBridge Finans";
 export const REPOSITORY_URL = "https://github.com/laanito/OpenTerminalUI";
-export const REPOSITORY_LABEL = "github.com/laanito/OpenTerminalUI";
+export const REPOSITORY_LABEL = "SoftBridge Finans";
 
 // Version is sourced from package.json at build time via Vite's
 // `__APP_VERSION__` global (see vite.config.ts). Resolve it when rendering so

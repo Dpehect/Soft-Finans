@@ -672,7 +672,7 @@ export function CommandBar({ onExecute }: Props) {
   return (
     <div
       ref={rootRef}
-      className="relative z-40 border-b border-terminal-border bg-[#0D1117]/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-[#0D1117]/88"
+      className="relative z-40 border-b border-terminal-border bg-terminal-bg/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-terminal-bg/88"
       role={isOpen || aiOpen ? "dialog" : undefined}
       aria-modal={isOpen || aiOpen ? true : undefined}
       aria-label="Command palette"
@@ -697,13 +697,13 @@ export function CommandBar({ onExecute }: Props) {
     >
       <div
         className={[
-          "relative flex items-center gap-2 rounded-sm border bg-[#161B22] px-2 py-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]",
+          "relative flex items-center gap-2 rounded-sm border bg-terminal-panel px-2 py-1 shadow-sm",
           flashState === "success"
             ? "border-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
             : flashState === "error"
               ? "border-rose-500 shadow-[0_0_0_1px_rgba(244,63,94,0.35)]"
               : focused
-                ? "border-[#FF6B00] shadow-[0_0_0_1px_rgba(255,107,0,0.28)]"
+                ? "border-terminal-accent shadow-[0_0_0_1px_rgba(0,212,255,0.28)]"
                 : "border-terminal-border",
         ].join(" ")}
       >
@@ -765,8 +765,8 @@ export function CommandBar({ onExecute }: Props) {
               (e.target as HTMLInputElement).blur();
             }
           }}
-          className="h-8 min-w-0 flex-1 bg-transparent px-0 text-sm text-terminal-text outline-none placeholder:text-[#6E7681] ot-type-data"
-          style={{ caretColor: "#FF6B00", fontFamily: '"Fira Code", var(--ot-font-data)' }}
+          className="h-8 min-w-0 flex-1 bg-transparent px-0 text-sm text-terminal-text outline-none placeholder:text-terminal-muted ot-type-data"
+          style={{ caretColor: "var(--ot-color-accent-primary)", fontFamily: '"Fira Code", var(--ot-font-data)' }}
           placeholder="Type ticker, command, or search... (Ctrl+G)"
           aria-label="Command bar"
           role="combobox"
@@ -835,7 +835,7 @@ export function CommandBar({ onExecute }: Props) {
 
       {/* AI Response Panel */}
       {aiOpen && (
-        <div className="absolute left-3 right-3 top-[calc(100%+4px)] z-50 overflow-hidden rounded-sm border border-terminal-border bg-[#0D1117] shadow-2xl">
+        <div className="absolute left-3 right-3 top-[calc(100%+4px)] z-50 overflow-hidden rounded-sm border border-terminal-border bg-terminal-panel shadow-2xl">
           <div className="flex items-center justify-between border-b border-terminal-border bg-terminal-accent/10 px-3 py-2">
             <div className="flex items-center gap-2 text-xs font-bold text-terminal-accent">
               <Sparkles size={14} />
@@ -971,13 +971,13 @@ export function CommandBar({ onExecute }: Props) {
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => void submitCommand(item.command)}
                 className={`grid w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-2 py-1.5 text-left ${
-                  idx === selectedIndex ? "bg-[#1A2332]" : "hover:bg-terminal-panel"
+                  idx === selectedIndex ? "bg-terminal-accent/15 text-terminal-accent" : "hover:bg-terminal-panel"
                 }`}
               >
                 <span
                   className={`inline-flex h-5 items-center rounded-sm border px-1.5 text-[10px] ot-type-label ${
                     item.kind === "function"
-                      ? "border-[#FF6B00]/40 text-[#FF6B00]"
+                      ? "border-terminal-accent/50 text-terminal-accent"
                       : item.kind === "hint"
                         ? "border-violet-500/35 text-violet-300"
                         : item.kind === "disambiguation"

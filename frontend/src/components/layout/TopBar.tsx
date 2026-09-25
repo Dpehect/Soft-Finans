@@ -2,8 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { searchSymbols, type SearchSymbolItem } from "../../api/client";
+import { Compass, HelpCircle } from "lucide-react";
 import { CountryFlag } from "../common/CountryFlag";
+import { SoftBridgeLogo } from "../common/SoftBridgeLogo";
+import { UmayFoxLogo } from "../crypto/UmayFoxLogo";
+import { LanguageSelector } from "../common/LanguageSelector";
 import { NotificationBell } from "../notifications/NotificationBell";
+import { useGuideStore } from "../guide/guideStore";
+import { useTranslation } from "../../lib/i18n";
 import { useNavigationHistory } from "../../hooks/useNavigationHistory";
 import { inferRecentSecurityAssetClass, inferRecentSecurityMarket, useRecentSecurities } from "../../hooks/useRecentSecurities";
 import { useMarketStatus, useTopBarTickers } from "../../hooks/useStocks";
@@ -40,8 +46,12 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
   const setSelectedCountry = useSettingsStore((s) => s.selectedCountry === "IN" ? s.setSelectedCountry : s.setSelectedCountry); // keep store reactive
   const setSelectedMarket = useSettingsStore((s) => s.setSelectedMarket);
   const setDisplayCurrency = useSettingsStore((s) => s.setDisplayCurrency);
+  const themeVariant = useSettingsStore((s) => s.themeVariant);
+  const setThemeVariant = useSettingsStore((s) => s.setThemeVariant);
   const { addRecent } = useRecentSecurities();
   const { breadcrumbs } = useNavigationHistory({ autoTrack: true });
+  const { startTour, openHelp } = useGuideStore();
+  const { t } = useTranslation();
 
   const { data: polledStatus } = useMarketStatus();
   const realtimeStatus = useQuotesStore((s) => s.marketStatus);
@@ -269,38 +279,23 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
   const safeTicker = (ticker || "AAPL").toUpperCase();
 
   return (
-    <div className="relative z-20 border-b border-terminal-border bg-terminal-panel">
-      <div className="relative flex items-center gap-2 px-3 py-1.5">
-        <Link
-          to="/"
-          className="inline-flex h-7 items-center rounded border border-terminal-border bg-terminal-bg px-1.5"
-          aria-label="OpenTerminalUI Home"
-        >
-          <img src={BRAND_ICON_SRC} alt="OpenTerminalUI" className="h-5 w-5 object-contain" />
-        </Link>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link className="rounded border border-terminal-border px-2 py-1 text-[11px] text-terminal-muted hover:text-terminal-text" to="/">
-            HOME
-          </Link>
-          <Link className="rounded border border-terminal-border px-2 py-1 text-[11px] text-terminal-muted hover:text-terminal-text" to="/equity/screener">
-            SCREENER
-          </Link>
-          <Link className="rounded border border-terminal-border px-2 py-1 text-[11px] text-terminal-muted hover:text-terminal-text" to="/equity/compare">
-            COMPARE
-          </Link>
-          <Link className="rounded border border-terminal-border px-2 py-1 text-[11px] text-terminal-muted hover:text-terminal-text" to={`/fno/heatmap?symbol=${encodeURIComponent(safeTicker)}`}>
-            HEATMAP
-          </Link>
-          <Link className="rounded border border-terminal-border px-2 py-1 text-[11px] text-terminal-muted hover:text-terminal-text" to={`/fno?symbol=${encodeURIComponent(safeTicker)}`}>
-            F&O -&gt;
-          </Link>
+    <header className="relative z-20 h-14 border-b border-terminal-border bg-terminal-panel/95 backdrop-blur-md px-3 md:px-4">
+      <div className="flex h-full items-center justify-between gap-3">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Canlı Akış
+          </span>
+          <span className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-terminal-muted">
+            <span className="text-terminal-text">{selectedMarket}</span>
+          </span>
         </div>
         {!hideTickerLoader ? (
-          <div className="ml-2 flex min-w-[360px] flex-[1.4] items-center gap-1 xl:min-w-[460px]">
+          <div className="ml-2 flex min-w-[340px] flex-[1.4] items-center gap-1.5 xl:min-w-[440px]">
             <input
               ref={searchInputRef}
-              className="w-full rounded border border-terminal-border bg-terminal-bg px-2 py-1 text-xs outline-none focus:border-terminal-accent"
-              placeholder={`Search ${selectedMarket} symbol ( / )`}
+              className="w-full rounded-lg border border-terminal-border bg-terminal-panel px-3 py-1 text-xs text-terminal-text placeholder:text-terminal-muted/70 outline-none focus:border-terminal-accent focus:ring-2 focus:ring-terminal-accent/20 transition-all shadow-sm"
+              placeholder={`${t("searchHint", "Hisse veya sembol ara...")} (${selectedMarket} • tuş: /)`}
               value={query}
               onChange={(e) => {
                 const next = e.target.value.toUpperCase();
@@ -331,18 +326,18 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
               }}
             />
             <button
-              className="rounded bg-terminal-accent px-2 py-1 text-xs font-medium text-black"
+              className="rounded-lg bg-terminal-accent hover:bg-terminal-accent/90 px-3 py-1 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
               onClick={() => {
                 selectTicker(query);
               }}
             >
-              Load
+              {t("searchAction", "Ara")}
             </button>
           </div>
         ) : null}
-        <div className="flex shrink-0 items-center gap-1 border-l border-terminal-border pl-2">
+        <div className="flex shrink-0 items-center gap-1.5 border-l border-terminal-border/70 pl-2">
           <select
-            className="w-[88px] rounded border border-terminal-border bg-terminal-bg px-1 py-1 text-[11px] uppercase text-terminal-text outline-none"
+            className="w-[92px] rounded-lg border border-terminal-border bg-terminal-panel px-2 py-1 text-xs font-medium text-terminal-text outline-none focus:border-terminal-accent focus:ring-2 focus:ring-terminal-accent/20 transition-all shadow-sm cursor-pointer"
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}
           >
@@ -352,7 +347,7 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
             <option value="CRYPTO">{COUNTRY_FLAGS.CRYPTO} CRYPTO</option>
           </select>
           <select
-            className="w-[86px] rounded border border-terminal-border bg-terminal-bg px-1 py-1 text-[11px] uppercase text-terminal-text outline-none"
+            className="w-[90px] rounded-lg border border-terminal-border bg-terminal-panel px-2 py-1 text-xs font-medium text-terminal-text outline-none focus:border-terminal-accent focus:ring-2 focus:ring-terminal-accent/20 transition-all shadow-sm cursor-pointer"
             value={selectedMarket}
             onChange={(e) => setSelectedMarket(e.target.value as MarketCode)}
           >
@@ -363,31 +358,109 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
             ))}
           </select>
         </div>
-        <div className="flex shrink-0 items-center gap-1 border-l border-terminal-border pl-2">
+        <div className="flex shrink-0 items-center gap-1 border-l border-terminal-border/70 pl-2">
           <select
-            className="w-[72px] rounded border border-terminal-border bg-terminal-bg px-1 py-1 text-[11px] uppercase text-terminal-text outline-none"
+            className="w-[84px] rounded-lg border border-terminal-border bg-terminal-panel px-2 py-1 text-xs font-medium text-terminal-text outline-none focus:border-terminal-accent focus:ring-2 focus:ring-terminal-accent/20 transition-all shadow-sm cursor-pointer"
             value={displayCurrency}
             onChange={(e) => setDisplayCurrency(e.target.value as DisplayCurrency)}
-            title="Display currency"
-            aria-label="Display currency"
+            title="Para Birimi"
+            aria-label="Para Birimi"
           >
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="INR">INR</option>
+            <option value="USD">USD ($)</option>
+            <option value="TRY">TRY (₺)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="INR">INR (₹)</option>
           </select>
         </div>
-        <div className="inline-flex shrink-0 items-center gap-1 border-l border-terminal-border pl-2 text-[11px] uppercase tracking-wide text-terminal-muted">
-          <CountryFlag countryCode={selectedCountry} size="sm" />
-          <span>{selectedMarket}</span>
-        </div>
+        {/* UMY TOKEN QUICK ACCESS */}
+        <Link
+          to="/equity/umy"
+          className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-amber-500/50 bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-amber-500/15 px-2 text-xs font-bold text-amber-400 transition-all hover:border-amber-400 hover:shadow-[0_0_12px_rgba(245,158,11,0.3)] active:scale-95 group"
+          title="Umay (UMY) Token Hub: Köklerden Geleceğe Mitolojik Token"
+          aria-label="UMY Token"
+        >
+          <UmayFoxLogo size={16} className="drop-shadow-[0_0_4px_rgba(245,158,11,0.5)] group-hover:scale-110 transition-transform" />
+          <span className="bg-gradient-to-r from-amber-400 via-yellow-200 to-cyan-300 bg-clip-text text-transparent font-black tracking-wider">
+            UMY
+          </span>
+          <span className="hidden lg:inline text-[11px] text-cyan-300/90 font-medium">+24%</span>
+        </Link>
+        {/* REHBER & YARDIM BUTONLARI */}
+        <button
+          type="button"
+          onClick={() => startTour(0)}
+          className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-terminal-accent/50 bg-terminal-accent/15 px-2.5 text-xs font-bold text-terminal-accent transition-all hover:bg-terminal-accent/25 hover:border-terminal-accent shadow-sm active:scale-95"
+          title="Sitedeki her bölümü adım adım tanıtan interaktif rehberi başlat"
+          aria-label="Rehberi Başlat"
+        >
+          <Compass className="h-3.5 w-3.5 animate-pulse" />
+          <span className="tracking-wide">{t("guide", "REHBER")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => openHelp("sections")}
+          className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-terminal-border bg-terminal-panel px-2.5 text-xs font-medium text-terminal-text transition-all hover:border-terminal-accent/70 hover:text-terminal-accent shadow-sm active:scale-95"
+          title="Bölüm tanıtımları ve finans sözlüğü"
+          aria-label="Yardım Merkezi"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline tracking-wide">{t("help", "YARDIM")}</span>
+        </button>
+        {/* DİL SEÇİCİ (TR / EN / DE / ES / PT) */}
+        <LanguageSelector align="right" />
         <NotificationBell />
+        {/* TEMA MODLARI (RENKLİ / DENGELİ / DARK) */}
+        <div className="flex shrink-0 items-center rounded-lg border border-terminal-border bg-terminal-panel p-0.5 shadow-sm text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => setThemeVariant("renkli")}
+            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+              themeVariant === "renkli"
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm font-bold scale-[1.02]"
+                : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
+            }`}
+            title="Renkli Mod: Canlı, enerjik ve eğlenceli renkler"
+            aria-label="Renkli Mod"
+          >
+            <span>🎨</span>
+            <span className="hidden xl:inline">{t("themeColorful", "Renkli")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setThemeVariant("dengeli")}
+            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+              themeVariant === "dengeli" || themeVariant === "terminal-noir" || themeVariant === "light-desk" || !themeVariant
+                ? "bg-slate-700 text-white shadow-sm font-bold scale-[1.02]"
+                : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
+            }`}
+            title="Dengeli Mod: Göz yormayan dinlendirici mat tonlar (Ne parlak ne karanlık)"
+            aria-label="Dengeli Mod"
+          >
+            <span>⚖️</span>
+            <span className="hidden xl:inline">{t("themeBalanced", "Dengeli")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setThemeVariant("dark")}
+            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
+              themeVariant === "dark" || themeVariant === "classic-bloomberg"
+                ? "bg-slate-950 text-cyan-400 border border-cyan-500/40 shadow-sm font-bold scale-[1.02]"
+                : "text-terminal-muted hover:text-terminal-text hover:bg-terminal-bg/50"
+            }`}
+            title="Dark Mod: Şık, derin ve modern karanlık tema"
+            aria-label="Dark Mod"
+          >
+            <span>🌙</span>
+            <span className="hidden xl:inline">{t("themeDark", "Dark")}</span>
+          </button>
+        </div>
         <Link
           to="/"
-          className="inline-flex h-7 shrink-0 items-center border-l border-terminal-border pl-2"
-          aria-label="OpenTerminalUI Home (Top Right)"
-          title="OpenTerminalUI"
+          className="inline-flex h-7 shrink-0 items-center border-l border-terminal-border/70 pl-2"
+          aria-label="SoftBridge Finans Home"
+          title="SoftBridge Finans"
         >
-          <img src={BRAND_ICON_SRC} alt="OpenTerminalUI" className="h-5 w-5 object-contain" />
+          <SoftBridgeLogo size={20} className="shrink-0" />
         </Link>
         {!hideTickerLoader && isSuggestionsOpen && results.length > 0 && (
           <div className="absolute left-3 right-3 top-10 z-10 max-h-72 overflow-auto rounded border border-terminal-border bg-terminal-panel">
@@ -414,32 +487,6 @@ export function TopBar({ hideTickerLoader = false, hideMarketMarquee = false }: 
           </div>
         )}
       </div>
-      <div className="border-t border-terminal-border/60 px-3 py-1">
-        <div className="flex flex-wrap items-center gap-1 text-[10px] uppercase tracking-[0.12em]">
-          {collapsedBreadcrumbs.map((crumb, index) => {
-            const isCurrent = index === collapsedBreadcrumbs.length - 1;
-            const isEllipsis = crumb.label === "...";
-            return (
-              <span key={`${crumb.path}:${index}`} className="inline-flex items-center gap-1">
-                {isEllipsis ? (
-                  <span className="text-terminal-muted/80">{crumb.label}</span>
-                ) : isCurrent ? (
-                  <span className="text-terminal-text">{crumb.label}</span>
-                ) : (
-                  <button
-                    type="button"
-                    className="text-terminal-muted hover:text-terminal-text"
-                    onClick={() => navigate(crumb.path)}
-                  >
-                    {crumb.label}
-                  </button>
-                )}
-                {!isCurrent ? <span className="text-terminal-muted/60">&gt;</span> : null}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    </header>
   );
 }

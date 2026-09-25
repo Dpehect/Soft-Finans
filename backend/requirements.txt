@@ -38,7 +38,7 @@ pyarrow
 # pytickersymbols: bundled (offline) constituents of major global indices, used
 # to seed EU/UK equities into the instrument search universe.
 pytickersymbols
-hmmlearn
+# hmmlearn
 optuna
 statsmodels
 xgboost

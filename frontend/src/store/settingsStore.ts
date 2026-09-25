@@ -3,9 +3,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { COUNTRY_DEFAULT_MARKET, DEFAULT_COUNTRY, type CountryCode, type MarketCode } from "../types/markets";
 
-export type DisplayCurrency = "INR" | "USD" | "EUR";
+export type DisplayCurrency = "INR" | "USD" | "EUR" | "TRY";
 export type RealtimeMode = "polling" | "ws";
-export type ThemeVariant = "terminal-noir" | "classic-bloomberg" | "light-desk" | "custom";
+export type ThemeVariant = "renkli" | "dengeli" | "dark" | "terminal-noir" | "classic-bloomberg" | "light-desk" | "custom";
 export type RecentSecurityAssetClass = "equity" | "fno" | "crypto" | "commodity" | "forex" | "etf" | "mf";
 export type RecentSecurityMarket = "IN" | "US";
 
@@ -119,8 +119,8 @@ export const useSettingsStore = create<SettingsState>()(
       realtimeMode: "polling",
       newsAutoRefresh: true,
       newsRefreshSec: 60,
-      themeVariant: "terminal-noir",
-      customAccentColor: "#FF6B00",
+      themeVariant: "dengeli",
+      customAccentColor: "#00D4FF",
       hudOverlayEnabled: false,
       recentSecurities: [],
       setSelectedCountry: (country) => {
@@ -158,6 +158,19 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "ui-settings",
+      version: 4,
+      migrate: (persistedState: any, version: number) => {
+        if (version < 4) {
+          let theme = persistedState?.themeVariant;
+          if (theme === "terminal-noir" || theme === "light-desk") theme = "dengeli";
+          else if (theme === "classic-bloomberg") theme = "dark";
+          return {
+            ...(persistedState || {}),
+            themeVariant: theme || "dengeli",
+          };
+        }
+        return persistedState;
+      },
       storage: createJSONStorage(() => localStorage),
       merge: (persistedState, currentState) => {
         const persisted = (persistedState as Partial<SettingsState>) ?? {};
@@ -175,6 +188,9 @@ export const useSettingsStore = create<SettingsState>()(
           selectedCountry,
           selectedMarket: normalizePersistedMarket((persisted as any).selectedMarket, selectedCountry),
           themeVariant:
+            persisted.themeVariant === "renkli" ||
+            persisted.themeVariant === "dengeli" ||
+            persisted.themeVariant === "dark" ||
             persisted.themeVariant === "terminal-noir" ||
             persisted.themeVariant === "classic-bloomberg" ||
             persisted.themeVariant === "light-desk" ||

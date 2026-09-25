@@ -1,5 +1,9 @@
 const TICKER_ALIASES: Record<string, string> = {
   APPL: "AAPL",
+  UMY: "UMY-USD",
+  UMAY: "UMY-USD",
+  "UMAY-USD": "UMY-USD",
+  SFT: "SFT-USD",
 };
 
 export function normalizeTicker(input: string): string {
@@ -13,7 +17,8 @@ export function normalizeTicker(input: string): string {
 // endpoints (delivery-series, financials, shareholding, ...) don't apply and
 // 404/422 for them, so callers gate those off with this.
 export function isCryptoSymbol(ticker: string | null | undefined): boolean {
-  return /-USD$/i.test(normalizeTicker(ticker || ""));
+  const norm = normalizeTicker(ticker || "");
+  return /-USD$/i.test(norm) || norm === "UMY-USD" || norm === "UMAY-USD" || norm === "SFT-USD";
 }
 
 // Market indices use Yahoo's caret notation (^GSPC, ^NSEI, ^IXIC, ^N225, ...).

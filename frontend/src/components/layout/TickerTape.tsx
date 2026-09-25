@@ -180,7 +180,7 @@ export function TickerTape() {
         ].join(" ")}
         title={`Load ${item.label} in active chart`}
       >
-        <span className="text-[#FF6B00]">{item.label}</span>
+        <span className="text-terminal-accent font-semibold tracking-wide">{item.label}</span>
         <span>{formatPrice(item.price)}</span>
         <span className={item.change != null && item.change >= 0 ? "text-terminal-pos" : item.change != null ? "text-terminal-neg" : "text-terminal-muted"}>
           {formatChange(item.change)}

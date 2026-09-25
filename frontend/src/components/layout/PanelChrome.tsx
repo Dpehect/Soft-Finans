@@ -19,7 +19,7 @@ export function PanelFrame({ as = "section", children, className = "", ...rest }
   return (
     <Tag
       {...rest}
-      className={`rounded-sm border border-terminal-border bg-terminal-panel ${className}`.trim()}
+      className={`rounded-2xl border border-terminal-border/80 bg-terminal-panel/95 shadow-sm transition-all duration-200 overflow-hidden ${className}`.trim()}
     >
       {children}
     </Tag>
@@ -174,8 +174,8 @@ export function PanelHeader({
   };
 
   return (
-    <header {...rest} className={`shrink-0 border-b border-terminal-border ${className}`.trim()}>
-      <div className="flex items-center justify-between gap-2 px-2 py-1">
+    <header {...rest} className={`shrink-0 border-b border-terminal-border/70 bg-terminal-panel/60 ${className}`.trim()}>
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5">
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"
@@ -195,7 +195,7 @@ export function PanelHeader({
         <div className="ml-2 flex shrink-0 items-center gap-1">
           <button
             type="button"
-            className="rounded p-1 text-terminal-muted hover:text-terminal-text"
+            className="rounded-lg p-1 text-terminal-muted hover:bg-terminal-bg/80 hover:text-terminal-text transition-colors"
             onClick={handlePopout}
             title="Pop out to new window"
             aria-label="Pop out to new window"
@@ -205,7 +205,7 @@ export function PanelHeader({
           {actions ? <div className="shrink-0">{actions}</div> : null}
         </div>
       </div>
-      {toolbar ? <div className="border-t border-terminal-border/60 px-2 py-1">{toolbar}</div> : null}
+      {toolbar ? <div className="border-t border-terminal-border/60 px-3 py-1.5">{toolbar}</div> : null}
     </header>
   );
 }
@@ -216,7 +216,7 @@ type PanelBodyProps = HTMLAttributes<HTMLDivElement> & {
 
 export function PanelBody({ children, className = "", ...rest }: PanelBodyProps) {
   return (
-    <div {...rest} className={`p-2 ${className}`.trim()}>
+    <div {...rest} className={`p-2.5 ${className}`.trim()}>
       {children}
     </div>
   );
@@ -228,7 +228,7 @@ type PanelFooterProps = HTMLAttributes<HTMLElement> & {
 
 export function PanelFooter({ children, className = "", ...rest }: PanelFooterProps) {
   return (
-    <footer {...rest} className={`border-t border-terminal-border px-2 py-1 ${className}`.trim()}>
+    <footer {...rest} className={`border-t border-terminal-border/70 px-3 py-1.5 text-xs text-terminal-muted ${className}`.trim()}>
       {children}
     </footer>
   );

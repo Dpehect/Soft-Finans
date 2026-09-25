@@ -16,6 +16,7 @@ from backend.services.crypto_fundamentals import get_fundamentals
 from backend.services.crypto_market_service import CryptoMarketService
 from backend.services.crypto_universe import load_candles, load_universe, search_universe
 from backend.services.crypto_derivatives_service import load_depth_map, load_funding_oi
+from backend.services.custom_crypto import generate_custom_candles, is_custom_crypto
 from backend.shared.degraded import (
     REASON_NO_LIVE_SOURCE,
     REASON_NO_PROVIDER_DATA,
@@ -343,6 +344,21 @@ async def crypto_candles(
     interval: str = Query(default="1d"),
     range: str = Query(default="1y"),
 ) -> ChartResponse:
+    if is_custom_crypto(symbol):
+        custom_bars = generate_custom_candles(symbol, interval=interval, range_str=range)
+        custom_rows = [
+            OhlcvPoint(
+                t=int(c["t"]),
+                o=float(c["o"]),
+                h=float(c["h"]),
+                l=float(c["l"]),
+                c=float(c["c"]),
+                v=float(c["v"]),
+            )
+            for c in custom_bars
+        ]
+        return ChartResponse(ticker=symbol.upper(), interval=interval, currency="USD", data=custom_rows)
+
     fetcher = await get_unified_fetcher()
     adapter = CryptoAdapter(fetcher.yahoo)
     payload = await adapter.candles(symbol=symbol, interval=interval, range_str=range)
@@ -723,3 +739,79 @@ async def crypto_fundamentals(symbol: str) -> CryptoFundamentalsResponse:
     if data is None:
         raise HTTPException(status_code=404, detail="Crypto fundamentals not found")
     return data
+
+
+class UmySwapRequest(BaseModel):
+    action: str = "buy"  # "buy" or "sell"
+    pay_currency: str = "USDT"  # "USDT", "USD", "TRY"
+    amount: float  # amount of input currency or tokens
+    slippage: float = 0.5  # recommended 0.1% - 0.5%
+    wallet_address: str | None = None
+
+
+@router.get("/v1/crypto/tokens/umy")
+async def get_umy_token_hub() -> dict[str, Any]:
+    from backend.services.custom_crypto import UMY_METADATA
+    return {
+        "status": "success",
+        "data": UMY_METADATA,
+        "ts": _now_iso(),
+    }
+
+
+@router.post("/v1/crypto/tokens/umy/swap")
+async def swap_umy_token(req: UmySwapRequest) -> dict[str, Any]:
+    from backend.services.custom_crypto import UMY_METADATA
+    import hashlib
+    import time
+
+    if req.amount <= 0:
+        raise HTTPException(status_code=400, detail="Miktar 0'dan büyük olmalıdır.")
+
+    action = req.action.lower()
+    pay_curr = req.pay_currency.upper()
+    price_usd = float(UMY_METADATA["price_usd"])
+    price_try = float(UMY_METADATA["price_try"])
+
+    # Fee is 0.3% (within the 0.1% - 0.5% platform policy)
+    fee_pct = float(UMY_METADATA["trading_parameters"]["platform_fee_pct"])
+    fee_multiplier = fee_pct / 100.0
+
+    if action == "buy":
+        # Spending fiat/stable to buy UMY
+        unit_price = price_try if pay_curr == "TRY" else price_usd
+        fee_amount = req.amount * fee_multiplier
+        net_amount = req.amount - fee_amount
+        token_output = net_amount / unit_price
+        output_amount = round(token_output, 2)
+        out_curr = "UMY"
+        exec_price = unit_price
+    else:
+        # Selling UMY to receive fiat/stable
+        token_amount = req.amount
+        unit_price = price_try if pay_curr == "TRY" else price_usd
+        gross_value = token_amount * unit_price
+        fee_amount = gross_value * fee_multiplier
+        output_amount = round(gross_value - fee_amount, 4)
+        out_curr = pay_curr
+        exec_price = unit_price
+
+    tx_salt = f"{req.action}:{req.amount}:{time.time()}:{req.wallet_address}"
+    tx_hash = "0x" + hashlib.sha256(tx_salt.encode()).hexdigest()[:48]
+
+    return {
+        "success": True,
+        "action": action,
+        "input_amount": req.amount,
+        "input_currency": req.pay_currency.upper() if action == "buy" else "UMY",
+        "output_amount": output_amount,
+        "output_currency": out_curr,
+        "execution_price": exec_price,
+        "fee_amount": round(fee_amount, 6),
+        "fee_pct": fee_pct,
+        "slippage_pct": max(0.1, min(0.5, req.slippage)),
+        "tx_hash": tx_hash,
+        "network": "Solana / EVM Bridge",
+        "timestamp": _now_iso(),
+        "message": f"Umay Ana bereket ve koruyucu gücüyle {output_amount:,.2f} {out_curr} işlemi başarıyla simüle edildi.",
+    }

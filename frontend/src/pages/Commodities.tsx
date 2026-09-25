@@ -410,7 +410,7 @@ export function CommoditiesPage() {
   return (
     <div className="space-y-4 px-3 py-3">
       <TerminalPanel
-        title="Commodities Terminal"
+        title="Commodities Desk"
         subtitle="Energy, metals, and agriculture futures with curve and seasonality context"
         actions={
           <div className="flex items-center gap-2">

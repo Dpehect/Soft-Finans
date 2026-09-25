@@ -26,6 +26,14 @@ module.exports = {
           warn: "var(--ot-color-system-warning)",
           black: "var(--ot-color-canvas)"
         }
+      },
+      borderRadius: {
+        sm: "0.5rem", // 8px (softens all legacy rounded-sm)
+        DEFAULT: "0.625rem", // 10px
+        md: "0.75rem", // 12px
+        lg: "1rem", // 16px
+        xl: "1.25rem", // 20px
+        "2xl": "1.5rem" // 24px
       }
     }
   },

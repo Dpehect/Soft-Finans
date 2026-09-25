@@ -16,6 +16,12 @@ from backend.api.deps import cache_instance, get_unified_fetcher
 from backend.config.settings import get_settings
 from backend.core.coingecko_client import CoinGeckoClient
 from backend.core.ttl_policy import market_open_now, ttl_seconds
+from backend.services.custom_crypto import (
+    CUSTOM_COINS_LIST,
+    CUSTOM_COINS_MAP,
+    generate_custom_candles,
+    is_custom_crypto,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +43,9 @@ FALLBACK_META: dict[str, dict[str, str]] = {
     "IMX-USD": {"id": "immutable-x", "name": "Immutable", "sector": "Gaming"},
     "GALA-USD": {"id": "gala", "name": "Gala", "sector": "Gaming"},
     "ONDO-USD": {"id": "ondo-finance", "name": "Ondo", "sector": "RWA"},
-    "MKR-USD": {"id": "maker", "name": "Maker", "sector": "RWA"},
+    "UMY-USD": {"id": "umay-coin", "name": "Umay", "sector": "Mitolojik & Utility Hybrid"},
+    "UMAY-USD": {"id": "umay-coin", "name": "Umay", "sector": "Mitolojik & Utility Hybrid"},
+    "SFT-USD": {"id": "soft-coin", "name": "Soft Coin", "sector": "Ecosystem"},
 }
 
 _SECTOR_BY_SYMBOL = {sym: meta["sector"] for sym, meta in FALLBACK_META.items()}
@@ -152,17 +160,24 @@ async def _from_yahoo(limit: int) -> list[dict[str, Any]]:
     return rows
 
 
+def _merge_custom_coins(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    custom_symbols = {c["symbol"] for c in CUSTOM_COINS_LIST}
+    filtered = [r for r in rows if isinstance(r, dict) and r.get("symbol") not in custom_symbols]
+    return (list(CUSTOM_COINS_LIST) + filtered)[:limit]
+
+
 async def load_universe(limit: int = 300) -> list[dict[str, Any]]:
     """Return the crypto universe as canonical row dicts (cached).
 
     Order: fresh cache -> CoinGecko -> Yahoo fallback -> stale cache -> [].
+    Ecosystem custom coins (UMAY-USD, SFT-USD) are always prioritized at the head.
     """
     limit = max(1, min(300, limit))
     cache_key, stale_key = _cache_keys(limit)
 
     cached = await cache_instance.get(cache_key)
     if isinstance(cached, list) and cached:
-        return cached
+        return _merge_custom_coins(cached, limit)
 
     rows = await _from_coingecko(limit)
     source = "coingecko"
@@ -171,16 +186,17 @@ async def load_universe(limit: int = 300) -> list[dict[str, Any]]:
         source = "yahoo"
 
     if rows:
+        merged_rows = _merge_custom_coins(rows, limit)
         ttl = ttl_seconds("crypto", market_open_now())
-        await cache_instance.set(cache_key, rows, ttl=ttl)
-        await cache_instance.set(stale_key, rows, ttl=max(ttl * 6, ttl))
-        logger.debug("Loaded %d crypto rows from %s", len(rows), source)
-        return rows
+        await cache_instance.set(cache_key, merged_rows, ttl=ttl)
+        await cache_instance.set(stale_key, merged_rows, ttl=max(ttl * 6, ttl))
+        logger.debug("Loaded %d crypto rows from %s", len(merged_rows), source)
+        return merged_rows
 
     stale = await cache_instance.get(stale_key)
     if isinstance(stale, list):
-        return stale
-    return []
+        return _merge_custom_coins(stale, limit)
+    return list(CUSTOM_COINS_LIST)[:limit]
 
 
 # Map the app's range strings to a CoinGecko-OHLC-allowed `days` value. The
@@ -216,13 +232,16 @@ async def coin_id_for_symbol(symbol: str) -> str:
     return ""
 
 
-async def load_candles(symbol: str, range_str: str = "1y") -> list[dict[str, float]]:
-    """Return OHLC candles for a symbol from CoinGecko, or [].
+async def load_candles(symbol: str, range_str: str = "1y", interval: str = "1d") -> list[dict[str, float]]:
+    """Return OHLC candles for a symbol from custom generator or CoinGecko, or [].
 
     Used as the chart fallback for coins outside Yahoo's coverage. Rows are
     ``{"t", "o", "h", "l", "c", "v"}`` with ``v`` always 0 (CoinGecko OHLC
     carries no volume).
     """
+    if is_custom_crypto(symbol):
+        return generate_custom_candles(symbol, interval=interval, range_str=range_str)
+
     coin_id = await coin_id_for_symbol(symbol)
     if not coin_id:
         return []

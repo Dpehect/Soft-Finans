@@ -144,7 +144,7 @@ export function AiInsightCard({ title, description, disabled = false, disabledMe
       {status === "idle" && (
         <div className="mt-2 text-[11px] text-terminal-muted">
           {disabled
-            ? disabledMessage ?? "Required terminal data is not available yet."
+            ? disabledMessage ?? "Required market data is not available yet."
             : "Runs locally via your LLM endpoint (Ollama by default) — analysis can take a minute."}
         </div>
       )}

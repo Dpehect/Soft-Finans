@@ -39,6 +39,42 @@ def init_db() -> None:
     _ensure_alerts_columns()
     _ensure_instrument_master_columns()
     _ensure_portfolio_currency_columns()
+    _ensure_default_user()
+    _ensure_crypto_tokens()
+
+
+def _ensure_default_user() -> None:
+    try:
+        from backend.models.user import User, UserRole
+
+        with SessionLocal() as db:
+            user = db.query(User).filter(User.id == "dev-user").first()
+            if not user:
+                user = User(
+                    id="dev-user",
+                    email="admin@openterminal.local",
+                    hashed_password="",
+                    role=UserRole.ADMIN,
+                )
+                db.add(user)
+                db.commit()
+
+            admin_user = db.query(User).filter(User.email == "gurlekyunusemre2@gmail.com").first()
+            if not admin_user:
+                admin_user = User(
+                    id="fTP8Pr249iPeHibi1uUHxVviBPz2",
+                    email="gurlekyunusemre2@gmail.com",
+                    hashed_password="",
+                    role=UserRole.ADMIN,
+                )
+                db.add(admin_user)
+                db.commit()
+            elif admin_user.role != UserRole.ADMIN:
+                admin_user.role = UserRole.ADMIN
+                db.commit()
+    except Exception:
+        pass
+
 
 
 def _ensure_news_sentiment_columns() -> None:
@@ -159,3 +195,110 @@ def _ensure_portfolio_currency_columns() -> None:
             for column_name, ddl in columns_to_add.items():
                 if column_name not in existing:
                     conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {ddl}"))
+
+
+def _ensure_crypto_tokens() -> None:
+    try:
+        from backend.models.crypto_token import CryptoToken
+        from backend.instruments.models import InstrumentMaster
+
+        with SessionLocal() as db:
+            # 1. Seed or update UMY token
+            umy = db.query(CryptoToken).filter(CryptoToken.symbol == "UMY").first()
+            if not umy:
+                umy = CryptoToken(
+                    id="UMY",
+                    symbol="UMY",
+                    name="Umay",
+                    ticker="UMY-USD",
+                    canonical_id="CRYPTO:UMY",
+                    network="Solana / EVM",
+                    contract_address="UMY11111111111111111111111111111111111111111",
+                    total_supply=1_000_000_000.0,
+                    circulating_supply=1_000_000_000.0,
+                    initial_price_usd=0.0001,
+                    current_price_usd=0.000124,
+                    initial_price_try=0.004,
+                    current_price_try=0.00496,
+                    change_pct_24h=24.0,
+                    liquidity_pool_pct=80.0,
+                    community_rewards_pct=20.0,
+                    platform_fee_pct=0.3,
+                    slippage_recommended=0.5,
+                    story_inspiration="Eski Türk mitolojisinde bereketin, şansın ve koruyuculuğun sembolü olan Umay Ana felsefesi. Köklerden geleceğe uzanan dijital bir koruyucu güç.",
+                    developer_background="Tamamen bağımsız bir şekilde, büyük fonların desteği olmaksızın, SoftBridge Solutions bünyesinde bireysel geliştirici disipliniyle minimal bütçeyle hayata geçirilmiştir.",
+                    philosophy="Şişirilmiş VC (Girişim Sermayesi) yatırımları veya manipülatif ön satışlar barındırmayan; adil lansman (Fair Launch), saf kod ve topluluk gücüne dayanan bağımsız bir dijital deney ve utility/meme hibrit ekosistemi.",
+                    description="Umay, dijital varlıklarınızı koruyan ve büyüten, köklerini tarihten alan bağımsız topluluk tokenidir.",
+                    motto="Köklerden Geleceğe",
+                )
+                db.add(umy)
+
+            # 2. Seed SFT token
+            sft = db.query(CryptoToken).filter(CryptoToken.symbol == "SFT").first()
+            if not sft:
+                sft = CryptoToken(
+                    id="SFT",
+                    symbol="SFT",
+                    name="Soft Coin",
+                    ticker="SFT-USD",
+                    canonical_id="CRYPTO:SFT",
+                    network="SoftBridge Chain / EVM",
+                    contract_address="SFTbridge111111111111111111111111111111111",
+                    total_supply=100_000_000.0,
+                    circulating_supply=100_000_000.0,
+                    initial_price_usd=1.046,
+                    current_price_usd=1.24,
+                    initial_price_try=35.5,
+                    current_price_try=42.16,
+                    change_pct_24h=18.5,
+                    liquidity_pool_pct=70.0,
+                    community_rewards_pct=30.0,
+                    platform_fee_pct=0.2,
+                    slippage_recommended=0.5,
+                    story_inspiration="SoftBridge Finans ekosisteminin yerel yönetim ve işlem tokeni.",
+                    developer_background="SoftBridge Finans mühendislik ekibi.",
+                    philosophy="Yüksek verimlilik, güvenli zincirler arası takas ve platform sadakat ödülleri.",
+                    description="SoftBridge ekosisteminin hızlı, düşük komisyonlu yerel yardımcı tokeni.",
+                    motto="Finansın Köprüsü",
+                )
+                db.add(sft)
+
+            # 3. Ensure InstrumentMaster entries for global search & ranking
+            umy_inst = db.query(InstrumentMaster).filter(InstrumentMaster.canonical_id == "CRYPTO:UMY").first()
+            if not umy_inst:
+                umy_inst = InstrumentMaster(
+                    canonical_id="CRYPTO:UMY",
+                    display_symbol="UMY-USD",
+                    name="Umay",
+                    search_blob="umy umay umy-usd umay coin crypto token",
+                    type="crypto",
+                    source="softbridge",
+                    exchange="CRYPTO",
+                    currency="USD",
+                    tick_size="0.000001",
+                    lot_size="1",
+                    vendor_mappings_json={"softbridge": "UMY-USD", "coingecko": "umay-coin"},
+                )
+                db.add(umy_inst)
+
+            sft_inst = db.query(InstrumentMaster).filter(InstrumentMaster.canonical_id == "CRYPTO:SFT").first()
+            if not sft_inst:
+                sft_inst = InstrumentMaster(
+                    canonical_id="CRYPTO:SFT",
+                    display_symbol="SFT-USD",
+                    name="Soft Coin",
+                    search_blob="sft sft-usd soft coin crypto token",
+                    type="crypto",
+                    source="softbridge",
+                    exchange="CRYPTO",
+                    currency="USD",
+                    tick_size="0.001",
+                    lot_size="1",
+                    vendor_mappings_json={"softbridge": "SFT-USD", "coingecko": "soft-coin"},
+                )
+                db.add(sft_inst)
+
+            db.commit()
+    except Exception:
+        pass
+

@@ -35,6 +35,7 @@ coverage.xml
 pytest-report.xml
 
 # Frontend artifacts
+.vite/
 node_modules/
 frontend/node_modules/
 frontend/dist/

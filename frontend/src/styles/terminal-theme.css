@@ -1,7 +1,6 @@
 :root {
-  /* Terminal Design System v2 - semantic tokens */
-  --ot-font-data: "Fira Code", "JetBrains Mono", "IBM Plex Mono", "Courier New", monospace;
-  --ot-font-ui: "Inter", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --ot-font-data: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --ot-font-ui: "Inter", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
 
   --ot-font-weight-regular: 400;
   --ot-font-weight-medium: 500;
@@ -46,59 +45,65 @@
   --ot-type-data-line-height: var(--ot-line-height-data);
   --ot-type-ui-line-height: var(--ot-line-height-ui);
 
-  --ot-radius-xs: 2px;
-  --ot-radius-sm: 3px;
-  --ot-radius-md: 6px;
+  --ot-radius-xs: 6px;
+  --ot-radius-sm: 10px;
+  --ot-radius-md: 16px;
+  --ot-radius-lg: 24px;
+  --ot-radius-full: 9999px;
 
   --ot-space-1: 4px;
   --ot-space-2: 8px;
   --ot-space-3: 12px;
   --ot-space-4: 16px;
 
-  --ot-color-canvas: #0d1117;
-  --ot-color-canvas-elevated: #0f141b;
-  --ot-color-surface-1: #161b22;
-  --ot-color-surface-2: #1a212b;
-  --ot-color-surface-3: #222b36;
-  --ot-color-overlay: rgba(13, 17, 23, 0.82);
+  /* SoftBridge Finans — Eye-Comfort Gentle Light Slate (Ne Parlak Ne Karanlık - Göz Yormayan Açık Tonlar) */
+  --ot-color-canvas: #e8edf5;
+  --ot-color-canvas-elevated: #f1f5fa;
+  --ot-color-surface-1: #ffffff;
+  --ot-color-surface-2: #f4f7fb;
+  --ot-color-surface-3: #e2e8f0;
+  --ot-color-overlay: rgba(232, 237, 245, 0.92);
 
-  --ot-color-border-subtle: #212a36;
-  --ot-color-border-default: #2d3745;
-  --ot-color-border-strong: #3a4658;
+  --ot-color-border-subtle: #e2e8f0;
+  --ot-color-border-default: #cbd5e1;
+  --ot-color-border-strong: #94a3b8;
 
-  --ot-color-text-primary: #d7dde7;
-  --ot-color-text-secondary: #adb7c6;
-  --ot-color-text-muted: #7f8b9d;
-  --ot-color-text-inverse: #0d1117;
-  --ot-color-text-brand: #e0e0e0;
+  /* Text — Yumuşak, gözü yormayan yüksek kontrastlı net slate tonları */
+  --ot-color-text-primary: #0f172a;
+  --ot-color-text-secondary: #334155;
+  --ot-color-text-muted: #64748b;
+  --ot-color-text-inverse: #ffffff;
+  --ot-color-text-brand: #0f172a;
 
-  --ot-color-accent-primary: #ff6b00;
-  --ot-color-accent-primary-hover: #ff8b3d;
-  --ot-color-accent-primary-dim: #c85100;
-  --ot-color-accent-glow: rgba(255, 107, 0, 0.14);
-  --ot-color-accent-secondary: #18ffff;
-  --ot-color-accent-info: #448aff;
+  /* Accent — Canlı, eğlenceli ve güzel renkler (Vibrant Azure & Indigo & Violet) */
+  --ot-color-accent-primary: #0284c7;
+  --ot-color-accent-primary-hover: #0369a1;
+  --ot-color-accent-primary-dim: #0ea5e9;
+  --ot-color-accent-glow: rgba(2, 132, 199, 0.18);
+  --ot-color-accent-secondary: #8b5cf6;
+  --ot-color-accent-info: #3b82f6;
 
-  --ot-color-market-up: #00e676;
-  --ot-color-market-down: #ff3d3d;
-  --ot-color-market-neutral: #bdbdbd;
-  --ot-color-market-up-soft: rgba(0, 230, 118, 0.15);
-  --ot-color-market-down-soft: rgba(255, 61, 61, 0.15);
+  /* Market — Canlı taze zümrüt yeşili ve enerjik mercan gülü */
+  --ot-color-market-up: #059669;
+  --ot-color-market-down: #e11d48;
+  --ot-color-market-neutral: #64748b;
+  --ot-color-market-up-soft: rgba(5, 150, 105, 0.12);
+  --ot-color-market-down-soft: rgba(225, 29, 72, 0.12);
 
-  --ot-color-risk-low: #00e676;
-  --ot-color-risk-medium: #ffb74d;
-  --ot-color-risk-high: #ff3d3d;
-  --ot-color-risk-critical: #ff3d3d;
+  --ot-color-risk-low: #059669;
+  --ot-color-risk-medium: #d97706;
+  --ot-color-risk-high: #e11d48;
+  --ot-color-risk-critical: #e11d48;
 
-  --ot-color-system-ok: #00e676;
-  --ot-color-system-stale: #ffb74d;
-  --ot-color-system-warning: #ffb74d;
-  --ot-color-system-critical: #ff3d3d;
-  --ot-color-system-offline: #9e9e9e;
+  --ot-color-system-ok: #059669;
+  --ot-color-system-stale: #d97706;
+  --ot-color-system-warning: #d97706;
+  --ot-color-system-critical: #e11d48;
+  --ot-color-system-offline: #64748b;
 
-  --ot-color-action-safe: #00e676;
-  --ot-color-action-warning: #ffb74d;
-  --ot-color-action-danger: #ff3d3d;
+  --ot-color-action-safe: #059669;
+  --ot-color-action-warning: #d97706;
+  --ot-color-action-danger: #e11d48;
 
   /* Alert channel / severity semantics */
   --ot-color-alert-info: var(--ot-color-feedback-info);
@@ -114,10 +119,10 @@
   --ot-color-feedback-info: var(--ot-color-accent-info);
   --ot-color-feedback-warning: var(--ot-color-system-warning);
   --ot-color-feedback-error: var(--ot-color-system-critical);
-  --ot-color-feedback-success-soft: rgba(0, 230, 118, 0.12);
-  --ot-color-feedback-info-soft: rgba(68, 138, 255, 0.14);
-  --ot-color-feedback-warning-soft: rgba(255, 183, 77, 0.14);
-  --ot-color-feedback-error-soft: rgba(255, 61, 61, 0.14);
+  --ot-color-feedback-success-soft: rgba(16, 240, 128, 0.12);
+  --ot-color-feedback-info-soft: rgba(59, 130, 246, 0.16);
+  --ot-color-feedback-warning-soft: rgba(245, 158, 11, 0.14);
+  --ot-color-feedback-error-soft: rgba(255, 69, 96, 0.14);
 
   /* Ops/monitoring semantics */
   --ot-color-ops-running: var(--ot-color-system-ok);
@@ -127,7 +132,7 @@
   --ot-color-ops-queued: var(--ot-color-market-neutral);
 
   /* Interaction semantics */
-  --ot-color-interaction-focus-ring: color-mix(in srgb, var(--ot-color-accent-primary) 45%, transparent);
+  --ot-color-interaction-focus-ring: color-mix(in srgb, var(--ot-color-accent-primary) 40%, transparent);
   --ot-color-interaction-hover-border: color-mix(in srgb, var(--ot-color-accent-primary) 35%, var(--ot-color-border-default));
   --ot-color-interaction-selected-border: var(--ot-color-accent-primary);
   --ot-color-interaction-disabled-surface: color-mix(in srgb, var(--ot-color-surface-2) 82%, black);
@@ -135,9 +140,9 @@
 
   /* Workstation / chart panel semantics */
   --ot-color-workstation-panel-active-border: var(--ot-color-accent-primary);
-  --ot-color-workstation-panel-active-glow: rgba(255, 149, 0, 0.18);
+  --ot-color-workstation-panel-active-glow: rgba(0, 212, 255, 0.16);
   --ot-color-workstation-panel-drag-target-border: var(--ot-color-accent-info);
-  --ot-color-workstation-panel-drag-target-fill: rgba(68, 138, 255, 0.10);
+  --ot-color-workstation-panel-drag-target-fill: rgba(59, 130, 246, 0.10);
   --ot-color-workstation-panel-error-border: var(--ot-color-feedback-error);
   --ot-color-workstation-panel-sync-indicator: var(--ot-color-accent-secondary);
   --ot-color-workstation-panel-sync-muted: color-mix(in srgb, var(--ot-color-accent-secondary) 35%, var(--ot-color-text-muted));
@@ -147,20 +152,20 @@
   --ot-color-home-widget-surface-hover: color-mix(in srgb, var(--ot-color-surface-2) 88%, var(--ot-color-accent-primary) 12%);
   --ot-color-home-widget-surface-selected: color-mix(in srgb, var(--ot-color-surface-2) 80%, var(--ot-color-accent-primary) 20%);
   --ot-color-home-widget-border: var(--ot-color-border-subtle);
-  --ot-color-home-widget-border-strong: color-mix(in srgb, var(--ot-color-accent-primary) 36%, var(--ot-color-border-default));
-  --ot-color-home-widget-chart-fill-top: color-mix(in srgb, var(--ot-color-accent-primary) 18%, transparent);
-  --ot-color-home-widget-chart-benchmark: color-mix(in srgb, var(--ot-color-accent-secondary) 70%, var(--ot-color-text-muted));
-  --ot-color-home-widget-chart-grid: color-mix(in srgb, var(--ot-color-border-default) 74%, transparent);
-  --ot-color-home-widget-ring-track: color-mix(in srgb, var(--ot-color-border-default) 72%, transparent);
-  --ot-color-home-widget-tooltip-surface: color-mix(in srgb, var(--ot-color-canvas-elevated) 94%, transparent);
+  --ot-color-home-widget-border-strong: color-mix(in srgb, var(--ot-color-accent-primary) 32%, var(--ot-color-border-default));
+  --ot-color-home-widget-chart-fill-top: color-mix(in srgb, var(--ot-color-accent-primary) 16%, transparent);
+  --ot-color-home-widget-chart-benchmark: color-mix(in srgb, var(--ot-color-accent-secondary) 60%, var(--ot-color-text-muted));
+  --ot-color-home-widget-chart-grid: color-mix(in srgb, var(--ot-color-border-default) 70%, transparent);
+  --ot-color-home-widget-ring-track: color-mix(in srgb, var(--ot-color-border-default) 68%, transparent);
+  --ot-color-home-widget-tooltip-surface: color-mix(in srgb, var(--ot-color-canvas-elevated) 96%, transparent);
   --ot-color-home-widget-tooltip-border: var(--ot-color-border-strong);
-  --ot-color-home-widget-shadow: color-mix(in srgb, var(--ot-color-canvas) 54%, transparent);
+  --ot-color-home-widget-shadow: color-mix(in srgb, var(--ot-color-canvas) 60%, transparent);
 
   --ot-density-row-compact: 24px;
   --ot-density-row-default: 28px;
   --ot-density-row-comfortable: 32px;
 
-  /* Compatibility aliases (existing UI uses these widely) */
+  /* Compatibility aliases — now pointing to the new cyan-blue palette */
   --ot-black: var(--ot-color-canvas);
   --ot-bg: var(--ot-color-canvas-elevated);
   --ot-surface: var(--ot-color-surface-2);
@@ -180,41 +185,125 @@
   --ot-focus-ring: var(--ot-color-interaction-focus-ring);
 }
 
-:root[data-ot-theme="classic-bloomberg"] {
-  --ot-color-canvas: #000000;
-  --ot-color-canvas-elevated: #050505;
-  --ot-color-surface-1: #101010;
-  --ot-color-surface-2: #151515;
-  --ot-color-border-default: #2b2b2b;
-  --ot-color-accent-primary: #ff7a00;
-  --ot-color-accent-primary-hover: #ffa144;
-  --ot-color-text-primary: #f4f1e8;
-  --ot-color-text-muted: #9a978f;
+/* 1. RENKLİ MOD (Canlı, enerjik, neşeli ve iç açıcı) */
+:root[data-ot-theme="renkli"] {
+  --ot-color-canvas: #f0f7ff;
+  --ot-color-canvas-elevated: #f8faff;
+  --ot-color-surface-1: #ffffff;
+  --ot-color-surface-2: #f1f7fe;
+  --ot-color-surface-3: #e0eeff;
+  --ot-color-overlay: rgba(240, 247, 255, 0.94);
+
+  --ot-color-border-subtle: #dbeafe;
+  --ot-color-border-default: #bfdbfe;
+  --ot-color-border-strong: #93c5fd;
+
+  --ot-color-text-primary: #0f172a;
+  --ot-color-text-secondary: #1e293b;
+  --ot-color-text-muted: #64748b;
+  --ot-color-text-brand: #4338ca;
+
+  --ot-color-accent-primary: #4f46e5;
+  --ot-color-accent-primary-hover: #4338ca;
+  --ot-color-accent-primary-dim: #6366f1;
+  --ot-color-accent-glow: rgba(79, 70, 229, 0.22);
+  --ot-color-accent-secondary: #ec4899;
+  --ot-color-accent-info: #0284c7;
+
+  --ot-color-market-up: #10b981;
+  --ot-color-market-down: #f43f5e;
+  --ot-color-market-neutral: #64748b;
+  --ot-color-market-up-soft: rgba(16, 185, 129, 0.16);
+  --ot-color-market-down-soft: rgba(244, 63, 94, 0.16);
+
+  --ot-color-home-widget-surface: #ffffff;
+  --ot-color-home-widget-border: #bfdbfe;
+  --ot-color-home-widget-surface-hover: #f8faff;
+  --ot-color-workstation-panel-active-border: #4f46e5;
 }
 
-:root[data-ot-theme="light-desk"] {
-  --ot-color-canvas: #eef2f7;
-  --ot-color-canvas-elevated: #f7f9fc;
+/* 2. DENGELİ MOD (Göz yormayan dinlendirici mat tonlar - ne parlak ne karanlık) */
+:root[data-ot-theme="dengeli"],
+:root[data-ot-theme="terminal-noir"],
+:root[data-ot-theme="light-desk"],
+:root[data-ot-theme=""] {
+  --ot-color-canvas: #e8edf5;
+  --ot-color-canvas-elevated: #f1f5fa;
   --ot-color-surface-1: #ffffff;
-  --ot-color-surface-2: #f1f5fb;
-  --ot-color-surface-3: #e7edf6;
-  --ot-color-overlay: rgba(236, 241, 248, 0.9);
-  --ot-color-border-subtle: #c9d4e4;
-  --ot-color-border-default: #b8c6db;
-  --ot-color-border-strong: #90a4bf;
-  --ot-color-text-primary: #111a26;
-  --ot-color-text-secondary: #314055;
-  --ot-color-text-muted: #5f7088;
-  --ot-color-accent-primary: #d95f00;
-  --ot-color-accent-primary-hover: #ee812c;
-  --ot-color-market-up: #087f5b;
-  --ot-color-market-down: #d63a3a;
+  --ot-color-surface-2: #f4f7fb;
+  --ot-color-surface-3: #e2e8f0;
+  --ot-color-overlay: rgba(232, 237, 245, 0.92);
+
+  --ot-color-border-subtle: #e2e8f0;
+  --ot-color-border-default: #cbd5e1;
+  --ot-color-border-strong: #94a3b8;
+
+  --ot-color-text-primary: #0f172a;
+  --ot-color-text-secondary: #334155;
+  --ot-color-text-muted: #64748b;
+  --ot-color-text-brand: #0f172a;
+
+  --ot-color-accent-primary: #0284c7;
+  --ot-color-accent-primary-hover: #0369a1;
+  --ot-color-accent-primary-dim: #0ea5e9;
+  --ot-color-accent-glow: rgba(2, 132, 199, 0.18);
+  --ot-color-accent-secondary: #8b5cf6;
+  --ot-color-accent-info: #3b82f6;
+
+  --ot-color-market-up: #059669;
+  --ot-color-market-down: #e11d48;
+  --ot-color-market-neutral: #64748b;
+  --ot-color-market-up-soft: rgba(5, 150, 105, 0.12);
+  --ot-color-market-down-soft: rgba(225, 29, 72, 0.12);
+
+  --ot-color-home-widget-surface: #ffffff;
+  --ot-color-home-widget-border: #cbd5e1;
+  --ot-color-home-widget-surface-hover: #f8fafc;
+  --ot-color-workstation-panel-active-border: #0284c7;
+}
+
+/* 3. DARK MOD (Modern, premium derin slate karanlık tema) */
+:root[data-ot-theme="dark"],
+:root[data-ot-theme="classic-bloomberg"] {
+  --ot-color-canvas: #0b1120;
+  --ot-color-canvas-elevated: #0f172a;
+  --ot-color-surface-1: #1e293b;
+  --ot-color-surface-2: #141f33;
+  --ot-color-surface-3: #293548;
+  --ot-color-overlay: rgba(11, 17, 32, 0.94);
+
+  --ot-color-border-subtle: #1e293b;
+  --ot-color-border-default: #334155;
+  --ot-color-border-strong: #475569;
+
+  --ot-color-text-primary: #f8fafc;
+  --ot-color-text-secondary: #cbd5e1;
+  --ot-color-text-muted: #94a3b8;
+  --ot-color-text-brand: #38bdf8;
+
+  --ot-color-accent-primary: #38bdf8;
+  --ot-color-accent-primary-hover: #0ea5e9;
+  --ot-color-accent-primary-dim: #0284c7;
+  --ot-color-accent-glow: rgba(56, 189, 248, 0.25);
+  --ot-color-accent-secondary: #a78bfa;
+  --ot-color-accent-info: #60a5fa;
+
+  --ot-color-market-up: #34d399;
+  --ot-color-market-down: #fb7185;
+  --ot-color-market-neutral: #94a3b8;
+  --ot-color-market-up-soft: rgba(52, 211, 153, 0.16);
+  --ot-color-market-down-soft: rgba(251, 113, 133, 0.16);
+
+  --ot-color-home-widget-surface: #1e293b;
+  --ot-color-home-widget-border: #334155;
+  --ot-color-home-widget-surface-hover: #24334a;
+  --ot-color-workstation-panel-active-border: #38bdf8;
 }
 
 :root[data-ot-theme="custom"] {
-  --ot-color-accent-primary: var(--ot-custom-accent, #ff6b00);
+  --ot-color-accent-primary: var(--ot-custom-accent, #00d4ff);
   --ot-color-accent-primary-hover: color-mix(in srgb, var(--ot-color-accent-primary) 78%, white);
-  --ot-color-accent-glow: color-mix(in srgb, var(--ot-color-accent-primary) 20%, transparent);
+  --ot-color-accent-glow: color-mix(in srgb, var(--ot-color-accent-primary) 24%, transparent);
   --ot-color-interaction-selected-border: var(--ot-color-accent-primary);
   --ot-color-workstation-panel-active-border: var(--ot-color-accent-primary);
 }
@@ -222,7 +311,7 @@
 .ot-app-shell {
   min-height: 100vh;
   color: var(--ot-text);
-  font-family: var(--ot-font-data);
+  font-family: var(--ot-font-ui);
   background: var(--ot-black);
 }
 
@@ -243,11 +332,11 @@
 
 .ot-type-label {
   font-family: var(--ot-font-ui);
-  font-size: var(--ot-type-size-2xs);
+  font-size: var(--ot-type-size-xs);
   line-height: var(--ot-line-height-tight);
   font-weight: var(--ot-font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: var(--ot-letter-spacing-wide);
+  letter-spacing: 0;
+  color: var(--ot-color-text-secondary);
 }
 
 .ot-type-status {
@@ -255,36 +344,36 @@
   font-size: var(--ot-type-status-size);
   line-height: var(--ot-type-status-line-height);
   font-weight: var(--ot-font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: var(--ot-letter-spacing-wide);
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  color: var(--ot-color-text-primary);
 }
 
 .ot-type-badge {
   font-family: var(--ot-font-ui);
   font-size: var(--ot-type-badge-size);
   line-height: var(--ot-type-status-line-height);
-  font-weight: var(--ot-font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--ot-letter-spacing-wide);
+  font-weight: var(--ot-font-weight-medium);
+  letter-spacing: 0.01em;
+  border-radius: var(--ot-radius-full);
 }
 
 .ot-type-panel-title {
   font-family: var(--ot-font-ui);
-  font-size: var(--ot-type-panel-title-size);
-  line-height: var(--ot-type-status-line-height);
-  font-weight: var(--ot-font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--ot-letter-spacing-wide);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ot-color-accent-primary);
 }
 
 .ot-type-panel-subtitle {
   font-family: var(--ot-font-ui);
-  font-size: var(--ot-type-panel-subtitle-size);
-  line-height: var(--ot-type-status-line-height);
-  font-weight: var(--ot-font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: var(--ot-letter-spacing-wide);
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ot-color-text-muted);
 }
 
 .ot-type-table-cell {
@@ -293,15 +382,17 @@
   line-height: var(--ot-type-data-line-height);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
+  color: var(--ot-color-text-primary);
 }
 
 .ot-type-table-header {
   font-family: var(--ot-font-ui);
   font-size: var(--ot-type-table-header-size);
   line-height: var(--ot-type-status-line-height);
-  font-weight: var(--ot-font-weight-medium);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--ot-letter-spacing-wide);
+  color: var(--ot-color-text-secondary);
 }
 
 .ot-type-heading-lg {
@@ -310,6 +401,7 @@
   line-height: 1.2;
   font-weight: var(--ot-font-weight-semibold);
   letter-spacing: var(--ot-letter-spacing-tight);
+  color: var(--ot-color-text-brand);
 }
 
 .ot-type-heading-xl {
@@ -318,12 +410,14 @@
   line-height: 1.05;
   font-weight: var(--ot-font-weight-bold);
   letter-spacing: var(--ot-letter-spacing-tight);
+  color: var(--ot-color-text-brand);
 }
 
 .ot-type-body {
   font-family: var(--ot-font-ui);
   font-size: var(--ot-type-size-sm);
   line-height: var(--ot-line-height-copy);
+  color: var(--ot-color-text-primary);
 }
 
 .ot-density-dense {
@@ -355,19 +449,11 @@
 }
 
 .ot-scanline-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.03) 0px, rgba(0, 0, 0, 0.03) 1px, transparent 1px, transparent 3px);
+  display: none;
 }
 
 .ot-vignette-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9998;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+  display: none;
 }
 
 .ot-status-bar {
@@ -381,17 +467,23 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
-  padding: 0 12px;
-  background: var(--ot-amber);
-  color: var(--ot-black);
-  border-bottom: 1px solid #e98a00;
+  padding: 0 16px;
+  background: rgba(10, 14, 26, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ot-color-accent-primary);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.25);
   font-size: var(--ot-type-status-size);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
 }
 
 .ot-status-bar-left {
   font-weight: 700;
+  color: var(--ot-color-accent-primary);
+  letter-spacing: 0.14em;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
 }
 
 .ot-status-bar-center {
@@ -400,31 +492,37 @@
   gap: 8px;
   justify-self: center;
   font-weight: 600;
+  color: #e2e8f0;
 }
 
 .ot-status-bar-right {
   justify-self: end;
-  font-weight: 600;
+  font-weight: 500;
+  color: #94a3b8;
+  font-family: var(--ot-font-data);
 }
 
 .ot-live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   display: inline-block;
   animation: otPulse 2s ease-in-out infinite;
 }
 
 .ot-live-dot-green {
   background: var(--ot-green);
+  box-shadow: 0 0 8px rgba(16, 240, 128, 0.8);
 }
 
 .ot-live-dot-cyan {
   background: var(--ot-cyan);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
 }
 
 .ot-live-dot-amber {
   background: var(--ot-amber);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
 }
 
 .ot-slide-down {
@@ -444,6 +542,81 @@
   position: relative;
   border-right: 1px solid var(--ot-border);
   overflow: hidden;
+  background:
+    radial-gradient(ellipse 65% 55% at 20% 30%, rgba(0, 212, 255, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 85% 75%, rgba(124, 58, 237, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 212, 255, 0.10) 0%, transparent 60%),
+    var(--ot-color-canvas, #263349);
+}
+
+.ot-login-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+  pointer-events: none;
+  animation: otGridFloat 24s linear infinite;
+}
+
+.ot-login-hero::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  left: 10%;
+  top: 20%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.14) 0%, rgba(124, 58, 237, 0.06) 50%, transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+  animation: otAmbientWave 14s ease-in-out infinite alternate;
+}
+
+.ot-login-radar {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  left: 28%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ot-login-radar::before,
+.ot-login-radar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  animation: otRadarPing 6s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.ot-login-radar::after {
+  animation-delay: 3s;
+}
+
+.ot-radar-sweep {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  left: 28%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(0, 212, 255, 0.18) 360deg);
+  pointer-events: none;
+  animation: otRadarRotate 10s linear infinite;
+  z-index: 1;
+  mask-image: radial-gradient(circle, black 65%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, black 65%, transparent 70%);
 }
 
 .ot-login-ticker-wrap {
@@ -451,14 +624,20 @@
   top: 60%;
   left: 0;
   right: 0;
+  z-index: 2;
 }
 
 .ot-market-ticker {
-  border-top: 1px solid rgba(255, 149, 0, 0.08);
-  border-bottom: 1px solid rgba(255, 149, 0, 0.08);
-  background: rgba(10, 10, 10, 0.62);
+  border-top: 1px solid rgba(0, 212, 255, 0.20);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.20);
+  background: rgba(28, 40, 62, 0.90);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   overflow: hidden;
   white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
 }
 
 .ot-market-ticker-track {
@@ -470,7 +649,7 @@
 .ot-market-ticker-row {
   display: flex;
   align-items: center;
-  padding: 7px 0;
+  padding: 8px 0;
 }
 
 .ot-market-ticker-item {
@@ -481,6 +660,7 @@
 
 .ot-market-ticker-symbol {
   color: var(--ot-white);
+  font-weight: 600;
 }
 
 .ot-market-ticker-separator {
@@ -491,12 +671,23 @@
 .ot-login-metrics {
   position: absolute;
   left: 48px;
-  bottom: 230px;
+  bottom: 270px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  z-index: 2;
+}
+
+.ot-login-metrics span.ot-value-up,
+.ot-login-metrics span.ot-value-cyan,
+.ot-login-metrics span.ot-value-amber {
+  background: var(--ot-color-surface-1);
+  border: 1px solid var(--ot-color-border-default);
+  border-radius: var(--ot-radius-full);
+  padding: 5px 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
 .ot-brand-block {
@@ -504,30 +695,35 @@
   left: 48px;
   bottom: 48px;
   max-width: 560px;
+  z-index: 2;
 }
 
 .ot-brand-logo-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .ot-brand-logo {
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   opacity: 1;
-  border: 1px solid var(--ot-border);
+  border: 1px solid var(--ot-color-border-default);
+  border-radius: var(--ot-radius-md);
   padding: 6px;
-  background: rgba(10, 10, 10, 0.78);
+  background: var(--ot-color-surface-1);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
+  animation: otLogoFloat 4s ease-in-out infinite alternate;
 }
 
 .ot-brand-kicker {
-  color: var(--ot-amber);
-  font-size: 10px;
-  letter-spacing: 0.4em;
+  color: var(--ot-color-accent-primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  animation: otFadeInLeft 0.65s ease;
+  animation: otFadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ot-brand-title {
@@ -537,30 +733,38 @@
 }
 
 .ot-brand-title-open {
-  font-size: clamp(48px, 5vw, 64px);
-  font-weight: 700;
-  color: var(--ot-amber);
+  font-size: clamp(48px, 5vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #0f172a 0%, #0284c7 45%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(2, 132, 199, 0.22));
+  animation: otTitleGlow 4s ease-in-out infinite alternate;
 }
 
 .ot-brand-title-terminal {
-  font-size: clamp(48px, 5vw, 64px);
+  font-size: clamp(48px, 5vw, 68px);
   font-weight: 300;
-  color: var(--ot-dark);
+  color: #64748b;
 }
 
 .ot-brand-subtitle {
-  margin-top: 12px;
-  font-size: 14px;
-  color: var(--ot-muted);
+  margin-top: 14px;
+  font-size: 15px;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
 .ot-login-panel {
   position: relative;
-  background: rgba(17, 17, 17, 0.95);
-  border-left: 1px solid var(--ot-border);
+  background: var(--ot-color-surface-1);
+  border-left: 1px solid var(--ot-color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: -12px 0 35px rgba(15, 23, 42, 0.07);
 }
 
 .ot-login-panel::before {
@@ -568,9 +772,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 1px;
+  width: 3px;
   height: 100%;
-  background: rgba(255, 149, 0, 0.1);
+  background: linear-gradient(180deg, #0284c7 0%, rgba(139, 92, 246, 0.6) 50%, transparent 100%);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.35);
 }
 
 .ot-login-panel-inner {
@@ -580,16 +785,18 @@
 .ot-panel-kicker {
   margin: 0;
   font-size: 10px;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--ot-muted);
+  color: var(--ot-color-accent-primary);
+  font-weight: 700;
 }
 
 .ot-panel-title {
   margin: 8px 0 0;
-  font-size: 22px;
-  letter-spacing: 0.06em;
-  color: var(--ot-white);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ot-color-text-primary);
 }
 
 .ot-panel-logo-wrap {
@@ -597,26 +804,31 @@
 }
 
 .ot-panel-logo {
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
   object-fit: contain;
-  border: 1px solid var(--ot-border);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  border-radius: var(--ot-radius-md);
   padding: 6px;
-  background: rgba(10, 10, 10, 0.8);
+  background: var(--ot-color-surface-1);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.12);
 }
 
 .ot-panel-subtitle {
   margin: 8px 0 0;
   font-size: 12px;
-  color: var(--ot-muted);
+  color: var(--ot-color-text-muted);
+  line-height: 1.4;
 }
 
 .ot-panel-divider {
   display: block;
-  width: 40px;
-  height: 1px;
-  background: rgba(255, 149, 0, 0.4);
-  margin-top: 12px;
+  width: 48px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #0284c7 0%, #8b5cf6 100%);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+  margin-top: 14px;
 }
 
 .ot-login-form {
@@ -627,9 +839,10 @@
 
 .ot-field-label {
   font-size: 10px;
-  letter-spacing: 0.2em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--ot-muted);
+  color: var(--ot-color-text-muted);
 }
 
 .ot-input-wrap {
@@ -638,34 +851,36 @@
 
 .ot-input-prompt {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
-  color: var(--ot-amber);
+  color: var(--ot-color-accent-primary);
+  pointer-events: none;
 }
 
 .ot-input {
   width: 100%;
-  border: 1px solid var(--ot-border);
-  border-radius: 2px;
-  background: var(--ot-surface);
-  color: var(--ot-text);
-  height: 40px;
-  padding: 0 14px 0 34px;
+  border: 1px solid var(--ot-color-border-default);
+  border-radius: var(--ot-radius-sm);
+  background: var(--ot-color-surface-2);
+  color: var(--ot-color-text-primary);
+  height: 42px;
+  padding: 0 14px 0 36px;
   font-size: 13px;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ot-input::placeholder {
-  color: #444444;
+  color: var(--ot-color-text-muted);
 }
 
 .ot-input:focus {
   outline: none;
-  border-color: var(--ot-amber);
-  box-shadow: 0 0 0 2px var(--ot-amber-glow);
-  caret-color: var(--ot-amber);
+  border-color: var(--ot-color-accent-primary);
+  background: var(--ot-color-surface-1);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18), 0 0 16px rgba(2, 132, 199, 0.12);
+  caret-color: var(--ot-color-accent-primary);
 }
 
 .ot-input:focus-visible {
@@ -677,23 +892,24 @@
 }
 
 .ot-password-input {
-  color: var(--ot-amber);
+  color: #38bdf8;
 }
 
 .ot-password-toggle {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   border: 0;
   background: transparent;
-  color: var(--ot-muted);
+  color: #64748b;
   font-size: 14px;
   cursor: pointer;
+  transition: color 0.15s ease;
 }
 
 .ot-password-toggle:hover {
-  color: var(--ot-amber);
+  color: var(--ot-color-accent-primary);
 }
 
 .ot-options-row {
@@ -726,44 +942,50 @@
 }
 
 .ot-checkbox input:checked + .ot-checkbox-mark {
-  border-color: var(--ot-amber);
-  background: var(--ot-amber);
+  border-color: var(--ot-color-accent-primary);
+  background: var(--ot-color-accent-primary);
 }
 
 .ot-forgot-link {
-  color: var(--ot-amber);
+  color: var(--ot-color-accent-primary);
   text-decoration: none;
   font-size: 11px;
 }
 
 .ot-forgot-link:hover {
+  color: #38e8ff;
   text-decoration: underline;
 }
 
 .ot-login-submit {
-  margin-top: 4px;
-  height: 42px;
-  border: 1px solid #ffb041;
-  border-radius: 2px;
-  background: var(--ot-amber);
-  color: var(--ot-black);
+  margin-top: 6px;
+  height: 44px;
+  border: none;
+  border-radius: var(--ot-radius-sm);
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
-  animation: otIdlePulse 2.6s ease-in-out infinite;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.28);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ot-login-submit:hover:not(:disabled) {
-  background: #ffb041;
-  transform: scale(1.01);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(2, 132, 199, 0.38), 0 0 14px rgba(79, 70, 229, 0.3);
+  filter: brightness(1.05);
+}
+
+.ot-login-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
 }
 
 .ot-login-submit:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ot-amber-glow);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35), 0 0 16px rgba(2, 132, 199, 0.4);
 }
 
 .ot-login-submit:disabled {
@@ -780,7 +1002,7 @@
 
 .ot-input-flash .ot-input {
   border-color: var(--ot-red);
-  box-shadow: 0 0 0 1px rgba(255, 61, 61, 0.2);
+  box-shadow: 0 0 0 1px rgba(225, 29, 72, 0.2);
 }
 
 .ot-or-divider {
@@ -799,31 +1021,49 @@
 
 .ot-or-divider p {
   margin: 0;
-  color: #444444;
+  color: #64748b;
   font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 .ot-demo-button {
-  border: 1px solid var(--ot-border);
-  border-radius: 2px;
-  background: transparent;
-  color: var(--ot-muted);
-  height: 38px;
+  border: 1px solid rgba(2, 132, 199, 0.32);
+  border-radius: var(--ot-radius-sm);
+  background: rgba(2, 132, 199, 0.07);
+  color: #0284c7;
+  height: 40px;
   font-size: 11px;
-  letter-spacing: 0.16em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
-}
-
-.ot-demo-button span {
-  color: var(--ot-amber);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ot-demo-button:hover {
-  border-color: var(--ot-amber);
-  color: var(--ot-white);
-  box-shadow: 0 0 0 2px var(--ot-amber-glow);
+  background: rgba(2, 132, 199, 0.14);
+  border-color: #0284c7;
+  transform: translateY(-1px);
+}
+
+.ot-demo-button span {
+  display: inline-block;
+  color: var(--ot-color-accent-primary);
+  font-weight: 700;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ot-demo-button:hover {
+  border-color: var(--ot-color-accent-primary);
+  background: rgba(0, 212, 255, 0.16);
+  color: #ffffff;
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.ot-demo-button:hover span {
+  transform: translateX(4px);
+  color: #ffffff;
 }
 
 .ot-login-footer {
@@ -839,11 +1079,12 @@
 }
 
 .ot-login-footer a {
-  color: var(--ot-amber);
+  color: var(--ot-color-accent-primary);
   text-decoration: none;
 }
 
 .ot-login-footer a:hover {
+  color: #38e8ff;
   text-decoration: underline;
 }
 
@@ -855,9 +1096,441 @@
 
 .ot-stagger {
   opacity: 0;
-  transform: translateY(15px);
-  animation: otStaggerIn 0.4s ease forwards;
-  animation-delay: calc(var(--stagger-index) * 0.06s);
+  transform: translateY(22px) scale(0.98);
+  animation: otSmoothEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--stagger-index) * 0.05s);
+}
+
+/* Light / Dengeli / Renkli Theme Overrides for Login & Public Screens */
+:root[data-ot-theme="dengeli"] .ot-login-hero,
+:root[data-ot-theme="renkli"] .ot-login-hero,
+:root[data-ot-theme="light-desk"] .ot-login-hero,
+:root[data-ot-theme="terminal-noir"] .ot-login-hero,
+:root[data-ot-theme=""] .ot-login-hero {
+  background:
+    radial-gradient(ellipse 65% 55% at 20% 30%, rgba(2, 132, 199, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 85% 75%, rgba(99, 102, 241, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(2, 132, 199, 0.06) 0%, transparent 60%),
+    #eef2f7;
+  border-right-color: #cbd5e1;
+}
+
+:root[data-ot-theme="renkli"] .ot-login-hero {
+  background:
+    radial-gradient(ellipse 65% 55% at 20% 30%, rgba(99, 102, 241, 0.16) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 85% 75%, rgba(236, 72, 153, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(2, 132, 199, 0.12) 0%, transparent 60%),
+    #eef5ff;
+}
+
+:root[data-ot-theme="renkli"] .ot-login-submit {
+  background: linear-gradient(135deg, #4f46e5 0%, #ec4899 100%);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-hero::before,
+:root[data-ot-theme="renkli"] .ot-login-hero::before,
+:root[data-ot-theme="light-desk"] .ot-login-hero::before,
+:root[data-ot-theme="terminal-noir"] .ot-login-hero::before,
+:root[data-ot-theme=""] .ot-login-hero::before {
+  background-image:
+    linear-gradient(rgba(2, 132, 199, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2, 132, 199, 0.06) 1px, transparent 1px);
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-hero::after,
+:root[data-ot-theme="renkli"] .ot-login-hero::after,
+:root[data-ot-theme="light-desk"] .ot-login-hero::after,
+:root[data-ot-theme="terminal-noir"] .ot-login-hero::after,
+:root[data-ot-theme=""] .ot-login-hero::after {
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 70%);
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-radar,
+:root[data-ot-theme="renkli"] .ot-login-radar,
+:root[data-ot-theme="light-desk"] .ot-login-radar,
+:root[data-ot-theme="terminal-noir"] .ot-login-radar,
+:root[data-ot-theme=""] .ot-login-radar {
+  border-color: rgba(2, 132, 199, 0.15);
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-radar::before,
+:root[data-ot-theme="dengeli"] .ot-login-radar::after,
+:root[data-ot-theme="renkli"] .ot-login-radar::before,
+:root[data-ot-theme="renkli"] .ot-login-radar::after,
+:root[data-ot-theme="light-desk"] .ot-login-radar::before,
+:root[data-ot-theme="light-desk"] .ot-login-radar::after,
+:root[data-ot-theme="terminal-noir"] .ot-login-radar::before,
+:root[data-ot-theme="terminal-noir"] .ot-login-radar::after,
+:root[data-ot-theme=""] .ot-login-radar::before,
+:root[data-ot-theme=""] .ot-login-radar::after {
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+:root[data-ot-theme="dengeli"] .ot-radar-sweep,
+:root[data-ot-theme="renkli"] .ot-radar-sweep,
+:root[data-ot-theme="light-desk"] .ot-radar-sweep,
+:root[data-ot-theme="terminal-noir"] .ot-radar-sweep,
+:root[data-ot-theme=""] .ot-radar-sweep {
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(2, 132, 199, 0.20) 360deg);
+}
+
+:root[data-ot-theme="dengeli"] .ot-market-ticker,
+:root[data-ot-theme="renkli"] .ot-market-ticker,
+:root[data-ot-theme="light-desk"] .ot-market-ticker,
+:root[data-ot-theme="terminal-noir"] .ot-market-ticker,
+:root[data-ot-theme=""] .ot-market-ticker {
+  background: rgba(255, 255, 255, 0.90);
+  border-top-color: rgba(2, 132, 199, 0.25);
+  border-bottom-color: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-ot-theme="dengeli"] .ot-market-ticker-symbol,
+:root[data-ot-theme="renkli"] .ot-market-ticker-symbol,
+:root[data-ot-theme="light-desk"] .ot-market-ticker-symbol,
+:root[data-ot-theme="terminal-noir"] .ot-market-ticker-symbol,
+:root[data-ot-theme=""] .ot-market-ticker-symbol {
+  color: #0f172a;
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-metrics span.ot-value-up,
+:root[data-ot-theme="dengeli"] .ot-login-metrics span.ot-value-cyan,
+:root[data-ot-theme="dengeli"] .ot-login-metrics span.ot-value-amber,
+:root[data-ot-theme="renkli"] .ot-login-metrics span.ot-value-up,
+:root[data-ot-theme="renkli"] .ot-login-metrics span.ot-value-cyan,
+:root[data-ot-theme="renkli"] .ot-login-metrics span.ot-value-amber,
+:root[data-ot-theme="light-desk"] .ot-login-metrics span.ot-value-up,
+:root[data-ot-theme="light-desk"] .ot-login-metrics span.ot-value-cyan,
+:root[data-ot-theme="light-desk"] .ot-login-metrics span.ot-value-amber,
+:root[data-ot-theme="terminal-noir"] .ot-login-metrics span.ot-value-up,
+:root[data-ot-theme="terminal-noir"] .ot-login-metrics span.ot-value-cyan,
+:root[data-ot-theme="terminal-noir"] .ot-login-metrics span.ot-value-amber,
+:root[data-ot-theme=""] .ot-login-metrics span.ot-value-up,
+:root[data-ot-theme=""] .ot-login-metrics span.ot-value-cyan,
+:root[data-ot-theme=""] .ot-login-metrics span.ot-value-amber {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  color: #0f172a;
+}
+
+:root[data-ot-theme="dengeli"] .ot-brand-logo,
+:root[data-ot-theme="renkli"] .ot-brand-logo,
+:root[data-ot-theme="light-desk"] .ot-brand-logo,
+:root[data-ot-theme="terminal-noir"] .ot-brand-logo,
+:root[data-ot-theme=""] .ot-brand-logo {
+  background: #ffffff;
+  border-color: rgba(2, 132, 199, 0.3);
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.15);
+}
+
+:root[data-ot-theme="dengeli"] .ot-brand-title-open,
+:root[data-ot-theme="renkli"] .ot-brand-title-open,
+:root[data-ot-theme="light-desk"] .ot-brand-title-open,
+:root[data-ot-theme="terminal-noir"] .ot-brand-title-open,
+:root[data-ot-theme=""] .ot-brand-title-open {
+  background: linear-gradient(135deg, #0f172a 0%, #0284c7 60%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: none;
+}
+
+:root[data-ot-theme="dengeli"] .ot-brand-title-terminal,
+:root[data-ot-theme="renkli"] .ot-brand-title-terminal,
+:root[data-ot-theme="light-desk"] .ot-brand-title-terminal,
+:root[data-ot-theme="terminal-noir"] .ot-brand-title-terminal,
+:root[data-ot-theme=""] .ot-brand-title-terminal {
+  color: #64748b;
+}
+
+:root[data-ot-theme="dengeli"] .ot-brand-subtitle,
+:root[data-ot-theme="renkli"] .ot-brand-subtitle,
+:root[data-ot-theme="light-desk"] .ot-brand-subtitle,
+:root[data-ot-theme="terminal-noir"] .ot-brand-subtitle,
+:root[data-ot-theme=""] .ot-brand-subtitle {
+  color: #475569;
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-panel,
+:root[data-ot-theme="renkli"] .ot-login-panel,
+:root[data-ot-theme="light-desk"] .ot-login-panel,
+:root[data-ot-theme="terminal-noir"] .ot-login-panel,
+:root[data-ot-theme=""] .ot-login-panel {
+  background: rgba(255, 255, 255, 0.98);
+  border-left-color: #cbd5e1;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-panel::before,
+:root[data-ot-theme="renkli"] .ot-login-panel::before,
+:root[data-ot-theme="light-desk"] .ot-login-panel::before,
+:root[data-ot-theme="terminal-noir"] .ot-login-panel::before,
+:root[data-ot-theme=""] .ot-login-panel::before {
+  background: linear-gradient(180deg, #0284c7 0%, rgba(99, 102, 241, 0.6) 50%, transparent 100%);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.35);
+}
+
+:root[data-ot-theme="dengeli"] .ot-panel-title,
+:root[data-ot-theme="renkli"] .ot-panel-title,
+:root[data-ot-theme="light-desk"] .ot-panel-title,
+:root[data-ot-theme="terminal-noir"] .ot-panel-title,
+:root[data-ot-theme=""] .ot-panel-title {
+  color: #0f172a;
+}
+
+:root[data-ot-theme="dengeli"] .ot-panel-logo,
+:root[data-ot-theme="renkli"] .ot-panel-logo,
+:root[data-ot-theme="light-desk"] .ot-panel-logo,
+:root[data-ot-theme="terminal-noir"] .ot-panel-logo,
+:root[data-ot-theme=""] .ot-panel-logo {
+  background: #ffffff;
+  border-color: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 4px 15px rgba(2, 132, 199, 0.12);
+}
+
+:root[data-ot-theme="dengeli"] .ot-panel-subtitle,
+:root[data-ot-theme="renkli"] .ot-panel-subtitle,
+:root[data-ot-theme="light-desk"] .ot-panel-subtitle,
+:root[data-ot-theme="terminal-noir"] .ot-panel-subtitle,
+:root[data-ot-theme=""] .ot-panel-subtitle {
+  color: #64748b;
+}
+
+:root[data-ot-theme="dengeli"] .ot-field-label,
+:root[data-ot-theme="renkli"] .ot-field-label,
+:root[data-ot-theme="light-desk"] .ot-field-label,
+:root[data-ot-theme="terminal-noir"] .ot-field-label,
+:root[data-ot-theme=""] .ot-field-label {
+  color: #475569;
+}
+
+:root[data-ot-theme="dengeli"] .ot-input,
+:root[data-ot-theme="renkli"] .ot-input,
+:root[data-ot-theme="light-desk"] .ot-input,
+:root[data-ot-theme="terminal-noir"] .ot-input,
+:root[data-ot-theme=""] .ot-input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+:root[data-ot-theme="dengeli"] .ot-input::placeholder,
+:root[data-ot-theme="renkli"] .ot-input::placeholder,
+:root[data-ot-theme="light-desk"] .ot-input::placeholder,
+:root[data-ot-theme="terminal-noir"] .ot-input::placeholder,
+:root[data-ot-theme=""] .ot-input::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-ot-theme="dengeli"] .ot-input:focus,
+:root[data-ot-theme="renkli"] .ot-input:focus,
+:root[data-ot-theme="light-desk"] .ot-input:focus,
+:root[data-ot-theme="terminal-noir"] .ot-input:focus,
+:root[data-ot-theme=""] .ot-input:focus {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18), 0 0 16px rgba(2, 132, 199, 0.15);
+}
+
+:root[data-ot-theme="dengeli"] .ot-options-row,
+:root[data-ot-theme="renkli"] .ot-options-row,
+:root[data-ot-theme="light-desk"] .ot-options-row,
+:root[data-ot-theme="terminal-noir"] .ot-options-row,
+:root[data-ot-theme=""] .ot-options-row {
+  color: #475569;
+}
+
+:root[data-ot-theme="dengeli"] .ot-checkbox-mark,
+:root[data-ot-theme="renkli"] .ot-checkbox-mark,
+:root[data-ot-theme="light-desk"] .ot-checkbox-mark,
+:root[data-ot-theme="terminal-noir"] .ot-checkbox-mark,
+:root[data-ot-theme=""] .ot-checkbox-mark {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+:root[data-ot-theme="dengeli"] .ot-demo-button,
+:root[data-ot-theme="renkli"] .ot-demo-button,
+:root[data-ot-theme="light-desk"] .ot-demo-button,
+:root[data-ot-theme="terminal-noir"] .ot-demo-button,
+:root[data-ot-theme=""] .ot-demo-button {
+  background: rgba(2, 132, 199, 0.07);
+  border-color: rgba(2, 132, 199, 0.35);
+  color: #0284c7;
+}
+
+:root[data-ot-theme="dengeli"] .ot-demo-button:hover,
+:root[data-ot-theme="renkli"] .ot-demo-button:hover,
+:root[data-ot-theme="light-desk"] .ot-demo-button:hover,
+:root[data-ot-theme="terminal-noir"] .ot-demo-button:hover,
+:root[data-ot-theme=""] .ot-demo-button:hover {
+  background: rgba(2, 132, 199, 0.14);
+  border-color: #0284c7;
+  color: #0369a1;
+}
+
+:root[data-ot-theme="dengeli"] .ot-login-footer,
+:root[data-ot-theme="renkli"] .ot-login-footer,
+:root[data-ot-theme="light-desk"] .ot-login-footer,
+:root[data-ot-theme="terminal-noir"] .ot-login-footer,
+:root[data-ot-theme=""] .ot-login-footer {
+  color: #64748b;
+  border-top-color: #e2e8f0;
+}
+
+:root[data-ot-theme="dengeli"] .ot-status-bar,
+:root[data-ot-theme="renkli"] .ot-status-bar,
+:root[data-ot-theme="light-desk"] .ot-status-bar,
+:root[data-ot-theme="terminal-noir"] .ot-status-bar,
+:root[data-ot-theme=""] .ot-status-bar {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-color: #e2e8f0;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-ot-theme="dengeli"] .ot-status-bar-left,
+:root[data-ot-theme="renkli"] .ot-status-bar-left,
+:root[data-ot-theme="light-desk"] .ot-status-bar-left,
+:root[data-ot-theme="terminal-noir"] .ot-status-bar-left,
+:root[data-ot-theme=""] .ot-status-bar-left {
+  color: #0284c7;
+  text-shadow: none;
+}
+
+:root[data-ot-theme="dengeli"] .ot-status-bar-center,
+:root[data-ot-theme="renkli"] .ot-status-bar-center,
+:root[data-ot-theme="light-desk"] .ot-status-bar-center,
+:root[data-ot-theme="terminal-noir"] .ot-status-bar-center,
+:root[data-ot-theme=""] .ot-status-bar-center {
+  color: #334155;
+}
+
+:root[data-ot-theme="dengeli"] .ot-status-bar-right,
+:root[data-ot-theme="renkli"] .ot-status-bar-right,
+:root[data-ot-theme="light-desk"] .ot-status-bar-right,
+:root[data-ot-theme="terminal-noir"] .ot-status-bar-right,
+:root[data-ot-theme=""] .ot-status-bar-right {
+  color: #64748b;
+}
+
+/* Dark Theme Overrides for Login & Public Screens */
+:root[data-ot-theme="dark"] .ot-login-hero,
+:root[data-ot-theme="classic-bloomberg"] .ot-login-hero {
+  background:
+    radial-gradient(ellipse 65% 55% at 20% 30%, rgba(56, 189, 248, 0.20) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 85% 75%, rgba(167, 139, 250, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+    #0b1120;
+  border-right-color: #1e293b;
+}
+
+:root[data-ot-theme="dark"] .ot-login-panel,
+:root[data-ot-theme="classic-bloomberg"] .ot-login-panel {
+  background: #0f172a;
+  border-left-color: #334155;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-ot-theme="dark"] .ot-login-panel::before,
+:root[data-ot-theme="classic-bloomberg"] .ot-login-panel::before {
+  background: linear-gradient(180deg, #38bdf8 0%, rgba(167, 139, 250, 0.6) 50%, transparent 100%);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+:root[data-ot-theme="dark"] .ot-panel-title,
+:root[data-ot-theme="classic-bloomberg"] .ot-panel-title {
+  color: #f8fafc;
+}
+
+:root[data-ot-theme="dark"] .ot-panel-logo,
+:root[data-ot-theme="classic-bloomberg"] .ot-panel-logo {
+  background: #1e293b;
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-ot-theme="dark"] .ot-panel-subtitle,
+:root[data-ot-theme="classic-bloomberg"] .ot-panel-subtitle {
+  color: #94a3b8;
+}
+
+:root[data-ot-theme="dark"] .ot-field-label,
+:root[data-ot-theme="classic-bloomberg"] .ot-field-label {
+  color: #94a3b8;
+}
+
+:root[data-ot-theme="dark"] .ot-input,
+:root[data-ot-theme="classic-bloomberg"] .ot-input {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+:root[data-ot-theme="dark"] .ot-input::placeholder,
+:root[data-ot-theme="classic-bloomberg"] .ot-input::placeholder {
+  color: #64748b;
+}
+
+:root[data-ot-theme="dark"] .ot-input:focus,
+:root[data-ot-theme="classic-bloomberg"] .ot-input:focus {
+  background: #1e293b;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+:root[data-ot-theme="dark"] .ot-options-row,
+:root[data-ot-theme="classic-bloomberg"] .ot-options-row {
+  color: #94a3b8;
+}
+
+:root[data-ot-theme="dark"] .ot-checkbox-mark,
+:root[data-ot-theme="classic-bloomberg"] .ot-checkbox-mark {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+:root[data-ot-theme="dark"] .ot-demo-button,
+:root[data-ot-theme="classic-bloomberg"] .ot-demo-button {
+  background: rgba(56, 189, 248, 0.10);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+:root[data-ot-theme="dark"] .ot-demo-button:hover,
+:root[data-ot-theme="classic-bloomberg"] .ot-demo-button:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+:root[data-ot-theme="dark"] .ot-login-footer,
+:root[data-ot-theme="classic-bloomberg"] .ot-login-footer {
+  color: #94a3b8;
+  border-top-color: #1e293b;
+}
+
+:root[data-ot-theme="dark"] .ot-status-bar,
+:root[data-ot-theme="classic-bloomberg"] .ot-status-bar {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom-color: #1e293b;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-ot-theme="dark"] .ot-status-bar-left,
+:root[data-ot-theme="classic-bloomberg"] .ot-status-bar-left {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+:root[data-ot-theme="dark"] .ot-status-bar-center,
+:root[data-ot-theme="classic-bloomberg"] .ot-status-bar-center {
+  color: #cbd5e1;
+}
+
+:root[data-ot-theme="dark"] .ot-status-bar-right,
+:root[data-ot-theme="classic-bloomberg"] .ot-status-bar-right {
+  color: #94a3b8;
 }
 
 .ot-home-layout {
@@ -883,7 +1556,15 @@
   border: 1px solid var(--ot-color-home-widget-border);
   background: var(--ot-color-home-widget-surface);
   border-radius: var(--ot-radius-md);
-  padding: var(--ot-space-3);
+  padding: 14px;
+  box-shadow: 0 2px 10px -1px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ot-home-widget-card:hover {
+  border-color: color-mix(in srgb, var(--ot-color-accent-primary) 35%, var(--ot-color-home-widget-border));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -2px rgba(15, 23, 42, 0.10);
 }
 
 .ot-home-widget-card-header {
@@ -1529,7 +2210,7 @@ button.ot-home-widget-strip-chip:hover {
   gap: 12px;
   padding: 0 10px;
   border-bottom: 1px solid var(--ot-border);
-  background: #151515;
+  background: var(--ot-color-canvas-elevated);
 }
 
 .ot-home-brand {
@@ -1600,10 +2281,12 @@ button.ot-home-widget-strip-chip:hover {
 
 .ot-panel {
   border: 1px solid var(--ot-border);
-  border-radius: 2px;
+  border-radius: 12px;
   background: var(--ot-color-surface-1);
   min-height: 220px;
-  padding: 10px;
+  padding: 12px;
+  box-shadow: 0 2px 12px -1px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ot-stagger-cell {
@@ -1901,22 +2584,23 @@ button.ot-home-widget-strip-chip:hover {
   border: 1px solid var(--ot-border);
   color: var(--ot-text);
   background: var(--ot-color-surface-1);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
   min-height: 54px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: border-color 0.14s ease, color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ot-nav-card:hover {
-  border-color: var(--ot-amber);
+  border-color: var(--ot-color-accent-primary);
   color: var(--ot-white);
   background: var(--ot-color-surface-2);
-  box-shadow: 0 0 0 1px var(--ot-amber-glow) inset;
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .ot-nav-card-label {
@@ -2018,11 +2702,97 @@ button.ot-home-widget-strip-chip:hover {
 @keyframes otFadeInLeft {
   from {
     opacity: 0;
-    transform: translateX(-16px);
+    transform: translateX(-20px);
   }
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes otSmoothEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes otGridFloat {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 40px;
+  }
+}
+
+@keyframes otAmbientWave {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15) translate(30px, -20px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.95) translate(-20px, 20px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes otRadarPing {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes otRadarRotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes otLogoFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0 26px rgba(0, 212, 255, 0.45);
+  }
+}
+
+@keyframes otTitleGlow {
+  0% {
+    filter: drop-shadow(0 0 18px rgba(0, 212, 255, 0.25));
+  }
+  100% {
+    filter: drop-shadow(0 0 35px rgba(0, 212, 255, 0.55)) drop-shadow(0 0 10px rgba(124, 58, 237, 0.4));
+  }
+}
+
+@keyframes otLuminousPulse {
+  0%, 100% {
+    box-shadow: 0 4px 18px rgba(0, 212, 255, 0.32);
+  }
+  50% {
+    box-shadow: 0 4px 26px rgba(0, 212, 255, 0.55), 0 0 16px rgba(99, 102, 241, 0.45);
   }
 }
 
@@ -2074,7 +2844,7 @@ button.ot-home-widget-strip-chip:hover {
 
 @keyframes otCursorBlink {
   0%, 50% {
-    caret-color: var(--ot-amber);
+    caret-color: var(--ot-color-accent-primary);
   }
   50.01%, 100% {
     caret-color: transparent;
@@ -2083,10 +2853,10 @@ button.ot-home-widget-strip-chip:hover {
 
 @keyframes otIdlePulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 var(--ot-amber-glow);
+    box-shadow: 0 0 0 0 var(--ot-color-accent-glow);
   }
   50% {
-    box-shadow: 0 0 0 2px var(--ot-amber-glow);
+    box-shadow: 0 0 0 2px var(--ot-color-accent-glow);
   }
 }
 
@@ -2260,3 +3030,237 @@ button.ot-home-widget-strip-chip:hover {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Modern Unified (Non-Split) Login Layout
+   ========================================================================== */
+
+.ot-login-unified-layout {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background: var(--ot-color-canvas, #070b14);
+  padding-top: 30px;
+  overflow-x: hidden;
+  z-index: 3;
+}
+
+.ot-unified-bg-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ot-unified-bg-layer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center center;
+  animation: otGridFloat 30s linear infinite;
+}
+
+.ot-unified-radar {
+  position: absolute;
+  width: 720px;
+  height: 720px;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 255, 0.12);
+}
+
+.ot-unified-radar::before,
+.ot-unified-radar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  animation: otRadarPing 8s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.ot-unified-radar::after {
+  animation-delay: 4s;
+  border-color: rgba(0, 212, 255, 0.16);
+}
+
+.ot-unified-sweep {
+  position: absolute;
+  width: 720px;
+  height: 720px;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(249, 115, 22, 0.10) 360deg);
+  animation: otRadarRotate 12s linear infinite;
+  mask-image: radial-gradient(circle, black 60%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle, black 60%, transparent 72%);
+}
+
+.ot-unified-glow-orange {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  left: 30%;
+  top: 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
+  filter: blur(60px);
+  animation: otAmbientWave 12s ease-in-out infinite alternate;
+}
+
+.ot-unified-glow-blue {
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  right: 25%;
+  bottom: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.10) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 70%);
+  filter: blur(70px);
+  animation: otAmbientWave 16s ease-in-out infinite alternate-reverse;
+}
+
+.ot-unified-ticker-bar {
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid var(--ot-color-border-default, rgba(0, 212, 255, 0.15));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ot-unified-main {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px 40px;
+}
+
+.ot-unified-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: var(--ot-color-surface-1, rgba(13, 19, 33, 0.88));
+  border: 1px solid var(--ot-color-border-default, rgba(56, 189, 248, 0.2));
+  border-radius: 24px;
+  padding: 28px 32px 30px;
+  box-shadow:
+    0 24px 64px -12px rgba(0, 0, 0, 0.65),
+    0 0 40px rgba(249, 115, 22, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.ot-card-top-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f97316 0%, #fbbf24 35%, #00d4ff 70%, #6366f1 100%);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
+
+.ot-unified-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ot-unified-logo-wrap {
+  flex-shrink: 0;
+}
+
+.ot-unified-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ot-unified-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--ot-color-text-primary, #f8fafc) 30%, #00d4ff 70%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ot-unified-kicker {
+  margin: 3px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ot-color-accent-primary, #00d4ff);
+}
+
+.ot-unified-motto {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--ot-color-text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.ot-unified-telemetry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ot-color-surface-2, rgba(15, 23, 42, 0.5));
+  border: 1px solid var(--ot-color-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.ot-val-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ot-color-text-primary, #e2e8f0);
+  font-weight: 600;
+}
+
+.ot-telemetry-sep {
+  color: var(--ot-color-border-default, #334155);
+}
+
+.ot-unified-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--ot-color-border-default, rgba(56, 189, 248, 0.25)) 50%, transparent 100%);
+  margin-bottom: 16px;
+}
+
+.ot-unified-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ot-color-border-subtle, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ot-color-text-muted, #94a3b8);
+}
+

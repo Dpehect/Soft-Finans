@@ -80,41 +80,47 @@ export function MarketStatusBar(_props: { tickerOverride?: string | null } = {})
     connectionState === "connected" ? "CONNECTED" : connectionState === "connecting" ? "DEGRADED" : "DISCONNECTED";
 
   return (
-    <div className="border-t border-terminal-border bg-[#0D1117] px-3 py-0.5 text-[11px]">
-      <div className="grid h-5 grid-cols-[auto_1fr_auto] items-center gap-3 text-terminal-muted">
-        <div className="inline-flex items-center gap-3 ot-type-data whitespace-nowrap">
-          <span><span className="text-terminal-text">IST</span> {formatZone(now, "Asia/Kolkata")}</span>
-          <span><span className="text-terminal-text">ET</span> {formatZone(now, "America/New_York")}</span>
-          <span><span className="text-terminal-text">UTC</span> {formatZone(now, "UTC")}</span>
+    <footer className="border-t border-terminal-border/70 bg-terminal-panel/80 px-4 py-1 text-xs text-terminal-muted backdrop-blur-sm">
+      <div className="flex h-5 items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-terminal-text">SoftBridge Finans</span>
+          <span className="hidden sm:inline text-terminal-muted/60">•</span>
+          <span className="hidden sm:inline text-[11px]">v1.7.0</span>
         </div>
 
-        <div className="inline-flex min-w-0 items-center justify-center gap-3 overflow-hidden whitespace-nowrap ot-type-status">
-          <span className="inline-flex items-center gap-1">
-            <Dot tone={nseOpen === "OPEN" ? "green" : "gray"} />
+        <div className="flex items-center gap-3 text-[11px]">
+          <span className="inline-flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${nseOpen === "OPEN" ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`} />
             <span>NSE: {nseOpen}</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Dot tone={nyseOpen === "OPEN" ? "green" : "gray"} />
+          <span className="text-terminal-muted/60">•</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${nyseOpen === "OPEN" ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`} />
             <span>NYSE: {nyseOpen}</span>
           </span>
-          {marketPayload.nextOpenTime ? <span className="text-terminal-muted">NEXT OPEN {String(marketPayload.nextOpenTime)}</span> : null}
+          {marketPayload.nextOpenTime ? (
+            <span className="hidden md:inline text-terminal-muted/70">
+              (Açılış: {String(marketPayload.nextOpenTime)})
+            </span>
+          ) : null}
         </div>
 
-        <div className="inline-flex items-center gap-3 ot-type-data whitespace-nowrap">
-          <span className="inline-flex items-center gap-1">
+        <div className="flex items-center gap-3 text-[11px]">
+          <span className="inline-flex items-center gap-1.5">
             <Dot tone={connectionTone} />
-            <span>{connText}</span>
+            <span className="font-medium text-terminal-text">{connText}</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Bell className="h-3.5 w-3.5" />
-            <span>{unreadAlerts}</span>
-          </span>
-          <span>CPU~{perfStats.cpuHint}%</span>
-          <span>
-            MEM {perfStats.heapMb == null ? "NA" : `${perfStats.heapMb}MB${perfStats.heapPct == null ? "" : ` (${perfStats.heapPct}%)`}`}
+          {unreadAlerts > 0 ? (
+            <span className="inline-flex items-center gap-1 text-amber-400">
+              <Bell className="h-3 w-3" />
+              <span>{unreadAlerts}</span>
+            </span>
+          ) : null}
+          <span className="hidden lg:inline text-terminal-muted/70">
+            {formatZone(now, "Europe/Istanbul")}
           </span>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

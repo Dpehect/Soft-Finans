@@ -68,6 +68,7 @@ from backend.models.journal import JournalEntry
 from backend.models.brain import BrainChunkORM
 from backend.models.brain_memo import BrainMemoORM
 from backend.models.notes import NoteORM
+from backend.models.crypto_token import CryptoToken
 from backend.models.notification import Notification
 
 __all__ = [
@@ -141,4 +142,5 @@ __all__ = [
     "BrainChunkORM",
     "BrainMemoORM",
     "NoteORM",
+    "CryptoToken",
 ]

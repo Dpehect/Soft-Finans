@@ -17,10 +17,11 @@ export type CurrencyCode =
   | "HKD"
   | "SEK"
   | "DKK"
-  | "NOK";
+  | "NOK"
+  | "TRY";
 
 // Mirrors backend SUPPORTED_CURRENCIES in services/forex_service.py.
-export const CONVERTIBLE_CURRENCIES: CurrencyCode[] = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "INR"];
+export const CONVERTIBLE_CURRENCIES: CurrencyCode[] = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "INR", "TRY"];
 
 type CompactTier = { threshold: number; divisor: number; suffix: string };
 
@@ -52,6 +53,7 @@ const CURRENCY_META: Record<CurrencyCode, CurrencyMeta> = {
   SEK: { symbol: "kr", locale: "sv-SE", compact: WESTERN_COMPACT },
   DKK: { symbol: "kr", locale: "da-DK", compact: WESTERN_COMPACT },
   NOK: { symbol: "kr", locale: "nb-NO", compact: WESTERN_COMPACT },
+  TRY: { symbol: "₺", locale: "tr-TR", compact: WESTERN_COMPACT },
 };
 
 export function currencyMeta(currency: CurrencyCode): CurrencyMeta {
@@ -154,6 +156,7 @@ function usdLeg(currency: CurrencyCode, pairs: PairQuotes): number | null {
   if (direct && direct > 0) return direct;
   const inverse = pairs[`USD${currency}`];
   if (inverse && inverse > 0) return 1 / inverse;
+  if (currency === "TRY") return 1 / 34.5;
   return null;
 }
 
@@ -218,6 +221,7 @@ export type MoneyFormatOptions = {
   compact?: boolean;
   signed?: boolean;
   maximumFractionDigits?: number;
+  minimumFractionDigits?: number;
 };
 
 // Format a value already expressed in `currency`. Uses Intl currency formatting
@@ -225,26 +229,35 @@ export type MoneyFormatOptions = {
 // currency-aware compact form (Cr/L for INR, K/M/B/T otherwise).
 export function formatMoneyIn(value: number, currency: CurrencyCode, options: MoneyFormatOptions = {}): string {
   if (value === undefined || value === null || !Number.isFinite(value)) return "-";
-  const { compact = false, signed = false, maximumFractionDigits = 2 } = options;
+  const { compact = false, signed = false } = options;
   const sign = signed && value > 0 ? "+" : "";
+
+  const abs = Math.abs(value);
+  const isMicro = abs > 0 && abs < 0.1;
 
   if (compact) {
     const meta = currencyMeta(currency);
-    const abs = Math.abs(value);
     const tier = meta.compact.find((t) => abs >= t.threshold);
+    const maxFrac = options.maximumFractionDigits ?? (isMicro ? 6 : 2);
     if (tier) {
-      const scaled = (value / tier.divisor).toLocaleString(meta.locale, { maximumFractionDigits });
+      const scaled = (value / tier.divisor).toLocaleString(meta.locale, { maximumFractionDigits: maxFrac });
       return `${sign}${meta.symbol} ${scaled} ${tier.suffix}`;
     }
-    const plain = value.toLocaleString(meta.locale, { maximumFractionDigits });
+    const plain = value.toLocaleString(meta.locale, {
+      maximumFractionDigits: maxFrac,
+      minimumFractionDigits: isMicro ? 4 : 2,
+    });
     return `${sign}${meta.symbol} ${plain}`;
   }
+
+  const minDigits = options.minimumFractionDigits ?? (isMicro ? 4 : 2);
+  const maxDigits = options.maximumFractionDigits ?? (isMicro ? (abs < 0.001 ? 6 : 5) : 2);
 
   const formatted = new Intl.NumberFormat(currencyMeta(currency).locale, {
     style: "currency",
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits,
+    minimumFractionDigits: minDigits,
+    maximumFractionDigits: maxDigits,
   }).format(value);
   return `${sign}${formatted}`;
 }
