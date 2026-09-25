@@ -11,8 +11,10 @@ export function ThemeRuntime() {
     root.setAttribute("data-ot-theme", themeVariant);
     root.style.setProperty("--ot-custom-accent", customAccentColor);
     if (themeVariant === "dark" || themeVariant === "classic-bloomberg") {
+      root.classList.add("dark");
       root.style.setProperty("color-scheme", "dark");
     } else {
+      root.classList.remove("dark");
       root.style.setProperty("color-scheme", "light");
     }
   }, [themeVariant, customAccentColor]);
