@@ -70,6 +70,7 @@ from backend.models.brain_memo import BrainMemoORM
 from backend.models.notes import NoteORM
 from backend.models.crypto_token import CryptoToken
 from backend.models.notification import Notification
+from backend.models.wallet import BankDeposit, WalletBalance, WalletLedgerEntry
 
 __all__ = [
     "ScheduledReportORM",
@@ -143,4 +144,7 @@ __all__ = [
     "BrainMemoORM",
     "NoteORM",
     "CryptoToken",
+    "BankDeposit",
+    "WalletBalance",
+    "WalletLedgerEntry",
 ]

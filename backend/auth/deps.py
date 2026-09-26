@@ -104,6 +104,12 @@ def require_role(required_role: str) -> Callable:
     return _dep
 
 
+def require_authenticated_user(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.id == "anonymous":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+    return current_user
+
+
 def auth_exempt_path(path: str) -> bool:
     exempt_prefixes = ("/api/auth/login", "/api/auth/register", "/health", "/docs", "/openapi")
     return any(path.startswith(p) for p in exempt_prefixes)

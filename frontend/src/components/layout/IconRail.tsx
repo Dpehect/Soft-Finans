@@ -15,6 +15,7 @@ import {
   Star,
   Newspaper,
   Settings,
+  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 import { AuthContextRef } from "../../contexts/AuthContext";
@@ -35,6 +36,7 @@ const RAIL_ITEMS: RailItem[] = [
   { id: "umy", label: "Umay Token", icon: Sparkles, to: "/equity/umy", badge: "NEW" },
   { id: "crypto", label: "Kripto", icon: Coins, to: "/equity/crypto" },
   { id: "portfolio", label: "Portföy", icon: Briefcase, to: "/equity/portfolio" },
+  { id: "wallet", label: "Cüzdan", icon: WalletCards, to: "/equity/wallet" },
   { id: "screener", label: "Tarayıcı", icon: Filter, to: "/equity/screener" },
   { id: "fno", label: "Vadeli", icon: Activity, to: "/fno" },
   { id: "watchlist", label: "İzleme", icon: Star, to: "/equity/watchlist" },

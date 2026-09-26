@@ -20,6 +20,7 @@ import {
   Sparkles,
   Star,
   TrendingUp,
+  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 import { AuthContextRef } from "../../contexts/AuthContext";
@@ -88,6 +89,7 @@ export function ModernSidebar() {
           { id: "stocks", label: t("stocks", "Hisseler"), icon: TrendingUp, to: "/equity/stocks" },
           { id: "crypto", label: t("crypto", "Kripto Piyasaları"), icon: Coins, to: "/equity/crypto" },
           { id: "portfolio", label: t("portfolio", "Portföy Masası"), icon: Briefcase, to: "/equity/portfolio" },
+          { id: "wallet", label: "Cüzdan", icon: WalletCards, to: "/equity/wallet" },
         ],
       },
       {

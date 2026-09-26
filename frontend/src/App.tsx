@@ -58,6 +58,7 @@ const EconomicTerminal = lazyWithRetry(() => import("./pages/economics/EconomicT
 const SectorRotationPage = lazyWithRetry(() => import("./pages/SectorRotation").then((m) => ({ default: m.SectorRotationPage })));
 const CryptoWorkspacePage = lazyWithRetry(() => import("./pages/CryptoWorkspace").then((m) => ({ default: m.CryptoWorkspacePage })));
 const UmayTokenPage = lazyWithRetry(() => import("./pages/UmayTokenPage").then((m) => ({ default: m.UmayTokenPage })));
+const WalletPage = lazyWithRetry(() => import("./pages/WalletPage").then((m) => ({ default: m.WalletPage })));
 const BondsPage = lazyWithRetry(() => import("./pages/equity/bonds/Bonds").then((m) => ({ default: m.BondsPage })));
 const FactorDashboardPage = lazyWithRetry(() => import("./pages/FactorDashboard").then((m) => ({ default: m.FactorDashboardPage })));
 const IntelligenceTimelinePage = lazyWithRetry(() => import("./pages/IntelligenceTimelinePage").then((m) => ({ default: m.IntelligenceTimelinePage })));
@@ -181,6 +182,7 @@ function App() {
             <Route path="sector-rotation" element={<SectorRotationPage />} />
             <Route path="crypto" element={<CryptoWorkspacePage />} />
             <Route path="umy" element={<UmayTokenPage />} />
+            <Route path="wallet" element={<WalletPage />} />
             <Route path="etf-analytics" element={<ETFAnalyticsPage />} />
             <Route path="cockpit" element={<CockpitDashboard />} />
             <Route path="saved-views" element={<SavedViewsPage />} />

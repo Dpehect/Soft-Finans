@@ -41,6 +41,7 @@ _safe_include(lambda: __import__("backend.api.routes.fixed_income", fromlist=["r
 _safe_include(lambda: __import__("backend.api.routes.bonds", fromlist=["router"]).router)
 _safe_include(lambda: __import__("backend.api.routes.economics", fromlist=["router"]).router)
 _safe_include(lambda: __import__("backend.api.routes.correlation", fromlist=["router"]).router)
+_safe_include(lambda: __import__("backend.api.routes.wallet", fromlist=["router"]).router)
 
 # 2. Notes, AI & Brain routers
 _safe_include(lambda: __import__("backend.api.routes.ai", fromlist=["router"]).router, prefix="/api")

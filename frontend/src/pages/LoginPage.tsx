@@ -30,6 +30,7 @@ export function LoginPage() {
   const [rememberTerminal, setRememberTerminal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
   const [dotIndex, setDotIndex] = useState(1);
   const [inputErrorFlash, setInputErrorFlash] = useState(false);
@@ -60,6 +61,7 @@ export function LoginPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setShowRegisterPrompt(false);
 
     if (!userId.trim() || !password) {
       setError("GEREKLİ ALANLARI DOLDURUN");
@@ -116,6 +118,7 @@ export function LoginPage() {
         setError(message.toUpperCase());
       } else if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
         setError("HATALI E-POSTA VEYA ŞİFRE");
+        setShowRegisterPrompt(true);
       } else if (code === "auth/too-many-requests") {
         setError("ÇOK FAZLA DENEME — LÜTFEN BEKLEYİN");
       } else if (code === "auth/network-request-failed") {
@@ -312,6 +315,11 @@ export function LoginPage() {
             </button>
 
             {error ? <p className="ot-auth-error">{error}</p> : null}
+            {showRegisterPrompt ? (
+              <p className="mt-2 text-center text-xs text-terminal-muted">
+                Hesabınız yoksa <Link to="/register" className="font-semibold text-terminal-accent hover:underline">kaydolun</Link>.
+              </p>
+            ) : null}
 
             <p className="text-[10px] text-center text-terminal-muted mt-2 leading-relaxed">
               5 başarısız denemeden sonra hesap 15 dakika kilitlenir. Admin erişimi yalnızca yetkili e-posta ile sağlanır.
