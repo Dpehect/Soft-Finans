@@ -9,6 +9,7 @@ import { LanguageSelector } from "../components/common/LanguageSelector";
 import { useTranslation } from "../lib/i18n";
 import { useSettingsStore } from "../store/settingsStore";
 import { getAppVersion } from "../utils/constants";
+import { getLoginLockoutMessage } from "../lib/authSecurity";
 
 const TRANSITION_FLAG_KEY = "ot-terminal-transition";
 
@@ -72,6 +73,19 @@ export function LoginPage() {
       return;
     }
 
+    const lockout = getLoginLockoutMessage();
+    if (lockout) {
+      setError(lockout.toUpperCase());
+      triggerInputFlash();
+      return;
+    }
+
+    if (password.length > 128) {
+      setError("GEÇERSİZ ŞİFRE");
+      triggerInputFlash();
+      return;
+    }
+
     try {
       setAuthenticating(true);
       const startedAt = Date.now();
@@ -96,8 +110,11 @@ export function LoginPage() {
       const fallback = (location.state as { from?: string } | undefined)?.from || "/home";
       navigate(redirectParam || fallback, { replace: true });
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
       const code = (err as { code?: string }).code ?? "";
-      if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
+      if (message && !code) {
+        setError(message.toUpperCase());
+      } else if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
         setError("HATALI E-POSTA VEYA ŞİFRE");
       } else if (code === "auth/too-many-requests") {
         setError("ÇOK FAZLA DENEME — LÜTFEN BEKLEYİN");
@@ -296,23 +313,9 @@ export function LoginPage() {
 
             {error ? <p className="ot-auth-error">{error}</p> : null}
 
-            <div className="ot-or-divider">
-              <span />
-              <p>{t("quickLogin")}</p>
-              <span />
-            </div>
-
-            <button
-              type="button"
-              className="ot-demo-button"
-              onClick={() => {
-                setUserId("gurlekyunusemre2@gmail.com");
-                setPassword("Yunusemre366");
-                setError(null);
-              }}
-            >
-              <span>&gt;</span> {t("adminLogin")}
-            </button>
+            <p className="text-[10px] text-center text-terminal-muted mt-2 leading-relaxed">
+              5 başarısız denemeden sonra hesap 15 dakika kilitlenir. Admin erişimi yalnızca yetkili e-posta ile sağlanır.
+            </p>
           </form>
 
           {/* Card Footer */}

@@ -55,31 +55,22 @@ def resolve_secret(
 
 
 def get_jwt_secret() -> str:
-    try:
-        return resolve_secret(
-            env_var="JWT_SECRET_KEY",
-            component_name="JWT signing",
-            insecure_defaults=("dev-insecure-secret-key",),
-        )
-    except RuntimeError:
-        return "openterminalui-no-auth-secret-key-default"
+    return resolve_secret(
+        env_var="JWT_SECRET_KEY",
+        component_name="JWT signing",
+        insecure_defaults=("dev-insecure-secret-key",),
+    )
 
 
 def get_cache_signing_key() -> str:
-    try:
-        return resolve_secret(
-            env_var="CACHE_SIGNING_KEY",
-            component_name="cache signing",
-            insecure_defaults=("openterminalui-dev-cache-key",),
-        )
-    except RuntimeError:
-        return "openterminalui-dev-cache-key"
+    return resolve_secret(
+        env_var="CACHE_SIGNING_KEY",
+        component_name="cache signing",
+        insecure_defaults=("openterminalui-dev-cache-key",),
+    )
 
 
 def validate_runtime_secrets() -> None:
-    try:
-        get_jwt_secret()
-        get_cache_signing_key()
-    except Exception:
-        pass
+    get_jwt_secret()
+    get_cache_signing_key()
 

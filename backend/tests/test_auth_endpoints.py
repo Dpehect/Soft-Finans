@@ -50,8 +50,11 @@ def _build_test_app() -> tuple[FastAPI, sessionmaker]:
     return app, TestingSessionLocal
 
 
-def _register_and_login(client: TestClient, email: str = "user@example.com", password: str = "password123") -> dict:
-    r1 = client.post("/api/auth/register", json={"email": email, "password": password, "role": "viewer"})
+PASSWORD = "StrongPass!123"
+
+
+def _register_and_login(client: TestClient, email: str = "user@example.com", password: str = PASSWORD) -> dict:
+    r1 = client.post("/api/auth/register", json={"email": email, "password": password})
     assert r1.status_code == 200
     r2 = client.post("/api/auth/login", json={"email": email, "password": password})
     assert r2.status_code == 200
@@ -70,7 +73,7 @@ def test_register_login_and_protected_route() -> None:
 def test_invalid_credentials() -> None:
     app, _ = _build_test_app()
     client = TestClient(app)
-    client.post("/api/auth/register", json={"email": "u1@example.com", "password": "password123", "role": "viewer"})
+    client.post("/api/auth/register", json={"email": "u1@example.com", "password": PASSWORD})
     bad = client.post("/api/auth/login", json={"email": "u1@example.com", "password": "wrongpass"})
     assert bad.status_code == 401
 
@@ -126,12 +129,53 @@ def test_role_authorization() -> None:
     assert allowed.status_code == 200
 
 
+def test_role_in_payload_does_not_create_an_admin() -> None:
+    app, SessionLocal = _build_test_app()
+    client = TestClient(app)
+    response = client.post(
+        "/api/auth/register",
+        json={"email": "role-request@example.com", "password": PASSWORD, "role": "admin"},
+    )
+    assert response.status_code == 200
+
+    db: Session = SessionLocal()
+    try:
+        user = db.query(User).filter(User.email == "role-request@example.com").first()
+        assert user is not None
+        assert user.role == UserRole.VIEWER
+    finally:
+        db.close()
+
+
+def test_configured_admin_is_promoted_only_after_successful_login(monkeypatch) -> None:
+    app, SessionLocal = _build_test_app()
+    client = TestClient(app)
+    email = "operator@example.com"
+    registered = client.post("/api/auth/register", json={"email": email, "password": PASSWORD})
+    assert registered.status_code == 200
+
+    monkeypatch.setenv("ADMIN_EMAILS", email)
+    tokens = client.post("/api/auth/login", json={"email": email, "password": PASSWORD})
+    assert tokens.status_code == 200
+
+    db: Session = SessionLocal()
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        assert user is not None
+        assert user.role == UserRole.ADMIN
+    finally:
+        db.close()
+
+    access = client.get("/api/admin-only", headers={"Authorization": f"Bearer {tokens.json()['access_token']}"})
+    assert access.status_code == 200
+
+
 def test_forgot_access_resets_password_and_revokes_refresh_tokens() -> None:
     app, SessionLocal = _build_test_app()
     client = TestClient(app)
     email = "u5@example.com"
-    old_password = "password123"
-    new_password = "newpassword123"
+    old_password = PASSWORD
+    new_password = "NewPassword!456"
     tokens = _register_and_login(client, email=email, password=old_password)
 
     reset = client.post("/api/auth/forgot-access", json={"email": email, "new_password": new_password})

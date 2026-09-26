@@ -3,28 +3,33 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { MarketTicker } from "../../components/MarketTicker";
 import { StatusBar } from "../../components/StatusBar";
-import { useAuth, type AuthRole } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { SoftBridgeLogo } from "../../components/common/SoftBridgeLogo";
+import { passwordStrengthScore, validatePasswordStrength } from "../../lib/authSecurity";
 
 export function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<AuthRole>("viewer");
+  const [honeypot, setHoneypot] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { register, login, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  const strength = passwordStrengthScore(password);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
-    if (!email.includes("@")) {
-      setError("ENTER A VALID EMAIL");
+    if (honeypot.trim()) {
+      setError("KAYIT REDDEDİLDİ");
       return;
     }
-    if (password.length < 8) {
-      setError("PASSWORD MUST BE AT LEAST 8 CHARACTERS");
+
+    const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.ok) {
+      setError(passwordCheck.errors[0]?.toUpperCase() ?? "ŞİFRE YETERSİZ");
       return;
     }
     if (password !== confirmPassword) {
@@ -33,11 +38,12 @@ export function RegisterPage() {
     }
 
     try {
-      await register(email.trim(), password, role);
+      await register(email.trim(), password);
       await login(email.trim(), password);
-      navigate("/equity/stocks", { replace: true });
-    } catch {
-      setError("REGISTRATION FAILED");
+      navigate("/equity/umy", { replace: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "REGISTRATION FAILED";
+      setError(message.toUpperCase());
     }
   };
 
@@ -81,11 +87,22 @@ export function RegisterPage() {
             </div>
             <p className="ot-panel-kicker">NEW OPERATOR</p>
             <h2 className="ot-panel-title">REQUEST ACCESS</h2>
-            <p className="ot-panel-subtitle">Provision your platform credentials</p>
+            <p className="ot-panel-subtitle">Güçlü şifre ile güvenli hesap oluşturun (rol otomatik atanır)</p>
             <span className="ot-panel-divider" />
           </header>
 
           <form className="ot-login-form" onSubmit={onSubmit}>
+            <input
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(event) => setHoneypot(event.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute left-[-9999px] h-0 w-0 opacity-0"
+            />
+
             <label className="ot-field-label ot-stagger" style={{ ["--stagger-index" as string]: 2 }} htmlFor="ot-register-email">
               EMAIL
             </label>
@@ -111,13 +128,18 @@ export function RegisterPage() {
                 id="ot-register-password"
                 className="ot-input"
                 type="password"
-                placeholder="Create password..."
+                placeholder="Min. 12 karakter, büyük/küçük, rakam, özel karakter"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="new-password"
                 disabled={isLoading}
               />
             </div>
+            {password ? (
+              <div className="ot-stagger px-1 text-[10px] text-terminal-muted" style={{ ["--stagger-index" as string]: 5 }}>
+                Şifre gücü: {strength}/5
+              </div>
+            ) : null}
 
             <label className="ot-field-label ot-stagger" style={{ ["--stagger-index" as string]: 6 }} htmlFor="ot-register-confirm-password">
               CONFIRM PASSWORD
@@ -136,31 +158,13 @@ export function RegisterPage() {
               />
             </div>
 
-            <label className="ot-field-label ot-stagger" style={{ ["--stagger-index" as string]: 8 }} htmlFor="ot-register-role">
-              ROLE
-            </label>
-            <div className="ot-input-wrap ot-stagger" style={{ ["--stagger-index" as string]: 9 }}>
-              <span className="ot-input-prompt">&gt;</span>
-              <select
-                id="ot-register-role"
-                className="ot-input"
-                value={role}
-                onChange={(event) => setRole(event.target.value as AuthRole)}
-                disabled={isLoading}
-              >
-                <option value="viewer">VIEWER</option>
-                <option value="trader">TRADER</option>
-                <option value="admin">ADMIN</option>
-              </select>
-            </div>
-
-            <button type="submit" className="ot-login-submit ot-stagger" style={{ ["--stagger-index" as string]: 10 }} disabled={isLoading}>
+            <button type="submit" className="ot-login-submit ot-stagger" style={{ ["--stagger-index" as string]: 8 }} disabled={isLoading}>
               {isLoading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
             </button>
 
             {error ? <p className="ot-auth-error">{error}</p> : null}
 
-            <footer className="ot-login-footer ot-stagger" style={{ ["--stagger-index" as string]: 11 }}>
+            <footer className="ot-login-footer ot-stagger" style={{ ["--stagger-index" as string]: 9 }}>
               <p>
                 Already registered? <Link to="/login">Access platform</Link>
               </p>

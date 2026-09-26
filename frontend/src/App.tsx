@@ -139,7 +139,7 @@ function App() {
             <Route path="heatmap" element={<MarketHeatmapPage />} />
             <Route path="dividends" element={<DividendDashboardPage />} />
             <Route path="rs" element={<RelativeStrengthPage />} />
-            <Route path="data-quality" element={<DataQualityDashboard />} />
+            <Route path="data-quality" element={<ProtectedRoute requiredRole="admin"><DataQualityDashboard /></ProtectedRoute>} />
             <Route path="screener" element={<ScreenerPage />} />
             <Route path="factors" element={<FactorDashboardPage />} />
             <Route path="intelligence-timeline" element={<IntelligenceTimelinePage />} />
@@ -163,8 +163,8 @@ function App() {
             <Route path="stat-lab" element={<StatisticalLab />} />
             <Route path="pair-trading" element={<PairTradingLabPage />} />
             <Route path="oms" element={<OmsCompliancePage />} />
-            <Route path="ops" element={<OpsDashboardPage />} />
-            <Route path="plugins" element={<PluginsPage />} />
+            <Route path="ops" element={<ProtectedRoute requiredRole="admin"><OpsDashboardPage /></ProtectedRoute>} />
+            <Route path="plugins" element={<ProtectedRoute requiredRole="admin"><PluginsPage /></ProtectedRoute>} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="chart-workstation" element={<ChartWorkstationPage />} />
             <Route path="mta" element={<MultiTimeframePage />} />

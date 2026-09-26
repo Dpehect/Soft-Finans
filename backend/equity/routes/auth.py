@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from backend.api.deps import get_db
 from backend.auth.jwt import create_access_token, create_refresh_token, decode_token, refresh_expiry_utc
+from backend.auth.roles import configured_admin_emails, normalize_email, role_for_email
 from backend.models.user import RefreshToken, User, UserRole
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -54,21 +55,24 @@ class TokenPairResponse(BaseModel):
     token_type: str = "bearer"
 
 
-def _normalize_email(email: str) -> str:
-    return email.strip().lower()
-
-
 def _validate_email(email: str) -> None:
     if not _EMAIL_RE.match(email):
         raise HTTPException(status_code=400, detail="Invalid email format")
 
 
 def _validate_password(password: str) -> None:
-    if len(password) < 8:
-        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
-    # bcrypt only supports up to 72 bytes of input.
+    if len(password) < 12:
+        raise HTTPException(status_code=400, detail="Password must be at least 12 characters")
     if len(password.encode("utf-8")) > 72:
         raise HTTPException(status_code=400, detail="Password must be at most 72 bytes")
+    if not re.search(r"[a-z]", password):
+        raise HTTPException(status_code=400, detail="Password must include a lowercase letter")
+    if not re.search(r"[A-Z]", password):
+        raise HTTPException(status_code=400, detail="Password must include an uppercase letter")
+    if not re.search(r"[0-9]", password):
+        raise HTTPException(status_code=400, detail="Password must include a digit")
+    if not re.search(r"[^a-zA-Z0-9]", password):
+        raise HTTPException(status_code=400, detail="Password must include a special character")
 
 
 def _build_token_pair(db: Session, user: User) -> TokenPairResponse:
@@ -90,9 +94,12 @@ def _build_token_pair(db: Session, user: User) -> TokenPairResponse:
 
 @router.post("/register", response_model=UserResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> UserResponse:
-    email = _normalize_email(payload.email)
+    email = normalize_email(payload.email)
     _validate_email(email)
     _validate_password(payload.password)
+
+    if email in configured_admin_emails():
+        raise HTTPException(status_code=403, detail="Administrator accounts must be provisioned by an operator")
 
     existing = db.query(User).filter(User.email == email).first()
     if existing:
@@ -117,9 +124,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> UserRes
 
 @router.get("/me", response_model=UserResponse)
 def get_me(request: Request, db: Session = Depends(get_db)) -> UserResponse:
-    from backend.auth.deps import _get_or_create_dev_user
+    from backend.auth.deps import _fallback_unauthenticated_user
 
-    user = getattr(request.state, "current_user", None) or _get_or_create_dev_user(db)
+    user = getattr(request.state, "current_user", None) or _fallback_unauthenticated_user(db)
     return UserResponse(
         id=user.id,
         email=user.email,
@@ -131,13 +138,13 @@ def get_me(request: Request, db: Session = Depends(get_db)) -> UserResponse:
 
 @router.post("/login", response_model=TokenPairResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenPairResponse:
-    from backend.auth.deps import _get_or_create_dev_user
-
-    email = _normalize_email(payload.email) if payload.email else ""
+    email = normalize_email(payload.email) if payload.email else ""
+    _validate_email(email)
     user = db.query(User).filter(User.email == email).first() if email else None
-    if not user:
-        user = _get_or_create_dev_user(db)
+    if not user or not pwd_context.verify(payload.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
+    user.role = role_for_email(user.email)
     user.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
     db.commit()
 
@@ -146,25 +153,40 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenPairResp
 
 @router.post("/refresh", response_model=TokenPairResponse)
 def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPairResponse:
-    from backend.auth.deps import _get_or_create_dev_user
-
     try:
         decoded = decode_token(payload.refresh_token)
+        if decoded.get("type") != "refresh":
+            raise ValueError("Token is not a refresh token")
         user_id = str(decoded.get("sub") or "").strip()
+        jti = str(decoded.get("jti") or "").strip()
         user = db.query(User).filter(User.id == user_id).first() if user_id else None
+        refresh_token = (
+            db.query(RefreshToken)
+            .filter(
+                RefreshToken.user_id == user_id,
+                RefreshToken.jti == jti,
+                RefreshToken.revoked_at.is_(None),
+                RefreshToken.expires_at > datetime.now(timezone.utc).replace(tzinfo=None),
+            )
+            .first()
+        )
     except Exception:
         user = None
+        refresh_token = None
 
-    if not user:
-        user = _get_or_create_dev_user(db)
+    if not user or not refresh_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
 
+    refresh_token.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    user.role = role_for_email(user.email)
+    db.commit()
     return _build_token_pair(db, user)
 
 
 
 @router.post("/forgot-access", status_code=204)
 def forgot_access(payload: ForgotAccessRequest, db: Session = Depends(get_db)) -> None:
-    email = _normalize_email(payload.email)
+    email = normalize_email(payload.email)
     _validate_email(email)
     _validate_password(payload.new_password)
 

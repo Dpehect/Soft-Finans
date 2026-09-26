@@ -39,42 +39,7 @@ def init_db() -> None:
     _ensure_alerts_columns()
     _ensure_instrument_master_columns()
     _ensure_portfolio_currency_columns()
-    _ensure_default_user()
     _ensure_crypto_tokens()
-
-
-def _ensure_default_user() -> None:
-    try:
-        from backend.models.user import User, UserRole
-
-        with SessionLocal() as db:
-            user = db.query(User).filter(User.id == "dev-user").first()
-            if not user:
-                user = User(
-                    id="dev-user",
-                    email="admin@openterminal.local",
-                    hashed_password="",
-                    role=UserRole.ADMIN,
-                )
-                db.add(user)
-                db.commit()
-
-            admin_user = db.query(User).filter(User.email == "gurlekyunusemre2@gmail.com").first()
-            if not admin_user:
-                admin_user = User(
-                    id="fTP8Pr249iPeHibi1uUHxVviBPz2",
-                    email="gurlekyunusemre2@gmail.com",
-                    hashed_password="",
-                    role=UserRole.ADMIN,
-                )
-                db.add(admin_user)
-                db.commit()
-            elif admin_user.role != UserRole.ADMIN:
-                admin_user.role = UserRole.ADMIN
-                db.commit()
-    except Exception:
-        pass
-
 
 
 def _ensure_news_sentiment_columns() -> None:

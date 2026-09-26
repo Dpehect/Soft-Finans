@@ -16,8 +16,15 @@ import {
 } from "firebase/auth";
 
 import { auth } from "../lib/firebase";
-import { setAccessTokenGetter, setRefreshHandler } from "../api/client";
+import { api, setAccessTokenGetter, setRefreshHandler } from "../api/client";
 import { setAccessTokenGetter as setFnoAccessTokenGetter } from "../fno/api/fnoApi";
+import {
+  assertLoginAllowed,
+  clearLoginFailures,
+  recordLoginFailure,
+  validateEmail,
+  validatePasswordStrength,
+} from "../lib/authSecurity";
 
 export type AuthRole = "admin" | "trader" | "viewer";
 
@@ -35,7 +42,7 @@ export type AuthContextValue = {
   isLoading: boolean;
   isInitializing: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role?: AuthRole) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   hasRole: (required: AuthRole) => boolean;
   resetPassword: (email: string) => Promise<void>;
@@ -60,24 +67,13 @@ const AuthContext = createContext<AuthContextValue>(DEFAULT_AUTH_VALUE);
 /** Raw context ref for optional (non-throwing) usage outside AuthProvider */
 export { AuthContext as AuthContextRef };
 
-const ADMIN_EMAILS = [
-  "gurlekyunusemre2@gmail.com",
-  "admin@openterminal.local",
-  "admin@softbridge.local",
-];
-
-function firebaseUserToAuthUser(fbUser: FirebaseUser): AuthUser {
-  const email = (fbUser.email ?? "").toLowerCase();
-  const isAdmin = ADMIN_EMAILS.includes(email);
-  return {
-    id: fbUser.uid,
-    email: fbUser.email ?? "",
-    role: isAdmin ? "admin" : "trader",
-  };
+function firebaseUserToAuthUser(fbUser: FirebaseUser, role: AuthRole = "viewer"): AuthUser {
+  return { id: fbUser.uid, email: fbUser.email ?? "", role };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +95,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAccessToken(refreshed);
           return refreshed;
         });
+        try {
+          const response = await api.get<{ id: string; email: string; role: AuthRole }>("/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const role = response.data.role === "admin" ? "admin" : "viewer";
+          setUser(firebaseUserToAuthUser(fbUser, role));
+        } catch {
+          setUser(firebaseUserToAuthUser(fbUser));
+        }
       } else {
+        setUser(null);
         setAccessToken(null);
         setAccessTokenGetter(null);
         setFnoAccessTokenGetter(null);
@@ -117,26 +123,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    assertLoginAllowed();
+    const emailError = validateEmail(email);
+    if (emailError) {
+      throw new Error(emailError);
+    }
+    if (!password || password.length > 128) {
+      throw new Error("Geçersiz şifre.");
+    }
+
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will update state automatically
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      clearLoginFailures();
+    } catch (err) {
+      recordLoginFailure();
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const register = useCallback(
-    async (email: string, password: string, _role?: AuthRole) => {
-      setIsLoading(true);
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+  const register = useCallback(async (email: string, password: string) => {
+    const emailError = validateEmail(email);
+    if (emailError) {
+      throw new Error(emailError);
+    }
+    const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.ok) {
+      throw new Error(passwordCheck.errors[0] ?? "Şifre güvenlik gereksinimlerini karşılamıyor.");
+    }
+
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const logout = useCallback(() => {
     void signOut(auth);
@@ -149,20 +173,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasRole = useCallback(
     (required: AuthRole) => {
       if (!firebaseUser) return false;
-      const user = firebaseUserToAuthUser(firebaseUser);
       const ROLE_RANK: Record<AuthRole, number> = {
         viewer: 1,
         trader: 2,
         admin: 3,
       };
-      return (ROLE_RANK[user.role] ?? 0) >= (ROLE_RANK[required] ?? 99);
+      return (ROLE_RANK[user?.role ?? "viewer"] ?? 0) >= (ROLE_RANK[required] ?? 99);
     },
-    [firebaseUser],
-  );
-
-  const user = useMemo<AuthUser | null>(
-    () => (firebaseUser ? firebaseUserToAuthUser(firebaseUser) : null),
-    [firebaseUser],
+    [firebaseUser, user],
   );
 
   const value = useMemo<AuthContextValue>(

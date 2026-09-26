@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, inMemoryPersistence, setPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBP-MvCEjvJ2DAknjhYX8fcYHoHid5TUFs",
@@ -15,4 +15,8 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+
+// Keep Firebase credentials out of persistent browser storage. API tokens remain
+// in memory for the active tab only and are cleared when it is closed.
+void setPersistence(auth, inMemoryPersistence);
 export default app;
