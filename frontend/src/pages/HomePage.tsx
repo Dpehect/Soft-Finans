@@ -5,6 +5,7 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowUpRight,
+  ArrowDownRight,
   ShieldCheck,
   Activity,
   BarChart3,
@@ -23,6 +24,8 @@ import {
 import { RunningFox } from "../components/common/RunningFox";
 import { SoftBridgeLogo } from "../components/common/SoftBridgeLogo";
 import { UmayFoxLogo } from "../components/crypto/UmayFoxLogo";
+import { useUmayLiveStore } from "../store/umayLiveStore";
+import { useCoinWalletStore } from "../store/coinWalletStore";
 
 import {
   fetchBacktestV1Presets,
@@ -280,8 +283,42 @@ export function HomePage() {
   const [quickUmyAmount, setQuickUmyAmount] = useState<string>("100");
   const [quickUmySuccess, setQuickUmySuccess] = useState<boolean>(false);
 
-  const tokensCalculated = Math.floor((parseFloat(quickUmyAmount) || 0) / 0.0040);
+  // Live Umay state synchronization
+  const {
+    priceTry: umayPriceTry,
+    priceUsd: umayPriceUsd,
+    changePct24h: umayChangePct,
+    tickDirection: umayTickDirection,
+    recordUserSwap: recordUmaySwap,
+  } = useUmayLiveStore();
+  const executeBuyInWallet = useCoinWalletStore((s) => s.executeBuy);
+
+  const tokensCalculated = useMemo(() => {
+    const amountVal = parseFloat(quickUmyAmount) || 0;
+    const effectivePrice = umayPriceTry > 0 ? umayPriceTry : 0.0049;
+    return Math.floor(amountVal / effectivePrice);
+  }, [quickUmyAmount, umayPriceTry]);
+
   const handleQuickBuyUmy = () => {
+    const tryAmount = parseFloat(quickUmyAmount) || 0;
+    if (tryAmount <= 0) return;
+    const usdAmount = Number((tryAmount / 40.30).toFixed(2));
+    
+    // Live AMM tick & trade feed record
+    recordUmaySwap("buy", tokensCalculated, usdAmount);
+
+    // Update persistent wallet balance
+    if (user?.email) {
+      executeBuyInWallet({
+        payAmount: tryAmount,
+        payCurrency: "TRY",
+        umyOut: tokensCalculated,
+        priceUsd: umayPriceUsd,
+        feeFiat: 0,
+        paymentMethod: "balance",
+      });
+    }
+
     setQuickUmySuccess(true);
     window.setTimeout(() => setQuickUmySuccess(false), 5000);
   };
@@ -655,8 +692,12 @@ export function HomePage() {
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                       Canlı Piyasalar Aktif
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                      <UmayFoxLogo size={14} /> UMY +24.0%
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold transition-all ${
+                      umayChangePct >= 0
+                        ? "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : "border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                    }`}>
+                      <UmayFoxLogo size={14} /> UMY {umayChangePct >= 0 ? `+${umayChangePct.toFixed(2)}%` : `${umayChangePct.toFixed(2)}%`}
                     </span>
                   </div>
 
@@ -798,17 +839,23 @@ export function HomePage() {
                         <p className="text-[11px] text-terminal-muted">SoftBridge Finans Ekosistemi</p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-extrabold text-cyan-500 dark:text-cyan-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-                      +24.0% Canlı
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-extrabold transition-all ${
+                      umayChangePct >= 0
+                        ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-500 dark:text-cyan-300"
+                        : "border-rose-500/40 bg-rose-500/10 text-rose-500 dark:text-rose-300"
+                    }`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${umayChangePct >= 0 ? "bg-cyan-400" : "bg-rose-400"} animate-ping`} />
+                      {umayChangePct >= 0 ? `+${umayChangePct.toFixed(2)}%` : `${umayChangePct.toFixed(2)}%`} Canlı
                     </span>
                   </div>
 
                   <div className="mt-2.5 flex items-baseline gap-2">
-                    <p className="text-2xl md:text-3xl font-black tracking-tight text-amber-400">
-                      0,0040 ₺
+                    <p className={`text-2xl md:text-3xl font-black tracking-tight tabular-nums transition-colors duration-300 ${
+                      umayTickDirection === "up" ? "text-emerald-400" : umayTickDirection === "down" ? "text-rose-400" : "text-amber-400"
+                    }`}>
+                      {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺
                     </p>
-                    <span className="text-xs text-terminal-muted font-medium">($0.00012)</span>
+                    <span className="text-xs text-terminal-muted font-medium tabular-nums">(${umayPriceUsd.toFixed(6)})</span>
                   </div>
 
                   <p className="mt-1 text-xs text-terminal-muted line-clamp-2">
@@ -818,7 +865,7 @@ export function HomePage() {
 
                 <div className="mt-3 flex items-center justify-between border-t border-amber-500/20 pt-2.5 text-xs">
                   <span className="text-[11px] font-medium text-cyan-400">
-                    Açılış: 0,004 ₺ • %24 Ralli
+                    Açılış: 0,0040 ₺ • %{Math.abs(umayChangePct).toFixed(1)} {umayChangePct >= 0 ? "Yükseliş" : "Değişim"}
                   </span>
                   <button
                     type="button"
@@ -1020,9 +1067,13 @@ export function HomePage() {
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-base font-bold text-terminal-text">Umay (UMY) Hızlı Alım & Takas</h3>
-                            <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-extrabold text-cyan-500 dark:text-cyan-300">
-                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping mr-1" />
-                              0,0040 ₺ / +24.0%
+                            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold transition-all ${
+                              umayChangePct >= 0
+                                ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-500 dark:text-cyan-300"
+                                : "border-rose-500/40 bg-rose-500/10 text-rose-500 dark:text-rose-300"
+                            }`}>
+                              <span className={`inline-block h-1.5 w-1.5 rounded-full ${umayChangePct >= 0 ? "bg-cyan-400" : "bg-rose-400"} animate-ping mr-1`} />
+                              {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺ / {umayChangePct >= 0 ? "+" : ""}{umayChangePct.toFixed(2)}%
                             </span>
                           </div>
                           <p className="text-xs text-terminal-muted max-w-xl">
@@ -1195,11 +1246,19 @@ export function HomePage() {
                                 </div>
                               </td>
                               <td className="py-3 px-3 text-terminal-muted">Kripto / SoftBridge</td>
-                              <td className="py-3 px-3 text-right font-bold text-terminal-text">0,0040 ₺</td>
+                              <td className={`py-3 px-3 text-right font-bold tabular-nums transition-colors duration-300 ${
+                                umayTickDirection === "up" ? "text-emerald-500 dark:text-emerald-400" : umayTickDirection === "down" ? "text-rose-500 dark:text-rose-400" : "text-terminal-text"
+                              }`}>
+                                {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺
+                              </td>
                               <td className="py-3 px-3 text-right">
-                                <span className="inline-flex items-center gap-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 font-bold text-cyan-600 dark:text-cyan-400">
-                                  <ArrowUpRight className="h-3 w-3" />
-                                  +24.00%
+                                <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-bold ${
+                                  umayChangePct >= 0
+                                    ? "border border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                                    : "border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                                }`}>
+                                  {umayChangePct >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                  {umayChangePct >= 0 ? `+${umayChangePct.toFixed(2)}%` : `${umayChangePct.toFixed(2)}%`}
                                 </span>
                               </td>
                               <td className="py-3 px-3 text-right">
@@ -1406,8 +1465,12 @@ export function HomePage() {
                                   <div>
                                     <div className="font-bold text-amber-500 dark:text-amber-400 flex items-center gap-1.5">
                                       <span>UMY</span>
-                                      <span className="rounded-md bg-amber-500/20 px-1.5 py-0.2 text-[10px] font-extrabold text-amber-500 dark:text-amber-300">
-                                        +24% AÇILIŞ
+                                      <span className={`rounded-md px-1.5 py-0.2 text-[10px] font-extrabold transition-all ${
+                                        umayChangePct >= 0
+                                          ? "bg-amber-500/20 text-amber-500 dark:text-amber-300"
+                                          : "bg-rose-500/20 text-rose-500 dark:text-rose-300"
+                                      }`}>
+                                        {umayChangePct >= 0 ? `+${umayChangePct.toFixed(1)}%` : `${umayChangePct.toFixed(1)}%`} CANLI
                                       </span>
                                     </div>
                                     <div className="text-[11px] text-terminal-muted">Umay Token • 1 Milyar Arz</div>
@@ -1415,10 +1478,19 @@ export function HomePage() {
                                 </div>
                               </td>
                               <td className="py-3 px-3 text-terminal-muted">SoftBridge Finans Ekosistemi</td>
-                              <td className="py-3 px-3 text-right font-black text-amber-400">0,0040 ₺</td>
+                              <td className={`py-3 px-3 text-right font-black tabular-nums transition-colors duration-300 ${
+                                umayTickDirection === "up" ? "text-emerald-400" : umayTickDirection === "down" ? "text-rose-400" : "text-amber-400"
+                              }`}>
+                                {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺
+                              </td>
                               <td className="py-3 px-3 text-right">
-                                <span className="inline-flex items-center gap-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 font-bold text-cyan-600 dark:text-cyan-400">
-                                  +24.00%
+                                <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-bold ${
+                                  umayChangePct >= 0
+                                    ? "border border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                                    : "border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                                }`}>
+                                  {umayChangePct >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                  {umayChangePct >= 0 ? `+${umayChangePct.toFixed(2)}%` : `${umayChangePct.toFixed(2)}%`}
                                 </span>
                               </td>
                               <td className="py-3 px-3 text-right">
@@ -1753,12 +1825,18 @@ export function HomePage() {
                     >
                       <div className="flex items-center justify-between w-full">
                         <UmayFoxLogo size={30} className="drop-shadow-[0_0_8px_rgba(245,158,11,0.35)]" />
-                        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-black text-amber-500 dark:text-amber-300">
-                          +24.0%
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-black transition-colors ${
+                          umayChangePct >= 0
+                            ? "bg-amber-500/20 text-amber-500 dark:text-amber-300"
+                            : "bg-rose-500/20 text-rose-500 dark:text-rose-300"
+                        }`}>
+                          {umayChangePct >= 0 ? `+${umayChangePct.toFixed(1)}%` : `${umayChangePct.toFixed(1)}%`}
                         </span>
                       </div>
                       <span className="font-bold text-amber-500 dark:text-amber-400 mt-1.5">Umay (UMY) Token Masası</span>
-                      <span className="text-[11px] text-terminal-muted">Mitolojik hikaye, tokenomics & canlı alım-satım</span>
+                      <span className="text-[11px] text-terminal-muted tabular-nums">
+                        {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺ (${umayPriceUsd.toFixed(6)}) • Canlı alım-satım
+                      </span>
                     </button>
                   </div>
                 </div>

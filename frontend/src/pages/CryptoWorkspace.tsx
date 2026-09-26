@@ -19,6 +19,7 @@ import { CryptoDefiPanel } from "../components/crypto/CryptoDefiPanel";
 import { CryptoDerivativesPanel } from "../components/crypto/CryptoDerivativesPanel";
 import { CryptoHeatmapPanel } from "../components/crypto/CryptoHeatmapPanel";
 import { UmayFoxLogo } from "../components/crypto/UmayFoxLogo";
+import { useUmayLiveStore } from "../store/umayLiveStore";
 import { TerminalBadge } from "../components/terminal/TerminalBadge";
 import { TerminalButton } from "../components/terminal/TerminalButton";
 import { TerminalInput } from "../components/terminal/TerminalInput";
@@ -152,6 +153,7 @@ function MetricCard({
 export function CryptoWorkspacePage() {
   const navigate = useNavigate();
   const setTicker = useStockStore((s) => s.setTicker);
+  const { priceTry: umayPriceTry, changePct24h: umayChangePct } = useUmayLiveStore();
   const [tab, setTab] = useState<CryptoTab>("markets");
   const [moversMetric, setMoversMetric] = useState("gainers");
   const [corrWindow, setCorrWindow] = useState(30);
@@ -615,11 +617,15 @@ export function CryptoWorkspacePage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-terminal-text text-sm">UMAY (UMY) Token</span>
-              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:text-cyan-400">
-                0,0040 ₺ / +24.0%
+              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black transition-all ${
+                umayChangePct >= 0
+                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400"
+                  : "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-400"
+              }`}>
+                {umayPriceTry.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 5 })} ₺ / {umayChangePct >= 0 ? "+" : ""}{umayChangePct.toFixed(2)}%
               </span>
               <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400 hidden md:inline">
-                Açılış Rallisi
+                Canlı Fiyat
               </span>
             </div>
             <p className="text-xs text-terminal-muted">
