@@ -15,7 +15,12 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  Wallet,
+  CreditCard,
+  Building2,
 } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useCoinWalletStore, type FiatCurrency, type PaymentMethod } from "../../store/coinWalletStore";
 import { useStockHistory } from "../../hooks/useStocks";
 import { UmayFoxLogo } from "./UmayFoxLogo";
 import { useUmayLiveStore } from "../../store/umayLiveStore";
